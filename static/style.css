@@ -1497,10 +1497,13 @@ body{
 }
 
 .header-logo {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
-    border-radius: 8px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .brand h1 {
@@ -3295,10 +3298,10 @@ body::after {
 }
 
 .header-logo {
-    border-radius: 14px;
-    box-shadow:
-        0 0 0 1px rgba(255,255,255,.14),
-        0 10px 34px rgba(0,0,255,.32);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .nav-links {
@@ -4849,7 +4852,11 @@ body {
 .header-logo {
     width: 40px;
     height: 40px;
-    border-radius: 13px;
+    object-fit: contain;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .nav-links {
