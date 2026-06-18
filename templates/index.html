@@ -1,62 +1,8 @@
-﻿﻿<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
 
-    <meta charset="UTF-8">
+{% block title %}Anzu anime{% endblock %}
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Anzu anime</title>
-
-    <style>html,body{background-color:#0b0907;color:#F3F4F5;}</style>
-    <meta name="theme-color" content="#0b0907">
-    <link rel="icon" type="image/png" href="/static/arcana.jpg">
-    <link
-        rel="stylesheet"
-        href="/static/style.css"
-    >
-
-</head>
-
-<body>
-
-<header class="topbar">
-
-    <div class="nav-left">
-        <a href="/" class="brand">
-            <img src="/static/logo_transparent_cropped.png" alt="Anzu Anime Logo" class="header-logo">
-            <h1>anzu<span>anime</span></h1>
-        </a>
-    </div>
-
-    <nav class="nav-center">
-        <ul class="nav-links">
-            <li><a href="/" class="nav-link active">Beranda</a></li>
-            <li><a href="/movies" class="nav-link">Movies</a></li>
-            <li><a href="/schedule" class="nav-link">Jadwal</a></li>
-        </ul>
-    </nav>
-
-    <div class="nav-right">
-        <div class="search-box">
-            <span class="search-icon">&#128269;</span>
-            <input
-                type="text"
-                id="animeSearch"
-                placeholder="Cari koleksi anime..."
-            >
-        </div>
-
-        <div class="user-action">
-            <div class="profile-circle">&#128100;</div>
-        </div>
-    </div>
-
-</header>
-
+{% block content %}
 {% if featured_slides %}
 
 <div class="featured-anime">
@@ -80,7 +26,7 @@
                     <div class="featured-row">
                         {% if slide.info %}
                         <div class="hero-actions">
-                            <a href="/anime/{{ slide.anime.name }}" class="watch-btn">▶ Play Now</a>
+                            <a href="/anime/{{ slide.anime.name }}" class="watch-btn">&#9654; Play Now</a>
                         </div>
 
                         <div class="featured-meta">
@@ -135,12 +81,10 @@
         <div class="dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></div>
         {% endfor %}
     </div>
-
 </div>
 
 {% endif %}
 
-<!-- Section: Lanjutkan Menonton (Baru) -->
 <section class="continue-watching-section">
     <div class="resume-section-head">
         <div>
@@ -170,7 +114,7 @@
                     <div class="progress-fill" style="width: 100%;"></div>
                 </div>
                 <div class="continue-overlay">
-                    <button class="play-mini-btn">▶</button>
+                    <button class="play-mini-btn">&#9654;</button>
                     <span class="continue-overlay-text">Continue</span>
                 </div>
             </div>
@@ -189,7 +133,7 @@
             </div>
         </a>
         {% endfor %}
-        
+
         {% if not continue_watching %}
         <div class="continue-card empty">
             <div class="empty-content">
@@ -202,29 +146,22 @@
 </section>
 
 <section class="collection-section">
-
     <div class="collection-glow"></div>
 
     <div class="collection-top">
-
         <div class="collection-heading">
             <div class="section-title">
                 <div class="section-line"></div>
-                <h2 class="section-heading">
-                Anime Collection
-                </h2>
+                <h2 class="section-heading">Anime Collection</h2>
             </div>
             <p class="section-subtitle">Jelajahi perpustakaan anime lokal Anda dengan data real-time.</p>
         </div>
-
     </div>
 
     <div class="collection-toolbar">
-
         <div class="toolbar-line"></div>
 
         <div class="status-filter">
-
             <a
                 href="#"
                 data-filter="ALL"
@@ -248,110 +185,51 @@
             >
                 Finished ({{ finished_count }})
             </a>
-
         </div>
-
     </div>
 
-<div class="grid">
-
-{% for anime in anime_list %}
-
-<div class="card" data-status="{{ anime.status }}">
-
-    <a 
-        href="{% if anime.name == 'Movies' %}/movies{% else %}/anime/{{ anime.name }}{% endif %}"
-        onclick="this.querySelector('.poster').style.viewTransitionName = 'anime-poster'"
-    >
-
-        <img
-            class="poster"
-            src="/poster/{{ anime.name }}"
-            alt="{{ anime.name }}"
-            loading="lazy"
-        >
-
-        <div class="poster-overlay">
-
-            <h3>
-                {{ anime.name }}
-            </h3>
-
-            <div class="poster-card-meta">
-
-                {% if anime.score %}
-                <span>
-                    &starf; {{ "%.1f"|format((anime.score or 0) / 10) }}
-                </span>
-                {% endif %}
-
-                {% if anime.year %}
-
-                <span>
-                    {% if anime.season %}
-                        {{ anime.season }}
-                    {% endif %}
-                    {{ anime.year }}
-                </span>
-
-                {% endif %}
-
-            </div>
-
-            <button
-                class="play-hover-btn"
+    <div class="grid">
+        {% for anime in anime_list %}
+        <div class="card" data-status="{{ anime.status }}">
+            <a
+                href="{% if anime.name == 'Movies' %}/movies{% else %}/anime/{{ anime.name }}{% endif %}"
+                onclick="this.querySelector('.poster').style.viewTransitionName = 'anime-poster'"
             >
-                &#9654; Watch
-            </button>
+                <img
+                    class="poster"
+                    src="/poster/{{ anime.name }}"
+                    alt="{{ anime.name }}"
+                    loading="lazy"
+                >
 
+                <div class="poster-overlay">
+                    <h3>{{ anime.name }}</h3>
+
+                    <div class="poster-card-meta">
+                        {% if anime.score %}
+                        <span>&starf; {{ "%.1f"|format((anime.score or 0) / 10) }}</span>
+                        {% endif %}
+
+                        {% if anime.year %}
+                        <span>
+                            {% if anime.season %}
+                                {{ anime.season }}
+                            {% endif %}
+                            {{ anime.year }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <button class="play-hover-btn">&#9654; Watch</button>
+                </div>
+            </a>
         </div>
-
-    </a>
-
-</div>
-
-{% endfor %}
-
-</div>
-
+        {% endfor %}
+    </div>
 </section>
+{% endblock %}
 
-<footer class="main-footer">
-    <div class="footer-surface-glow"></div>
-
-    <div class="footer-content">
-
-        <div class="footer-brand">
-            <h2>anzuanime</h2>
-            <p>
-                Manajemen koleksi anime lokal Anda dengan integrasi data dari AniList secara real-time.
-            </p>
-        </div>
-
-        <div class="footer-links">
-            <h3>Navigasi</h3>
-            <ul>
-                <li><a href="/">Beranda</a></li>
-                <li><a href="/movies">Koleksi Film</a></li>
-            </ul>
-        </div>
-
-        <div class="footer-meta">
-            <h3>Sistem</h3>
-            <p>Data Provider: AniList API</p>
-            <p>Media Engine: VLC / HTML5</p>
-        </div>
-
-    </div>
-
-    <div class="footer-bottom">
-        <p>
-            &copy; 2026 Anzu Anime. Dibuat untuk kenyamanan menonton koleksi pribadi.
-        </p>
-    </div>
-
-</footer>
-
+{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const slides = document.querySelectorAll('.featured-slide');
@@ -360,6 +238,10 @@
         let slideInterval;
 
         function showSlide(index) {
+            if (!slides[currentSlide] || !dots[currentSlide] || !slides[index] || !dots[index]) {
+                return;
+            }
+
             slides[currentSlide].classList.remove('active');
             dots[currentSlide].classList.remove('active');
             currentSlide = index;
@@ -384,7 +266,6 @@
             });
         }
 
-        // Fitur Pencarian Real-time
         const searchInput = document.getElementById('animeSearch');
         const featuredSection = document.querySelector('.featured-anime');
         const continueSection = document.querySelector('.continue-watching-section');
@@ -393,12 +274,12 @@
         const cards = document.querySelectorAll('.grid .card');
         const filterBtns = document.querySelectorAll('.filter-btn');
 
-        let currentStatus = 'ALL';
+        let currentStatus = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'ALL';
         let currentSearch = '';
 
         function applyFilters() {
             const isSearching = currentSearch.length > 0;
-            
+
             if (featuredSection) featuredSection.style.display = isSearching ? 'none' : 'block';
             if (continueSection) continueSection.style.display = isSearching ? 'none' : 'block';
             if (collectionHeading) collectionHeading.style.display = isSearching ? 'none' : 'block';
@@ -408,16 +289,15 @@
             cards.forEach((card) => {
                 const title = card.querySelector('h3').textContent.toLowerCase();
                 const status = card.getAttribute('data-status');
-                
+
                 const matchesSearch = title.includes(currentSearch);
                 const matchesStatus = (currentStatus === 'ALL' || status === currentStatus);
 
                 if (matchesSearch && matchesStatus) {
                     card.style.display = "flex";
                     card.classList.remove('filter-item');
-                    void card.offsetWidth; // Force reflow untuk restart animasi
-                    
-                    // Staggered delay yang lebih smooth
+                    void card.offsetWidth;
+
                     const delay = Math.min(visibleCount * 0.05, 0.8);
                     card.style.animation = `slideUpReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s forwards`;
                     card.style.opacity = '0';
@@ -430,10 +310,12 @@
             });
         }
 
-        searchInput.addEventListener('input', function(e) {
-            currentSearch = e.target.value.toLowerCase().trim();
-            applyFilters();
-        });
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                currentSearch = e.target.value.toLowerCase().trim();
+                applyFilters();
+            });
+        }
 
         filterBtns.forEach(btn => {
             btn.addEventListener('click', function(e) {
@@ -463,10 +345,7 @@
             resumeNext.addEventListener('click', () => scrollResume(1));
         }
 
-        // Jalankan filter saat load pertama kali untuk memberikan animasi awal
         applyFilters();
     });
 </script>
-
-</body>
-</html>
+{% endblock %}

@@ -1,66 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
 
-<meta charset="UTF-8">
+{% block title %}Movies{% endblock %}
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-Movies
-</title>
-
-<style>html,body{background-color:#0b0907;color:#F3F4F5;}</style>
-<meta name="theme-color" content="#0b0907">
-<link rel="icon" type="image/png" href="/static/arcana.jpg">
-<link
-    rel="stylesheet"
-    href="/static/style.css"
->
-
-</head>
-
-<body>
-
-<header class="topbar">
-
-    <div class="nav-left">
-        <a href="/" class="brand">
-            <img src="/static/Anzuanime_logo.png" alt="Anzu Anime Logo" class="header-logo">
-            <h1>Anzu<span>anime</span></h1>
-        </a>
-    </div>
-
-    <nav class="nav-center">
-        <ul class="nav-links">
-            <li><a href="/" class="nav-link">Beranda</a></li>
-            <li><a href="/movies" class="nav-link active">Movies</a></li>
-            <li><a href="/schedule" class="nav-link">Jadwal</a></li>
-        </ul>
-    </nav>
-
-    <div class="nav-right">
-        <div class="search-box">
-            <span class="search-icon">&#128269;</span>
-            <input
-                type="text"
-                id="animeSearch"
-                placeholder="Cari koleksi anime..."
-            >
-        </div>
-
-        <div class="user-action">
-            <div class="profile-circle">👤</div>
-        </div>
-    </div>
-
-</header>
-
+{% block content %}
 {% if movies %}
-<!-- Section: Featured Movie Hero -->
 <div class="featured-anime movie-hero">
     <div class="hero-ambient hero-ambient-left"></div>
     <div class="hero-ambient hero-ambient-right"></div>
@@ -80,7 +23,7 @@ Movies
 
                     <div class="featured-row">
                         <div class="hero-actions">
-                            <a href="/movie/{{ hero.file | urlencode }}" class="watch-btn">▶ Lihat Detail</a>
+                            <a href="/movie/{{ hero.file | urlencode }}" class="watch-btn">&#9654; Lihat Detail</a>
                         </div>
 
                         <div class="featured-meta">
@@ -128,7 +71,7 @@ Movies
 
         <div class="player-option-list">
             <button id="browserBtn" class="player-option">
-                <span class="player-icon">🌐</span>
+                <span class="player-icon">&#127760;</span>
                 <div class="player-text">
                     <strong>Putar di Browser</strong>
                     <small>Streaming langsung di Anzu Anime</small>
@@ -136,7 +79,7 @@ Movies
             </button>
 
             <button id="vlcBtn" class="player-option">
-                <span class="player-icon">▶</span>
+                <span class="player-icon">&#9654;</span>
                 <div class="player-text">
                     <strong>Buka di VLC</strong>
                     <small>Gunakan VLC Media Player</small>
@@ -165,98 +108,78 @@ Movies
         <div class="toolbar-line"></div>
     </div>
 
-<div class="grid">
-{% for movie in movies %}
-<div class="card">
-    <a href="/movie/{{ movie.file | urlencode }}">
-        <img
-            class="poster"
-            src="{{ movie.poster }}"
-            alt="{{ movie.title }}"
-            loading="lazy"
-        >
+    <div class="grid">
+        {% for movie in movies %}
+        <div class="card">
+            <a href="/movie/{{ movie.file | urlencode }}">
+                <img
+                    class="poster"
+                    src="{{ movie.poster }}"
+                    alt="{{ movie.title }}"
+                    loading="lazy"
+                >
 
-        <div class="poster-overlay">
-            <h3>{{ movie.title }}</h3>
-            
-            <div class="poster-card-meta">
-                {% if movie.score %}
-                <span>&starf; {{ "%.1f"|format(movie.score / 10) }}</span>
-                {% endif %}
-                {% if movie.year %}
-                <span>{{ movie.year }}</span>
-                {% endif %}
-            </div>
+                <div class="poster-overlay">
+                    <h3>{{ movie.title }}</h3>
 
-            <button class="play-hover-btn">
-                &#9654; Detail
-            </button>
+                    <div class="poster-card-meta">
+                        {% if movie.score %}
+                        <span>&starf; {{ "%.1f"|format(movie.score / 10) }}</span>
+                        {% endif %}
+                        {% if movie.year %}
+                        <span>{{ movie.year }}</span>
+                        {% endif %}
+                    </div>
+
+                    <button class="play-hover-btn">&#9654; Detail</button>
+                </div>
+            </a>
         </div>
-    </a>
-</div>
-{% endfor %}
-</div>
-
+        {% endfor %}
+    </div>
 </section>
+{% endblock %}
 
-<footer class="main-footer">
-    <div class="footer-surface-glow"></div>
-
-    <div class="footer-content">
-
-        <div class="footer-brand">
-            <h2>Anzu Anime</h2>
-            <p>
-                Manajemen koleksi anime lokal Anda dengan integrasi data dari AniList secara real-time.
-            </p>
-        </div>
-
-        <div class="footer-links">
-            <h3>Navigasi</h3>
-            <ul>
-                <li><a href="/">Beranda</a></li>
-                <li><a href="/movies">Koleksi Film</a></li>
-            </ul>
-        </div>
-
-        <div class="footer-meta">
-            <h3>Sistem</h3>
-            <p>Data Provider: AniList API</p>
-            <p>Media Engine: VLC / HTML5</p>
-        </div>
-
-    </div>
-
-    <div class="footer-bottom">
-        <p>
-            &copy; 2025 Anzu Anime. Dibuat untuk kenyamanan menonton koleksi pribadi.
-        </p>
-    </div>
-
-</footer>
-
+{% block scripts %}
 <script>
 let selectedMovie = "";
 
-document.getElementById("browserBtn").onclick = function() {
-    window.location.href = "/player/Movies/" + encodeURIComponent(selectedMovie);
-};
+const browserBtn = document.getElementById("browserBtn");
+if (browserBtn) {
+    browserBtn.onclick = function() {
+        window.location.href = "/player/Movies/" + encodeURIComponent(selectedMovie);
+    };
+}
 
 function openPlayerModal(file) {
     selectedMovie = file;
-    document.getElementById("playerModal").showModal();
+    const modal = document.getElementById("playerModal");
+    if (modal) {
+        modal.showModal();
+    }
 }
 
-document.getElementById("vlcBtn").onclick = function() {
-    fetch("/play/Movies/" + encodeURIComponent(selectedMovie));
-    document.getElementById("playerModal").close();
-};
+const vlcBtn = document.getElementById("vlcBtn");
+if (vlcBtn) {
+    vlcBtn.onclick = function() {
+        fetch("/play/Movies/" + encodeURIComponent(selectedMovie));
+        const modal = document.getElementById("playerModal");
+        if (modal) {
+            modal.close();
+        }
+    };
+}
 
-document.getElementById("closeBtn").onclick = function() {
-    document.getElementById("playerModal").close();
-};
+const closeBtn = document.getElementById("closeBtn");
+if (closeBtn) {
+    closeBtn.onclick = function() {
+        const modal = document.getElementById("playerModal");
+        if (modal) {
+            modal.close();
+        }
+    };
+}
 
-// Menutup modal saat kembali dari halaman player
 window.addEventListener("pageshow", function() {
     const modal = document.getElementById("playerModal");
     if (modal && modal.open) {
@@ -264,30 +187,29 @@ window.addEventListener("pageshow", function() {
     }
 });
 
-// Fitur Pencarian Real-time Modern
-document.getElementById('animeSearch').addEventListener('input', function(e) {
-    const term = e.target.value.toLowerCase().trim();
-    const cards = document.querySelectorAll('.grid .card');
-    const movieHero = document.querySelector('.movie-hero');
-    const collectionTop = document.querySelector('.collection-top');
-    const toolbar = document.querySelector('.collection-toolbar');
-    const isSearching = term.length > 0;
-    
-    // Sembunyikan elemen dekoratif saat mencari
-    if (movieHero) movieHero.style.display = isSearching ? 'none' : 'block';
-    if (collectionTop) collectionTop.style.display = isSearching ? 'none' : 'block';
-    if (toolbar) toolbar.style.display = isSearching ? 'none' : 'flex';
-    
-    cards.forEach(card => {
-        const title = card.querySelector('h3').textContent.toLowerCase();
-        if (title.includes(term)) {
-            card.style.display = "flex";
-        } else {
-            card.style.display = "none";
-        }
-    });
-});
-</script>
+const movieSearchInput = document.getElementById('animeSearch');
+if (movieSearchInput) {
+    movieSearchInput.addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.grid .card');
+        const movieHero = document.querySelector('.movie-hero');
+        const collectionTop = document.querySelector('.collection-top');
+        const toolbar = document.querySelector('.collection-toolbar');
+        const isSearching = term.length > 0;
 
-</body>
-</html>
+        if (movieHero) movieHero.style.display = isSearching ? 'none' : 'block';
+        if (collectionTop) collectionTop.style.display = isSearching ? 'none' : 'block';
+        if (toolbar) toolbar.style.display = isSearching ? 'none' : 'flex';
+
+        cards.forEach(card => {
+            const title = card.querySelector('h3').textContent.toLowerCase();
+            if (title.includes(term)) {
+                card.style.display = "flex";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    });
+}
+</script>
+{% endblock %}

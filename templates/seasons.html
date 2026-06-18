@@ -1,32 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
 
-    <meta charset="UTF-8">
+{% block title %}{{ anime_name }}{% endblock %}
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        {{ anime_name }}
-    </title>
-
-    <style>html,body{background-color:#0b0907;color:#F3F4F5;}</style>
-    <meta name="theme-color" content="#0b0907">
-    <link rel="icon" type="image/png" href="/static/arcana.jpg">
-    <link
-        rel="stylesheet"
-        href="/static/style.css"
-    >
-
-</head>
-
-<body>
-
+{% block content %}
 <div class="hero">
-
     <img
         class="hero-banner"
         src="/banner/{{ anime_name }}"
@@ -34,7 +11,6 @@
     >
 
     <div class="hero-overlay">
-
         <a
             href="/"
             class="back-btn"
@@ -42,93 +18,55 @@
             &larr; Kembali
         </a>
 
-        <h1>
-            {{ anime_name }}
-        </h1>
+        <h1>{{ anime_name }}</h1>
 
-        <p>
-            Pilih season untuk melihat episode
-        </p>
-
+        <p>Pilih season untuk melihat episode</p>
     </div>
-
 </div>
 
 <div class="anime-header">
-
     <div class="section-title">
-
         <div class="section-line"></div>
 
-        <h2>
-            Available Seasons
-        </h2>
-
+        <h2>Available Seasons</h2>
     </div>
-
 </div>
 
 <div class="episode-grid">
-
-{% for season in seasons %}
-
-<a
-    href="/anime/{{ anime_name }}/{{ season.name }}"
-    class="season-card"
->
-
-    <div class="season-cover">
-
-        <div class="season-number">
-            {{ loop.index }}
+    {% for season in seasons %}
+    <a
+        href="/anime/{{ anime_name }}/{{ season.name }}"
+        class="season-card"
+    >
+        <div class="season-cover">
+            <div class="season-number">
+                {{ loop.index }}
+            </div>
         </div>
 
-    </div>
+        <div class="season-info">
+            <h3>{{ season.title or season.name }}</h3>
 
-    <div class="season-info">
+            <p>{{ season.name }}</p>
 
-        <h3>
-            {{ season.title or season.name }}
-        </h3>
-
-        <p>
-            {{ season.name }}
-        </p>
-
-        <div class="season-meta">
-
-            {% if season.score %}
-
-            <span>
-                &starf; {{ "%.1f"|format(season.score / 10) }}
-            </span>
-
-            {% endif %}
-
-            {% if season.year %}
-
-            <span>
-                {% if season.season %}
-                    {{ season.season }}
+            <div class="season-meta">
+                {% if season.score %}
+                <span>&starf; {{ "%.1f"|format(season.score / 10) }}</span>
                 {% endif %}
-                {{ season.year }}
-            </span>
 
-            {% endif %}
+                {% if season.year %}
+                <span>
+                    {% if season.season %}
+                        {{ season.season }}
+                    {% endif %}
+                    {{ season.year }}
+                </span>
+                {% endif %}
 
-            <span>
-                {{ season.episodes }} Episode
-            </span>
-
+                <span>{{ season.episodes }} Episode</span>
+            </div>
         </div>
-
-    </div>
-
-</a>
-
-{% endfor %}
-
+    </a>
+    {% endfor %}
 </div>
-
-</body>
-</html>
+{% endblock %}
