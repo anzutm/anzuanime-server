@@ -1,0 +1,132 @@
+{
+    "title": "The Angel Next Door Spoils Me Rotten2",
+    "description": "The second season of <i>Otonari no Tenshi-sama ni Itsunomanika Dame Ningen ni Sareteita Ken</i>.\n<br><br>\nNow a couple, Amane and Mahiru navigate school life and overcome their pasts in this sweet love story.\n<br><br>\n(Source: Crunchyroll News)\n<br><br>\n<i>Note: Crunchyroll has labeled the English title under the name \"The Angel Next Door Spoils Me Rotten2\", so while it seems erroneous for the title not to have a space between the name and 2, it is what the series is officially labeled as.</i>",
+    "episodes": 12,
+    "duration": 24,
+    "format": "TV",
+    "season": "SPRING",
+    "year": 2026,
+    "status": "RELEASING",
+    "studio": "project No.9",
+    "genres": [
+        "Romance",
+        "Slice of Life"
+    ],
+    "score": 75,
+    "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx170019-djbN0b934MhE.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/170019-r07RiVV5d8rT.jpg",
+    "characters": [
+        {
+            "name": "Mahiru Shiina",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b195602-Cc0vrUDl7r15.png",
+            "role": "MAIN",
+            "va_name": "Manaka Iwami",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n121821-tQSkHZEuB3XH.png"
+        },
+        {
+            "name": "Amane Fujimiya",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b195601-rDhWj5yC1BAe.png",
+            "role": "MAIN",
+            "va_name": "Taito Ban",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n151336-Z9ZnITPdVRaW.png"
+        },
+        {
+            "name": "Chitose Shirakawa",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b230208-I6Z2x00fq0oC.png",
+            "role": "SUPPORTING",
+            "va_name": "Haruka Shiraishi",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n112629-U0y9a5Z9ogfk.png"
+        },
+        {
+            "name": "Itsuki Akazawa",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b230210-eK4qdB0x2Vs8.png",
+            "role": "SUPPORTING",
+            "va_name": "Taku Yashiro",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n119833-6CySrXDVAZ2X.jpg"
+        },
+        {
+            "name": "Shihoko Fujimiya",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b296639-xyzxcwjeh2sd.jpg",
+            "role": "SUPPORTING",
+            "va_name": "Hisako Kanemoto",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n103555-2ZtBwZfy9DTi.jpg"
+        },
+        {
+            "name": "Shuuto Fujimiya",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b299923-NXD8NfBNpoAS.jpg",
+            "role": "SUPPORTING",
+            "va_name": "Makoto Furukawa",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n112635-ORlGvRvgf5Nq.png"
+        }
+    ],
+    "relations": [
+        {
+            "title": "The Angel Next Door Spoils Me Rotten",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx143338-zhyDVYgEzsm5.png",
+            "type": "Prequel",
+            "status": "FINISHED"
+        }
+    ],
+    "recommendations": [
+        {
+            "title": "The Fragrant Flower Blooms With Dignity",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx181444-Ut9DDUZdfHwg.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Horimiya",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx124080-3i22mRVPBS0T.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "TONIKAWA: Over The Moon For You",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx116267-Eo1biPBTlL4i.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "More than a Married Couple, but Not Lovers.",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx141949-tViCIRHPZAyG.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "I Made Friends with the Second Prettiest Girl in My Class",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx169580-nXxpmqu6UVux.jpg",
+            "type": "Anime",
+            "status": "RELEASING"
+        },
+        {
+            "title": "Shikimori's Not Just a Cutie",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx127911-qfJDzUt0qCna.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "You and I Are Polar Opposites",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx184951-s8Lg2muPBhdX.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Golden Time",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx17895-M8yjOyMxHf5X.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Kubo Won't Let Me Be Invisible",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx148969-3vPgXpMpQvba.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "The Dangers in My Heart Season 2",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx166216-vCMkF4e3x5FB.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        }
+    ]
+}

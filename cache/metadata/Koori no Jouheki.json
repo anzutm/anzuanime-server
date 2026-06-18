@@ -1,0 +1,134 @@
+{
+    "title": "The Ramparts of Ice",
+    "description": "Socially inept, Higawa Koyuki maintains a wall between herself and other people. She spends her time in high school alone, until she meets Amamiya Minato, a boy who keeps trying to close the distance between them for some reason?!\n<BR><BR>\nThe loner Koyuki, the popular Miki, the boundary-less Minato, and the kind basketball player Youta. This is the story about four complicated and confused young people and their mixed up lives!\n<BR><BR>\n(Source: Margaret, translated)",
+    "episodes": null,
+    "duration": 24,
+    "format": "TV",
+    "season": "SPRING",
+    "year": 2026,
+    "status": "RELEASING",
+    "studio": "Studio KAI",
+    "genres": [
+        "Comedy",
+        "Drama",
+        "Romance",
+        "Slice of Life"
+    ],
+    "score": 79,
+    "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx186497-uwPrNPphXvjP.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/186497-naXtQFMHJaR1.jpg",
+    "characters": [
+        {
+            "name": "Koyuki Hikawa",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b354440-baufwO1gkKDE.jpg",
+            "role": "MAIN",
+            "va_name": "Anna Nagase",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n182100-buLXSv62GTH2.png"
+        },
+        {
+            "name": "Minato Amamiya",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b354441-KvKq0Zb8K1nd.jpg",
+            "role": "MAIN",
+            "va_name": "Shouya Chiba",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n119672-2CrLoxBEYTMk.jpg"
+        },
+        {
+            "name": "Youta Hino",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b354443-SzGQVXaJn8C9.jpg",
+            "role": "MAIN",
+            "va_name": "Satoshi Inomata",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n165186-79ya8S2FORfS.png"
+        },
+        {
+            "name": "Miki Azumi",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b354442-FdfLbziapdYB.jpg",
+            "role": "MAIN",
+            "va_name": "Fuuka Izumi",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n164145-BELo0NnByHWt.jpg"
+        },
+        {
+            "name": "Tsukiko Shimojima",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b393702-3KzxjOqdc36h.png",
+            "role": "SUPPORTING",
+            "va_name": "Sakura Shinfuku",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n294426-C7TiCxdWt2gS.png"
+        },
+        {
+            "name": "Akine Atagawa",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b394747-9ZHS5EgVqPdr.png",
+            "role": "SUPPORTING",
+            "va_name": "Natsumi Kawaida",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n151445-3qF3EB619d74.png"
+        }
+    ],
+    "relations": [
+        {
+            "title": "You and I Are Polar Opposites",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx184951-s8Lg2muPBhdX.jpg",
+            "type": "Character",
+            "status": "FINISHED"
+        }
+    ],
+    "recommendations": [
+        {
+            "title": "You and I Are Polar Opposites",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx184951-s8Lg2muPBhdX.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Kimi ni Todoke: From Me to You",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx6045-JujXjoWtslUM.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Skip and Loafer",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx141911-o6Jwav7hRPPM.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Horimiya",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx124080-3i22mRVPBS0T.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "The Fragrant Flower Blooms With Dignity",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx181444-Ut9DDUZdfHwg.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Blue Box",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx170942-KKcLfQzV57nG.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Toradora!",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx4224-PXVMBLNwy2aF.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Inexpressive Kashiwada and Expressive Oota",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx187940-3ugUhO9h0luh.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "A Sign of Affection",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx166794-1MAXFMgND6qS.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Tsuredure Children",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx98291-LY6txxZTX8We.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        }
+    ]
+}

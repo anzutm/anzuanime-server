@@ -1,0 +1,135 @@
+{
+    "title": "The Case Study of Vanitas Part 2",
+    "description": "The second cour of <i>Vanitas no Carte</i>.<br>\n<br>\nIt’s 19th-century Paris, and young vampire Noé hunts for the Book of Vanitas. Attacked by a vampire driven insane, a human doctor called Vanitas tempts Noé with a mad crusade to “cure” the entire vampire race. While allying with him may be dangerous, news reaches Vanitas that the Beast of Gévaudan has returned, and Noé is being brought along to investigate this phantom from the past.<br>\n<br>\n(Source: Funimation)",
+    "episodes": 12,
+    "duration": 24,
+    "format": "TV",
+    "season": "WINTER",
+    "year": 2022,
+    "status": "FINISHED",
+    "studio": "bones",
+    "genres": [
+        "Action",
+        "Drama",
+        "Fantasy",
+        "Mystery",
+        "Supernatural"
+    ],
+    "score": 81,
+    "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx135136-wVMApb1FEmkz.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/135136-AtddW2jg5H4n.jpg",
+    "characters": [
+        {
+            "name": "Vanitas",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b89590-K3RdKR4VnYM4.png",
+            "role": "MAIN",
+            "va_name": "Natsuki Hanae",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n111635-L385UcjTKCBq.png"
+        },
+        {
+            "name": "Noé Archiviste",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b89835-xnAJMex6Uq0U.png",
+            "role": "MAIN",
+            "va_name": "Kaito Ishikawa",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n115156-ngYfqBazlxYQ.png"
+        },
+        {
+            "name": "Jeanne",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b89836-xLr4mkxojjc3.png",
+            "role": "SUPPORTING",
+            "va_name": "Inori Minase",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n106297-DUyxkSjS9pEK.jpg"
+        },
+        {
+            "name": "Dominique de Sade",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b139553-Ni2xZ2U8aPii.jpg",
+            "role": "SUPPORTING",
+            "va_name": "Ai Kayano",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n105765-DDK94me8axVv.png"
+        },
+        {
+            "name": "Chloé d'Apchier",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b146014-lhZxoInTtvNc.jpg",
+            "role": "SUPPORTING",
+            "va_name": "Rie Kugimiya",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n95008-2y0EeuSTHIri.png"
+        },
+        {
+            "name": "Roland Fortis",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b139554-kD2aBERnYQPA.png",
+            "role": "SUPPORTING",
+            "va_name": "Kengo Kawanishi",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n110877-8mqVadVTaFl4.png"
+        }
+    ],
+    "relations": [
+        {
+            "title": "The Case Study of Vanitas",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx131646-cuyGfKcekZ62.jpg",
+            "type": "Prequel",
+            "status": "FINISHED"
+        }
+    ],
+    "recommendations": [
+        {
+            "title": "PandoraHearts",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx5530-ukD9JNrN47aA.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Bungo Stray Dogs",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21311-hAXyT8Yoh6G9.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Black Butler",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/nx4898-mW4gabZvwmLC.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "D.Gray-man",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx1482-6jc8ZVSmHuLo.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Noragami",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20447-EoQXeygHaVCK.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Undead Murder Farce",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx162983-T3nZyk6sUlEj.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Re:ZERO -Starting Life in Another World-",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21355-wRVUrGxpvIQQ.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "The Ancient Magus' Bride",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx98436-n7sK6POCd0XV.png",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Delico's Nursery",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx167991-uOu8ggPXzVUQ.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "The Witch and the Beast",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx153818-FWvl0RL6vDbq.png",
+            "type": "Anime",
+            "status": "FINISHED"
+        }
+    ]
+}

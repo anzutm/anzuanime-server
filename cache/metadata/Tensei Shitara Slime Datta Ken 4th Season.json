@@ -1,0 +1,128 @@
+{
+    "title": "That Time I Got Reincarnated as a Slime Season 4",
+    "description": "The fourth season of <i>Tensei Shitara Slime Datta Ken</i>.<br><br>\nDemon Lord Rimuru's dream of creating an alliance between humans and monsters takes a step closer to being realized. As Tempest continues to prosper, Granville Rozzo and his granddaughter, Maribel Rozzo, clash with Demon Lord Rimuru over their plan to protect mankind by ruling over them. Meanwhile, in El Dorado, Demon Lord Leon works toward goals of his own. The awakening of a new Hero draws near!<br><br>\n\n(Source: Crunchyroll News)",
+    "episodes": null,
+    "duration": 24,
+    "format": "TV",
+    "season": "SPRING",
+    "year": 2026,
+    "status": "RELEASING",
+    "studio": "8-bit",
+    "genres": [
+        "Action",
+        "Adventure",
+        "Comedy",
+        "Fantasy"
+    ],
+    "score": 81,
+    "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx182205-q2AeO1owuQbO.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/182205-fRUoKv6f2JAq.jpg",
+    "characters": [
+        {
+            "name": "Rimuru Tempest",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b123962-eL9yGV0NLMF7.png",
+            "role": "MAIN",
+            "va_name": "Miho Okasaki",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n127666-kJTHGXxNtzKU.png"
+        },
+        {
+            "name": "Milim Nava",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b128036-lW0dxNwerqw4.png",
+            "role": "SUPPORTING",
+            "va_name": "Rina Hidaka",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n100250-L8WsoaLevibT.jpg"
+        },
+        {
+            "name": "Shion",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b128033-fLbTgW4M2yj3.png",
+            "role": "SUPPORTING",
+            "va_name": "Mao Ichimichi",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n118510-iMUv5D7W99C1.png"
+        },
+        {
+            "name": "Diablo",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b131033-0LguIALHCBEH.jpg",
+            "role": "SUPPORTING",
+            "va_name": "Takahiro Sakurai",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n95079-MdbWTLxPUvFf.jpg"
+        },
+        {
+            "name": "Shuna",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b128040-QOhtFHgfOT5O.png",
+            "role": "SUPPORTING",
+            "va_name": "Sayaka Senbongi",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n119616-Dakq7gsUo2ja.png"
+        },
+        {
+            "name": "Veldora Tempest",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b128034-Gg5MrpTFNSv8.png",
+            "role": "SUPPORTING",
+            "va_name": "Tomoaki Maeno",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n96489-xTzYxgdC9g9l.png"
+        }
+    ],
+    "relations": [
+        {
+            "title": "That Time I Got Reincarnated as a Slime Season 3",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx156822-Jzo2ITWgm4kM.jpg",
+            "type": "Prequel",
+            "status": "FINISHED"
+        }
+    ],
+    "recommendations": [
+        {
+            "title": "TSUKIMICHI -Moonlit Fantasy- Season 2",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx139518-GZWYKM8Kg1S2.png",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "That Time I Got Reincarnated as a Slime",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101280-tDxCVJm714nt.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Overlord",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20832-vUNm5zrYWifc.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Mushoku Tensei: Jobless Reincarnation",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx108465-1ANspF1EWyFx.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "The Rising of the Shield Hero",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx99263-LcazQwdlWzMy.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "In the Land of Leadale",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx130166-YVHrYg4wNA68.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Re:ZERO -Starting Life in Another World- Season 2",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx108632-lQWnmw7XaNOK.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Mushoku Tensei: Jobless Reincarnation Cour 2",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx127720-ADJgIrUVMdU9.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Reincarnated as a Dragon Hatchling",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx187941-ykmc8WRedPpw.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        }
+    ]
+}

@@ -1,0 +1,133 @@
+{
+    "title": "Witch Hat Atelier",
+    "description": "In a world where everyone takes wonders like magic spells and dragons for granted, Coco is a girl with a simple dream: she wants to be a witch. But everybody knows magicians are born, not made, and Coco was not born with a gift for magic. Resigned to her un-magical life, Coco is about to give up on her dream to become a witch … until the day she meets Qifrey, a mysterious, traveling magician. After secretly seeing Qifrey perform magic in a way she’s never seen before, Coco soon learns what everybody “knows” might not be the truth, and discovers that her magical dream may not be as far away as it may seem... <br>\n<br>\n(Source: Kodansha USA) <br><br>\n\n<i>Note: Tongari Boushi no Atelier episode 2 was streamed a week in advance on Crunchyroll, ABEMA, and Netflix, alongside episode 1. Streaming is one week ahead of the TV broadcast.</i>",
+    "episodes": 13,
+    "duration": 24,
+    "format": "ONA",
+    "season": "SPRING",
+    "year": 2026,
+    "status": "RELEASING",
+    "studio": "BUG FILMS",
+    "genres": [
+        "Adventure",
+        "Drama",
+        "Fantasy"
+    ],
+    "score": 86,
+    "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx147105-rwOX8qyUy8gV.jpg",
+    "banner": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/147105-fTjmRrILFixZ.jpg",
+    "characters": [
+        {
+            "name": "Qifrey",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b129841-brgGFuOv1h0n.png",
+            "role": "MAIN",
+            "va_name": "Natsuki Hanae",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n111635-L385UcjTKCBq.png"
+        },
+        {
+            "name": "Coco",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b129840-B2CVE0TIcKpT.png",
+            "role": "MAIN",
+            "va_name": "Rena Motomura",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n344276-kHHSHFe3msI6.jpg"
+        },
+        {
+            "name": "Agott Arkrome",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b129842-n9YfEU63mDNm.png",
+            "role": "SUPPORTING",
+            "va_name": "Hibiku Yamamura",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n107750-ncaOycwTveFP.png"
+        },
+        {
+            "name": "Richeh",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b129838-DRjxUa0u7Lyg.jpg",
+            "role": "SUPPORTING",
+            "va_name": "Hika Tsukishiro",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n280420-OQvfhdEqx5pW.png"
+        },
+        {
+            "name": "Olruggio",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b137972-4sSEu1132KZM.png",
+            "role": "SUPPORTING",
+            "va_name": "Yuuichi Nakamura",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n95513-up9ZDuocHgRs.png"
+        },
+        {
+            "name": "Tetia",
+            "image_url": "https://s4.anilist.co/file/anilistcdn/character/large/b129839-7KP7lqLC7ZdW.png",
+            "role": "SUPPORTING",
+            "va_name": "Kurumi Haruki",
+            "va_image_url": "https://s4.anilist.co/file/anilistcdn/staff/large/n391322-2nQ7PR69U7c5.png"
+        }
+    ],
+    "relations": [
+        {
+            "title": "Wind's Anthem",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx211301-6xzR9MKzFSRj.png",
+            "type": "Other",
+            "status": "FINISHED"
+        }
+    ],
+    "recommendations": [
+        {
+            "title": "Frieren: Beyond Journey’s End",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-qQTzQnEJJ3oB.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Delicious in Dungeon",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx153518-IVXPDY5ph3kO.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Little Witch Academia (TV)",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21858-huBrbIOGMYXv.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Kiki's Delivery Service",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx512-UwP8X4BR8YoM.png",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Fullmetal Alchemist: Brotherhood",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx5114-nSWCgQlmOMtj.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Secrets of the Silent Witch",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx179966-g0EU7rVe2Og7.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Wandering Witch: The Journey of Elaina",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx112609-hBCbnYlEHluz.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "The Apothecary Diaries",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx161645-QLbzHXiYRgV2.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "The Ancient Magus' Bride",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx98436-n7sK6POCd0XV.png",
+            "type": "Anime",
+            "status": "FINISHED"
+        },
+        {
+            "title": "Frieren: Beyond Journey’s End Season 2",
+            "poster": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx182255-butzrqd4I0aC.jpg",
+            "type": "Anime",
+            "status": "FINISHED"
+        }
+    ]
+}

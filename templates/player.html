@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ anime_name }}
+    </title>
+
+    <!-- Plyr & SubtitlesOctopus Styles -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>html{background-color:#0b0907;} body{background-color:transparent !important; color:#F3F4F5;}</style>
+    <meta name="theme-color" content="#0b0907">
+
+    <link rel="icon" type="image/png" href="/static/arcana.jpg">
+    <link rel="stylesheet" href="/static/style.css?v={{ (range(1, 9999) | list | random) }}">
+
+</head>
+
+<body>
+
+<div class="player-backdrop">
+    <img src="/banner/{{ anime_name | urlencode }}" alt="{{ anime_name }}">
+</div>
+
+<div class="player-cinema-shell">
+<div class="player-page">
+
+    <header class="player-header">
+        <div class="player-header-actions" aria-label="Player navigation">
+            <a href="/" class="player-back player-home">
+                <span class="player-home-icon" aria-hidden="true">&#8962;</span>
+            </a>
+
+            <a
+                href="{{ back_url or '/anime/' + (anime_name | urlencode) }}"
+                class="player-back"
+            >
+                &larr; Kembali
+            </a>
+        </div>
+        
+        <div class="player-title-stack">
+            <h1>{{ anime_name }}</h1> {# Display name, no need to urlencode #}
+            <p class="player-episode-line">Episode {{ current_episode }} dari {{ total_episodes }}</p>
+        </div>
+
+        <div class="player-header-meta" aria-label="Playback status">
+            <span>Local Stream</span>
+            <span>VLC Ready</span>
+            {% if previous_episode or next_episode %}
+            <span>Episode Nav</span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="main-player-section">
+        <div class="video-player-container">
+            <div class="video-player">
+                <video id="player" playsinline controls crossorigin>
+                    <source src="/stream/{{ anime_name | urlencode }}/{{ episode }}" type="video/mp4">
+                    <track
+                        kind="subtitles" 
+                        src="/subtitle/{{ anime_name | urlencode }}/{{ episode }}" 
+                        srclang="id" 
+                        label="Indonesia" 
+                        default
+                    >
+                    <p>Browser Anda tidak mendukung codec video ini (H.265/10-bit). Gunakan tombol <b>Buka di VLC</b> untuk menonton.</p>
+                </video>
+            </div>
+            
+            <div class="player-status-bar">
+                <div class="status-left">
+                    <span class="live-badge">Local Stream</span>
+                </div>
+                <div class="player-navigation">
+                    <div class="nav-divider"></div>
+
+                    <button onclick="playInVLC()" class="nav-btn vlc-quick-btn">
+                        <span class="vlc-icon">&#9654;</span> Buka di VLC
+                    </button>
+                    <div class="nav-divider"></div>
+
+                    {% if previous_episode %}
+                    <a class="nav-btn prev" href="/player/{{ anime_name | urlencode }}/{{ previous_episode }}">
+                        <span>&lsaquo;</span> Prev
+                    </a>
+                    {% endif %}
+                    
+                    {% if next_episode %}
+                    <a class="nav-btn next" href="/player/{{ anime_name | urlencode }}/{{ next_episode }}">
+                        Next <span>&rsaquo;</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="player-episodes">
+
+    <div class="episode-header">
+        <div class="section-title">
+            <div class="section-line"></div>
+            <h2>Episodes</h2>
+        </div>
+        <div class="episode-controls">
+            <button id="scrollLeft">&larr;</button>
+            <button id="scrollRight">&rarr;</button>
+        </div>
+    </div>
+
+    <div class="player-episode-grid" id="episodeGrid">
+
+        {% for ep in episodes %}
+        <a
+
+            href="/player/{{ anime_name | urlencode }}/{{ ep.file }}"
+
+            class="player-episode-card
+
+            {% if ep.file == episode %}
+                active
+            {% endif %}"
+
+        >
+            <div class="player-thumb-wrapper">
+
+                <img
+
+                    class="player-thumb"
+
+                    src="{{ ep.thumbnail }}"
+
+                    loading="lazy"
+                >
+
+                <div class="duration-badge">
+
+                    {{ ep.duration }}
+
+                </div>
+
+                <div class="resolution-badge">
+                    {{ ep.resolution }}
+                </div>
+
+                <div class="episode-overlay">
+                    <div class="play-circle">
+                        &#9654;
+                    </div>
+
+                    <div class="episode-meta">
+                        <p>
+                            Watch now
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="player-card-info">
+
+                <h3>
+                    Episode {{ ep.episode }}
+                </h3>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<div id="screenshotToast" class="toast">
+    <span class="toast-icon">📸</span>
+    <span id="toastMessage">Screenshot berhasil disimpan!</span>
+</div>
+
+<!-- Player Libraries -->
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+<!-- Metadata container untuk sinkronisasi data ke JavaScript tanpa memicu error linter -->
+<div id="player-data-container" style="display: none;"
+    data-anime-name="{{ anime_name }}"
+    data-episode-path="{{ episode }}"
+    data-current-ep="{{ current_episode }}"
+    data-next-ep="{{ next_episode }}"
+    data-resume-time="{{ resume_time or 0 }}">
+</div>
+
+<script>
+    (function() {
+        const config = document.getElementById('player-data-container').dataset;
+        window.ANIME_NAME = config.animeName;
+        window.EPISODE_PATH = config.episodePath;
+        window.CURRENT_EP_NUM = config.currentEp;
+        window.NEXT_EP_PATH = (config.nextEp && config.nextEp !== 'None') ? config.nextEp : null;
+        window.RESUME_TIME = parseFloat(config.resumeTime || 0);
+    })();
+</script>
+
+<script src="/static/player.js"></script>
+
+</body>
+
+</html>

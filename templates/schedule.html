@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Tayang - Anzu Anime</title>
+    <style>html,body{background-color:#0b0907;color:#F3F4F5;}</style>
+    <meta name="theme-color" content="#0b0907">
+    <link rel="icon" type="image/png" href="/static/arcana.jpg">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="nav-left">
+        <a href="/" class="brand">
+            <img src="/static/Anzuanime_logo.png" alt="Anzu Anime Logo" class="header-logo">
+            <h1>anzu<span>anime</span></h1>
+        </a>
+    </div>
+
+    <nav class="nav-center">
+        <ul class="nav-links">
+            <li><a href="/" class="nav-link">Beranda</a></li>
+            <li><a href="/movies" class="nav-link">Movies</a></li>
+            <li><a href="/schedule" class="nav-link active">Jadwal</a></li>
+        </ul>
+    </nav>
+
+    <div class="nav-right">
+        <div class="search-box">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" id="animeSearch" placeholder="Cari jadwal...">
+        </div>
+        <div class="user-action">
+            <div class="profile-circle">👤</div>
+        </div>
+    </div>
+</header>
+
+<section class="collection-section" style="margin-top: 100px;">
+    <div class="collection-glow"></div>
+
+    <div class="collection-top">
+        <div class="collection-heading">
+            <div class="section-title">
+                <div class="section-line"></div>
+                <h2 class="section-heading">Jadwal Tayang Hari Ini</h2>
+            </div>
+            <p class="section-subtitle">{{ today }} (Waktu Lokal)</p>
+        </div>
+    </div>
+
+    <div class="collection-toolbar">
+        <div class="toolbar-line"></div>
+    </div>
+
+    <div class="grid">
+        {% for item in schedule %}
+        <div class="card">
+            <img class="poster" src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy">
+            <div class="poster-overlay" style="opacity: 1; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);">
+                <h3>{{ item.title }}</h3>
+                <div class="poster-card-meta">
+                    <span style="color: var(--primary);">Ep {{ item.episode }}</span>
+                    <span>🕒 {{ item.time }}</span>
+                    <span>{{ item.format }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if not schedule %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 100px; color: var(--text-secondary);">
+            <p>Tidak ada jadwal tayang ditemukan untuk hari ini.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<footer class="main-footer">
+    <div class="footer-content">
+        <div class="footer-brand">
+            <h2>anzuanime</h2>
+            <p>Integrasi jadwal tayang real-time dari AniList.</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 Anzu Anime.</p>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('animeSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.grid .card');
+        
+        cards.forEach(card => {
+            const title = card.querySelector('h3').textContent.toLowerCase();
+            if (title.includes(term)) {
+                card.style.display = "flex";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

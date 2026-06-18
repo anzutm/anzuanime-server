@@ -1,0 +1,398 @@
+﻿﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ anime_name }}</title>
+    <style>html,body{background-color:#0b0907;color:#F3F4F5;}</style>
+    <meta name="theme-color" content="#0b0907">
+
+    <link rel="icon" type="image/png" href="/static/arcana.jpg">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div class="hero">
+
+    <img
+        class="hero-banner"
+        src="/banner/{{ anime_name }}"
+        alt="{{ anime_name }}"
+    >
+
+    <div class="hero-overlay">
+
+        <a
+            href="/"
+            class="back-btn"
+            aria-label="Kembali ke beranda"
+        >
+            &larr; Kembali
+        </a>
+
+        {% if anime_info %}
+
+        <div class="hero-content detail-hero-content">
+
+            <div class="hero-poster-shell">
+                <img
+                    class="hero-poster"
+                    src="/poster/{{ anime_name }}"
+                    alt="{{ anime_name }}"
+                >
+                <div class="poster-status-chip">
+                    {{ anime_info.format or "Anime" }}
+                </div>
+            </div>
+
+            <div class="hero-details">
+
+                <div class="detail-panel-top">
+                    <div class="title-row">
+                        <h1>
+                            {{ anime_info.title }}
+                        </h1>
+                        {% if anime_info.status %}
+                        <span class="status-badge {{ anime_info.status.lower() }}">
+                            {{ anime_info.status }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="anime-meta detail-meta">
+
+                    <span>
+                        <small>Score</small>
+                        <strong>{{ "%.1f"|format((anime_info.score or 0) / 10) }}</strong>
+                    </span>
+
+                    <span>
+                        <small>Season</small>
+                        <strong>{{ anime_info.season }}</strong>
+                    </span>
+
+                    <span>
+                        <small>Format</small>
+                        <strong>{{ anime_info.format }}</strong>
+                    </span>
+
+                    <span>
+                        <small>Episodes</small>
+                        <strong>{{ anime_info.episodes }}</strong>
+                    </span>
+
+                </div>
+
+                <div class="genre-panel">
+                    <div class="genre-panel-label">Genres</div>
+                    <div class="genre-list">
+
+                    {% for genre in anime_info.genres %}
+
+                        <span class="genre-tag">
+                            {{ genre }}
+                        </span>
+
+                    {% endfor %}
+
+                    </div>
+                </div>
+
+                <p class="anime-description">
+
+                    {{ anime_info.description
+                        | striptags
+                        | truncate(200)
+                    }}
+
+                </p>
+
+                <div class="info-grid">
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.year }}</h3>
+                        <p>Year</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.duration }}</h3>
+                        <p>Minutes</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.format }}</h3>
+                        <p>Format</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.status }}</h3>
+                        <p>Status</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.studio }}</h3>
+                        <p>Studio</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <h1>
+            {{ anime_name }}
+        </h1>
+
+        {% endif %}
+
+    </div> <!-- End hero-overlay -->
+</div> <!-- End hero -->
+
+{% if anime_info and anime_info.characters %}
+<div class="character-section">
+    <div class="section-title">
+        <div class="section-line"></div>
+        <div>
+            <h2>Characters & Voice Actors</h2>
+            <p class="section-subtitle">Cast highlights pulled into a cleaner streaming-style panel.</p>
+        </div>
+    </div>
+    
+    <div class="character-grid">
+        {% for char in anime_info.characters %}
+        <div class="character-card">
+            <div class="char-side character-profile character-main">
+                <div class="character-image-wrap">
+                    <img src="/character_img/{{ anime_name }}/{{ char.image_local }}" alt="{{ char.name }}" loading="lazy">
+                </div>
+                <div class="char-info">
+                    <span class="char-name">{{ char.name }}</span>
+                    <span class="char-role">{{ char.role }}</span>
+                </div>
+            </div>
+            
+            {% if char.va_name %}
+            <div class="va-side character-profile voice-profile">
+                <div class="character-image-wrap voice-image-wrap">
+                    <img src="/character_img/{{ anime_name }}/{{ char.va_image_local }}" alt="{{ char.va_name }}" loading="lazy">
+                </div>
+                <div class="va-info">
+                    <span class="va-name">{{ char.va_name }}</span>
+                    <span class="va-role">Seiyuu</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="anime-header">
+
+    <div class="episode-header">
+
+        <div class="section-title">
+            <div class="section-line"></div>
+            <div>
+                <h2>Episode List</h2>
+                <p class="section-subtitle">Choose an episode and jump straight into playback.</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div
+    class="episode-grid"
+    id="episodeGrid"
+>
+
+{% for ep in episodes %}
+
+<div class="episode-card">
+    <div class="episode-card-shell">
+
+    <div
+        class="thumbnail-wrapper"
+        data-file="{{ ep.file }}"
+        onclick="playEpisode(this.dataset.file)"
+    >
+
+        <img
+            class="episode-thumbnail"
+            src="{{ ep.thumbnail }}"
+            loading="lazy"
+        >
+
+        <div class="duration-badge">
+            {{ ep.duration }}
+        </div>
+
+        <div class="resolution-badge">
+            {{ ep.resolution }}
+        </div>
+
+        <div class="episode-overlay">
+
+            <div class="play-circle">
+                ▶
+            </div>
+
+            <div class="episode-meta">
+
+                <p>
+                    Watch now
+                </p>
+
+            </div>
+
+            <div class="episode-arrow">
+                &rsaquo;
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="episode-card-footer">
+        <div>
+            <strong>Episode {{ ep.episode }}</strong>
+        </div>
+    </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% if anime_info and anime_info.recommendations %}
+<div class="related-section" style="margin-top: 40px;">
+    <div class="section-title">
+        <div class="section-line"></div>
+        <h2>Recommended Anime</h2>
+    </div>
+    
+    <div class="related-grid">
+        {% for rec in anime_info.recommendations %}
+        <div class="related-card">
+            <div class="rel-poster-wrapper">
+                <img src="/poster/{{ rec.title }}" alt="{{ rec.title }}" loading="lazy">
+                <div class="rel-type-badge">Recommended</div>
+            </div>
+            <div class="rel-info">
+                <h3 class="rel-title">{{ rec.title }}</h3>
+                <div class="rel-meta">
+                    <span class="rel-status {{ rec.status.lower() if rec.status else '' }}">
+                        {{ rec.status.replace('_', ' ').title() if rec.status else 'Unknown' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if anime_info and anime_info.relations %}
+<div class="related-section">
+    <div class="section-title">
+        <div class="section-line"></div>
+        <h2>Related Anime</h2>
+    </div>
+    
+    <div class="related-grid">
+        {% for rel in anime_info.relations %}
+        <div class="related-card">
+            <div class="rel-poster-wrapper">
+                <img src="/poster/{{ rel.title }}" alt="{{ rel.title }}" loading="lazy">
+                <div class="rel-type-badge">{{ rel.type }}</div>
+            </div>
+            <div class="rel-info">
+                <h3 class="rel-title">{{ rel.title }}</h3>
+                <div class="rel-meta">
+                    <span class="rel-status {{ rel.status.lower() if rel.status else '' }}">
+                        {{ rel.status.replace('_', ' ').title() if rel.status else 'Unknown' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<footer class="main-footer">
+    <div class="footer-surface-glow"></div>
+
+    <div class="footer-content">
+
+        <div class="footer-brand">
+            <h2>Anzu Anime</h2>
+            <p>
+                Manajemen koleksi anime lokal Anda dengan integrasi data dari AniList secara real-time.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <h3>Navigasi</h3>
+            <ul>
+                <li><a href="/">Beranda</a></li>
+                <li><a href="/movies">Koleksi Film</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-meta">
+            <h3>Sistem</h3>
+            <p>Data Provider: AniList API</p>
+            <p>Media Engine: VLC / HTML5</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <p>
+            &copy; 2026 Anzu Anime. Dibuat untuk kenyamanan menonton koleksi pribadi.
+        </p>
+    </div>
+
+</footer>
+
+<script>
+
+function encodeEpisodePath(path){
+    return path
+        .split("/")
+        .map(encodeURIComponent)
+        .join("/");
+}
+
+function playEpisode(ep){
+    window.location.href =
+        "/player/{{ folder_name or anime_name }}/" +
+        encodeEpisodePath(ep);
+}
+</script>
+
+<script>
+// Animasi Masuk yang Lebih Reliabel
+window.addEventListener('pageshow', () => {
+    document.querySelectorAll('.episode-card').forEach((card, i) => {
+        card.style.opacity = '0';
+        setTimeout(() => {
+            const delay = Math.min(i * 0.04, 1.2);
+            card.style.animation = `slideUpReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s forwards`;
+        }, 100);
+    });
+});
+</script>
+</body>
+</html>

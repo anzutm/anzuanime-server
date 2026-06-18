@@ -1,0 +1,2204 @@
+from flask import Flask, render_template, redirect, jsonify, send_file, request, abort
+import os
+import subprocess
+import requests
+import mimetypes
+import re
+import json
+import sqlite3
+import hashlib
+import random
+import base64
+import threading
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import time
+from datetime import datetime
+ 
+try:
+    from pypresence import Presence
+    DISCORD_CLIENT_ID = "1512299340398329907" 
+    rpc = Presence(DISCORD_CLIENT_ID)
+    rpc_connected = False
+except ImportError:
+    rpc = None
+    rpc_connected = False
+
+RPC_START_TIME = None
+CURRENT_RPC_ANIME = None
+
+ANIME_PATHS = [
+    r"D:\Fajar\Anime\Watchlist",
+    r"D:\Fajar\Anime\Onggoing",
+]
+
+app = Flask(__name__)
+
+# Path Absolut agar aplikasi stabil saat dijalankan dari Tray/VBS
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+MOVIE_PATH = r"D:\Fajar\Anime\Watchlist\Movies"
+VLC_PATH = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+
+POSTER_CACHE = os.path.join(BASE_DIR, "cache", "posters")
+BANNER_CACHE = os.path.join(BASE_DIR, "cache", "banners")
+THUMBNAIL_CACHE = os.path.join(BASE_DIR, "cache", "thumbnails")
+METADATA_CACHE = os.path.join(BASE_DIR, "cache", "metadata")
+CHARACTER_CACHE = os.path.join(BASE_DIR, "cache", "characters")
+EPISODE_CACHE = os.path.join(BASE_DIR, "cache", "episodes")
+SUBTITLE_CACHE = os.path.join(BASE_DIR, "cache", "subtitles")
+DB_PATH = os.path.join(BASE_DIR, "cache", "library.db")
+WATCH_HISTORY_FILE = os.path.join(BASE_DIR, "cache", "watch_history.json")
+
+def init_db():
+    os.makedirs(
+        POSTER_CACHE,
+        exist_ok=True
+    )
+    os.makedirs(
+        THUMBNAIL_CACHE,
+        exist_ok=True
+    )
+    os.makedirs(
+        METADATA_CACHE,
+        exist_ok=True
+    )
+    os.makedirs(
+        EPISODE_CACHE,
+        exist_ok=True
+    )
+    os.makedirs(
+        BANNER_CACHE,
+        exist_ok=True
+    )
+    os.makedirs(
+        SUBTITLE_CACHE,
+        exist_ok=True
+    )
+    os.makedirs(
+        CHARACTER_CACHE,
+        exist_ok=True
+    )
+
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS anime_library (
+                name TEXT PRIMARY KEY,
+                episodes INTEGER,
+                score REAL,
+                genres TEXT,
+                year INTEGER,
+                season TEXT,
+                status TEXT
+            )
+        """)
+
+        # Sinkronisasi skema database: Tambahkan kolom jika menggunakan database versi lama
+        cursor = conn.execute("PRAGMA table_info(anime_library)")
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'genres' not in columns:
+            conn.execute("ALTER TABLE anime_library ADD COLUMN genres TEXT")
+        if 'year' not in columns:
+            conn.execute("ALTER TABLE anime_library ADD COLUMN year INTEGER")
+        if 'season' not in columns:
+            conn.execute("ALTER TABLE anime_library ADD COLUMN season TEXT")
+        if 'status' not in columns:
+            conn.execute("ALTER TABLE anime_library ADD COLUMN status TEXT")
+
+init_db()
+
+VIDEO_EXTENSIONS = (
+    ".mp4",
+    ".mkv",
+    ".avi",
+    ".mov",
+    ".wmv"
+)
+
+def safe_join_media_path(base_path, relative_path):
+
+    if not base_path:
+        return None
+
+    base_path = os.path.abspath(base_path)
+
+    candidate_path = os.path.abspath(
+        os.path.normpath(
+            os.path.join(
+                base_path,
+                relative_path
+            )
+        )
+    )
+
+    try:
+
+        if os.path.commonpath(
+            [
+                base_path,
+                candidate_path
+            ]
+        ) != base_path:
+
+            return None
+
+    except ValueError:
+
+        return None
+
+    return candidate_path
+
+def clean_movie_title(filename):
+
+    title = os.path.splitext(
+        filename
+    )[0]
+
+    title = re.sub(
+        r"\[.*?\]",
+        "",
+        title
+    )
+
+    title = re.sub(
+        r"\b1080p\b",
+        "",
+        title,
+        flags=re.I
+    )
+
+    title = re.sub(
+        r"\bBD\b",
+        "",
+        title,
+        flags=re.I
+    )
+
+    return " ".join(
+        title.split()
+    )
+
+def get_anilist_poster(anime_name):
+
+    safe_name = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
+    poster_path = os.path.join(
+        POSTER_CACHE,
+        f"{safe_name}.jpg"
+    )
+
+    banner_path = os.path.join(
+        BANNER_CACHE,
+        f"{safe_name}.jpg"
+    )
+
+    if os.path.exists(
+        poster_path
+    ):
+        return poster_path
+
+    # Gunakan info dari metadata cache jika tersedia untuk menghindari API call ganda
+    info = get_cached_anilist_info(anime_name)
+    if not info:
+        return None
+
+    try:
+        poster_url = info.get("poster")
+        banner_url = info.get("banner")
+
+        if not poster_url:
+            return None
+
+        # Download Poster
+        poster_image = requests.get(
+            poster_url,
+            timeout=15
+        )
+
+        with open(
+            poster_path,
+            "wb"
+        ) as f:
+
+            f.write(
+                poster_image.content
+            )
+
+        if banner_url:
+
+            banner_image = requests.get(
+                banner_url,
+                timeout=15
+            )
+
+            with open(
+                banner_path,
+                "wb"
+            ) as f:
+
+                f.write(
+                    banner_image.content
+                )
+
+        return poster_path
+
+    except Exception as e:
+
+        print(
+            "AniList Error:",
+            anime_name,
+            e
+        )
+
+        return None
+
+def get_anilist_info(anime_name):
+
+    query = """
+    query ($search: String) {
+      Media(
+        search: $search,
+        type: ANIME
+      ) {
+        title {
+          romaji
+          english
+        }
+        description
+        episodes
+        duration
+        format
+        season
+        seasonYear
+        status
+        genres
+        averageScore
+        bannerImage
+        coverImage {
+          extraLarge
+        }
+        studios(
+          isMain: true
+        ) {
+          nodes {
+            name
+          }
+        }
+        characters(sort: [ROLE, FAVOURITES_DESC], perPage: 6) {
+          edges {
+            role
+            node {
+              name { full }
+              image { large }
+            }
+            voiceActors(language: JAPANESE) {
+              name { full }
+              image { large }
+            }
+          }
+        }
+        relations {
+          edges {
+            relationType
+            node {
+              title {
+                romaji
+                english
+              }
+              coverImage {
+                extraLarge
+              }
+              type
+              status
+            }
+          }
+        }
+        recommendations(sort: [RATING_DESC, ID_DESC], perPage: 10) {
+          nodes {
+            mediaRecommendation {
+              title {
+                romaji
+                english
+              }
+              coverImage {
+                extraLarge
+              }
+              type
+              status
+            }
+          }
+        }
+      }
+    }
+    """
+
+    try:
+
+        response = requests.post(
+            "https://graphql.anilist.co",
+            json={
+                "query": query,
+                "variables": {
+                    "search": anime_name
+                }
+            },
+            timeout=20
+        )
+
+        data = response.json()
+
+        media = data["data"]["Media"]
+
+        if not media:
+            return None
+
+        studio = None
+
+        # Akses nama studio secara aman
+        studios = media.get("studios", {})
+        nodes = studios.get("nodes", [])
+        if nodes and nodes[0]:
+            studio = nodes[0].get("name")
+
+        chars_list = []
+        for edge in media.get("characters", {}).get("edges", []):
+            char_node = edge.get("node")
+            if not char_node: continue
+            va = edge.get("voiceActors", [])
+            va_node = va[0] if va else None
+            
+            chars_list.append({
+                "name": char_node["name"]["full"],
+                "image_url": char_node["image"]["large"],
+                "role": edge.get("role"),
+                "va_name": va_node["name"]["full"] if va_node else None,
+                "va_image_url": va_node["image"]["large"] if va_node else None
+            })
+
+        relations_list = []
+        for edge in media.get("relations", {}).get("edges", []):
+            rel_node = edge.get("node")
+            if not rel_node or rel_node.get("type") != "ANIME":
+                continue
+            relations_list.append({
+                "title": rel_node["title"]["english"] or rel_node["title"]["romaji"],
+                "poster": rel_node["coverImage"]["extraLarge"],
+                "type": edge.get("relationType").replace("_", " ").title(),
+                "status": rel_node.get("status")
+            })
+
+        recommendations_list = []
+        for node in media.get("recommendations", {}).get("nodes", []):
+            rec_media = node.get("mediaRecommendation")
+            if not rec_media or rec_media.get("type") != "ANIME":
+                continue
+            recommendations_list.append({
+                "title": rec_media["title"]["english"] or rec_media["title"]["romaji"],
+                "poster": rec_media["coverImage"]["extraLarge"],
+                "type": rec_media.get("type").replace("_", " ").title(),
+                "status": rec_media.get("status")
+            })
+
+        return {
+            "title": media["title"]["english"] or media["title"]["romaji"],
+            "description": media["description"],
+            "episodes": media["episodes"],
+            "duration": media["duration"],
+            "format": media["format"],
+            "season": media["season"],
+            "year": media["seasonYear"],
+            "status": media["status"],
+            "studio": studio,
+            "genres": media["genres"],
+            "score": media["averageScore"],
+            "poster": media["coverImage"]["extraLarge"],
+            "banner": media["bannerImage"],
+            "characters": chars_list,
+            "relations": relations_list,
+            "recommendations": recommendations_list
+        }
+
+    except Exception as e:
+
+        print(
+            "AniList Error:",
+            anime_name,
+            e
+        )
+
+        return None
+    
+def get_thumbnail(video_path):
+
+    print("\n====================")
+    print("MEMBUAT THUMBNAIL")
+    print(video_path)
+    print("====================\n")
+
+    filename = hashlib.md5(
+        video_path.encode("utf-8")
+    ).hexdigest()
+
+    thumbnail_path = os.path.join(
+        THUMBNAIL_CACHE,
+        filename + ".jpg"
+    )
+
+    if os.path.exists(
+        thumbnail_path
+    ):
+        print(
+            "Thumbnail sudah ada:",
+            thumbnail_path
+        )
+
+        return thumbnail_path
+
+    try:
+
+        result = subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-ss",
+                "00:00:10",
+                "-i",
+                video_path,
+                "-frames:v",
+                "1",
+                thumbnail_path
+            ],
+            capture_output=True,
+            text=True
+        )
+
+        print(
+            "FFmpeg return code:",
+            result.returncode
+        )
+
+        if result.stderr:
+            print(
+                "\nFFmpeg stderr:\n",
+                result.stderr
+            )
+
+        if os.path.exists(
+            thumbnail_path
+        ):
+
+            print(
+                "Thumbnail berhasil dibuat:"
+            )
+
+            print(
+                thumbnail_path
+            )
+
+            return thumbnail_path
+
+        print(
+            "Thumbnail tidak dibuat"
+        )
+
+    except Exception as e:
+
+        print(
+            "Thumbnail gagal:",
+            e
+        )
+
+    return None
+
+def get_video_resolution(video_path):
+
+    try:
+
+        result = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "quiet",
+                "-print_format",
+                "json",
+                "-show_streams",
+                video_path
+            ],
+            capture_output=True,
+            text=True
+        )
+
+        print(result.stdout)
+
+        data = json.loads(result.stdout)
+
+        for stream in data["streams"]:
+
+            if stream["codec_type"] == "video":
+
+                print("HEIGHT =", stream["height"])
+
+                return f'{stream["height"]}p'
+
+    except Exception as e:
+
+        print("Resolution Error:", e)
+
+    return ""
+
+def get_episode_cache(
+    anime_name,
+    video_path,
+    season_name=None
+):
+
+    cache_name = anime_name
+
+    if season_name:
+
+        cache_name += (
+            "_" +
+            season_name
+        )
+
+    cache_name = (
+        cache_name
+        .replace("\\", "_")
+        .replace("/", "_")
+        .replace(":", "")
+    )
+
+    cache_file = os.path.join(
+        EPISODE_CACHE,
+        f"{cache_name}.json"
+    )
+
+    cache_data = {}
+
+    if os.path.exists(
+        cache_file
+    ):
+
+        try:
+
+            with open(
+                cache_file,
+                "r",
+                encoding="utf-8"
+            ) as f:
+
+                cache_data = json.load(
+                    f
+                )
+
+        except:
+
+            cache_data = {}
+
+    filename = os.path.basename(
+        video_path
+    )
+
+    if filename in cache_data:
+
+        return cache_data[
+            filename
+        ]
+
+    duration = get_video_duration(
+        video_path
+    )
+
+    resolution = get_video_resolution(
+        video_path
+    )
+
+    cache_data[
+        filename
+    ] = {
+
+        "duration":
+            duration,
+
+        "resolution":
+            resolution
+
+    }
+
+    with open(
+        cache_file,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            cache_data,
+            f,
+            ensure_ascii=False,
+            indent=4
+        )
+
+    return cache_data[
+        filename
+    ]
+
+def get_episode_number(filename):
+    # Mencari angka yang biasanya muncul setelah spasi, tanda hubung, atau di akhir (episode)
+    # Dan mengabaikan angka yang diikuti 'p' atau 'k' (resolusi seperti 1080p atau 4k)
+    
+    # Pola: cari angka yang didahului pembatas dan bukan bagian dari resolusi
+    match = re.search(r'(?:^|[\s\-_])(\d+)(?![pk])(?:[\s\-_]|$)', filename, re.I)
+    
+    if not match:
+        # Fallback ke pencarian angka pertama jika pola khusus tidak ditemukan
+        match = re.search(r'(\d+)', filename)
+
+    if match:
+        return int(match.group(1))
+
+    return 0
+
+def get_video_duration(video_path):
+
+    try:
+
+        result = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "quiet",
+                "-print_format",
+                "json",
+                "-show_format",
+                video_path
+            ],
+            capture_output=True,
+            text=True
+        )
+
+        data = json.loads(
+            result.stdout
+        )
+
+        seconds = int(
+            float(
+                data["format"]["duration"]
+            )
+        )
+
+        minutes = seconds // 60
+
+        return f"{minutes} min"
+
+    except:
+        return ""
+
+def find_anime_path(anime_name):
+
+    for base_path in ANIME_PATHS:
+
+        anime_path = os.path.join(
+            base_path,
+            anime_name
+        )
+
+        if os.path.isdir(anime_path):
+            return anime_path
+
+    return None
+
+def get_season_anilist_info(anime_name, season_name):
+
+    search_name = season_name
+
+    if anime_name.lower() not in season_name.lower():
+
+        search_name = f"{anime_name} {season_name}"
+
+    info = get_cached_anilist_info(
+        search_name
+    )
+
+    if info:
+
+        return info
+
+    return get_cached_anilist_info(
+        anime_name
+    )
+
+def get_airing_schedule():
+    now = datetime.now()
+    start_of_day = int(datetime(now.year, now.month, now.day).timestamp())
+    end_of_day = start_of_day + 86400
+
+    query = """
+    query ($start: Int, $end: Int) {
+      Page(perPage: 50) {
+        airingSchedules(airingAt_greater: $start, airingAt_less: $end, sort: TIME) {
+          airingAt
+          episode
+          media {
+            title {
+              romaji
+              english
+            }
+            coverImage {
+              extraLarge
+            }
+            format
+          }
+        }
+      }
+    }
+    """
+    try:
+        response = requests.post(
+            "https://graphql.anilist.co",
+            json={
+                "query": query,
+                "variables": {"start": start_of_day, "end": end_of_day}
+            },
+            timeout=10
+        )
+        return response.json().get("data", {}).get("Page", {}).get("airingSchedules", [])
+    except Exception as e:
+        print(f"Schedule API Error: {e}")
+        return []
+
+def update_discord_rpc(anime_name, episode_num, time_str=None):
+    global rpc_connected, RPC_START_TIME, CURRENT_RPC_ANIME
+    if rpc is None:
+        return
+    
+    try:
+        # Reset timer jika menonton anime yang berbeda
+        if CURRENT_RPC_ANIME != anime_name:
+            RPC_START_TIME = time.time()
+            CURRENT_RPC_ANIME = anime_name
+
+        if not rpc_connected:
+            rpc.connect()
+            rpc_connected = True
+
+        state_text = f"Episode {episode_num:02d}"
+        if time_str:
+            state_text += f" ({time_str})"
+
+        rpc.update(
+            details=anime_name,
+            state=state_text,
+            large_image="anzu_logo", # Dikembalikan agar status lebih stabil muncul di Discord
+            buttons=[{"label": "Buka Anzu Anime", "url": "http://animearchive.local:5000"}]
+        )
+    except Exception as e:
+        print(f"Discord RPC Error: {e}")
+        rpc_connected = False
+
+def clear_discord_rpc():
+    """Menghapus status Discord Rich Presence."""
+    global rpc_connected, RPC_START_TIME, CURRENT_RPC_ANIME
+    if rpc is not None and rpc_connected:
+        try:
+            rpc.clear()
+            RPC_START_TIME = None
+            CURRENT_RPC_ANIME = None
+            print("Discord RPC cleared")
+        except Exception as e:
+            print(f"Discord RPC Clear Error: {e}")
+            # Jika gagal (misal Discord tertutup), set koneksi ke False
+            rpc_connected = False
+
+def get_cached_anilist_info(
+    anime_name
+):
+
+    cache_file = os.path.join(
+        METADATA_CACHE,
+        f"{anime_name}.json"
+    )
+    info = None
+
+    # 1. Coba muat dari cache metadata
+    if os.path.exists(
+        cache_file
+    ):
+        try:
+            with open(
+                cache_file,
+                "r",
+                encoding="utf-8"
+            ) as f:
+                info = json.load(f)
+                # Jika metadata ditemukan tapi tidak punya informasi karakter atau relations, paksa ambil ulang
+                if "characters" not in info or "relations" not in info or "recommendations" not in info:
+                    info = None
+        except:
+            info = None
+
+    # 2. Jika tidak ada di cache atau data tidak lengkap, ambil dari AniList API
+    if not info:
+        info = get_anilist_info(anime_name)
+        if info:
+            with open(
+                cache_file,
+                "w",
+                encoding="utf-8"
+            ) as f:
+                json.dump(
+                    info,
+                    f,
+                    ensure_ascii=False,
+                    indent=4
+                )
+
+    # 3. Proses gambar karakter dan poster relations (Harus dijalankan meskipun metadata sudah ada di cache)
+    if info:
+        # Download Gambar Karakter & Seiyuu
+        if "characters" in info:
+            safe_anime = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
+            anime_char_dir = os.path.join(CHARACTER_CACHE, safe_anime)
+            
+            # Pastikan folder karakter ada (terutama jika baru dihapus)
+            os.makedirs(anime_char_dir, exist_ok=True)
+            
+            for char in info["characters"]:
+                # Gambar Karakter
+                if char.get("image_url"):
+                    clean_name = re.sub(r'[<>:"/\\|?*]', '_', char['name'])
+                    fname = f"{clean_name}_char.jpg"
+                    fpath = os.path.join(anime_char_dir, fname)
+                    # Unduh jika file belum ada
+                    if not os.path.exists(fpath):
+                        try:
+                            r = requests.get(char["image_url"], timeout=15)
+                            if r.status_code == 200:
+                                with open(fpath, "wb") as f_img:
+                                    f_img.write(r.content)
+                        except: pass
+                    char["image_local"] = fname
+                
+                # Gambar Seiyuu
+                if char.get("va_image_url") and char.get("va_name"):
+                    clean_va = re.sub(r'[<>:"/\\|?*]', '_', char['va_name'])
+                    fname = f"{clean_va}_va.jpg"
+                    fpath = os.path.join(anime_char_dir, fname)
+                    # Unduh jika file belum ada
+                    if not os.path.exists(fpath):
+                        try:
+                            r = requests.get(char["va_image_url"], timeout=15)
+                            if r.status_code == 200:
+                                with open(fpath, "wb") as f_img:
+                                    f_img.write(r.content)
+                        except: pass
+                    char["va_image_local"] = fname
+
+        # Download Poster Relations ke Cache
+        if "relations" in info:
+            for rel in info["relations"]:
+                rel_title = rel.get("title")
+                rel_poster_url = rel.get("poster")
+                if rel_title and rel_poster_url and rel_poster_url.startswith("http"):
+                    safe_rel_title = re.sub(r'[<>:"/\\|?*]', '_', rel_title)
+                    rel_poster_path = os.path.join(POSTER_CACHE, f"{safe_rel_title}.jpg")
+                    if not os.path.exists(rel_poster_path):
+                        try:
+                            r = requests.get(rel_poster_url, timeout=15)
+                            if r.status_code == 200:
+                                with open(rel_poster_path, "wb") as f:
+                                    f.write(r.content)
+                        except: pass
+
+        # Download Poster Recommendations ke Cache
+        if "recommendations" in info:
+            for rec in info["recommendations"]:
+                rec_title = rec.get("title")
+                rec_poster_url = rec.get("poster")
+                if rec_title and rec_poster_url and rec_poster_url.startswith("http"):
+                    safe_rec_title = re.sub(r'[<>:"/\\|?*]', '_', rec_title)
+                    rec_poster_path = os.path.join(POSTER_CACHE, f"{safe_rec_title}.jpg")
+                    if not os.path.exists(rec_poster_path):
+                        try:
+                            r = requests.get(rec_poster_url, timeout=15)
+                            if r.status_code == 200:
+                                with open(rec_poster_path, "wb") as f:
+                                    f.write(r.content)
+                        except: pass
+
+    return info
+
+def get_subtitle_vtt_path(anime_name, episode_path):
+    # Membuat nama folder dan file yang aman untuk sistem file Windows
+    safe_anime = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
+    safe_episode = re.sub(r'[<>:"|?*]', '_', episode_path).replace('/', '_').replace('\\', '_')
+    
+    vtt_filename = f"{safe_episode}.vtt"
+    return os.path.join(SUBTITLE_CACHE, safe_anime, vtt_filename)
+
+def generate_subtitle_vtt(video_path, vtt_path):
+    print(f"Subtitle sedang dibuat: {video_path}")
+    
+    # Pastikan sub-direktori anime di dalam cache tersedia
+    os.makedirs(os.path.dirname(vtt_path), exist_ok=True)
+    
+    try:
+        # Ekstraksi subtitle stream pertama (0:s:0) langsung ke format WebVTT menggunakan FFmpeg
+        result = subprocess.run([
+            "ffmpeg",
+            "-y",
+            "-i", video_path,
+            "-map", "0:s:0",
+            vtt_path
+        ], capture_output=True, text=True)
+        
+        if result.returncode == 0 and os.path.exists(vtt_path):
+            # Pembersihan konten VTT dari tag SSA/ASS dan drawing commands
+            try:
+                with open(vtt_path, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+
+                cleaned_lines = ["WEBVTT\n"]
+                i = 0
+                while i < len(lines):
+                    line = lines[i].strip()
+                    if "-->" in line:
+                        timestamp = line
+                        cue_text = []
+                        i += 1
+                        # Ambil semua baris teks milik cue ini
+                        while i < len(lines) and lines[i].strip() != "" and "-->" not in lines[i]:
+                            text_line = lines[i].strip()
+                            # 1. Hapus tag SSA/ASS seperti {\an7\pos...}
+                            text_line = re.sub(r'\{.*?\}', '', text_line)
+                            # 2. Hapus drawing commands (koordinat seperti m 0 0 l ...)
+                            # Kita hapus tag HTML sementara untuk validasi konten murni
+                            plain_text = re.sub(r'<[^>]*>', '', text_line).strip()
+                            # Deteksi instruksi gambar ASS (m, l, c, b, p dan angka)
+                            is_drawing = bool(re.match(r'^[mlcbp\s\d.-]+$', plain_text, re.I)) and any(c.isdigit() for c in plain_text)
+                            
+                            if not is_drawing and plain_text != "":
+                                cue_text.append(text_line)
+                            i += 1
+                        
+                        # Simpan cue hanya jika ada teks bersih yang tersisa
+                        if cue_text:
+                            cleaned_lines.append("\n" + timestamp + "\n")
+                            cleaned_lines.append("\n".join(cue_text) + "\n")
+                    else:
+                        i += 1
+
+                with open(vtt_path, "w", encoding="utf-8") as f:
+                    f.writelines(cleaned_lines)
+            except Exception as clean_err:
+                print(f"Warning: Gagal membersihkan subtitle: {clean_err}")
+
+            print(f"Subtitle berhasil dibuat dan dibersihkan: {vtt_path}")
+            return True
+        else:
+            print(f"Subtitle gagal dibuat (Mungkin tidak ada stream subtitle): {video_path}")
+            return False
+    except Exception as e:
+        print(f"Error saat membuat subtitle: {e}")
+        return False
+
+def update_watch_history(anime_name, episode, episode_num, time_str=None, last_seconds=0):
+    history = {}
+    if os.path.exists(WATCH_HISTORY_FILE):
+        try:
+            with open(WATCH_HISTORY_FILE, "r", encoding="utf-8") as f:
+                history = json.load(f)
+        except:
+            pass
+    
+    history[anime_name] = {
+        "episode": episode,
+        "episode_num": episode_num,
+        "updated_at": datetime.now().isoformat(),
+        "time_str": time_str,
+        "last_seconds": last_seconds
+    }
+    
+    with open(WATCH_HISTORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=4)
+
+def sync_anime_to_db(anime_name):
+    """Memindai satu folder anime dan memperbarui database SQLite.
+       Fungsi ini dipanggil oleh background scanner."""
+    anime_path = find_anime_path(anime_name)
+    if not anime_path:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute("PRAGMA journal_mode=WAL") # Optimasi konkurensi
+            conn.execute("DELETE FROM anime_library WHERE name = ?", (anime_name,))
+        return
+
+    episode_count = 0
+    for root, dirs, files in os.walk(anime_path):
+        for file in files:
+            if file.lower().endswith(VIDEO_EXTENSIONS):
+                episode_count += 1
+
+    info = get_cached_anilist_info(anime_name)
+    
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("""
+            INSERT OR REPLACE INTO anime_library (name, episodes, score, genres, year, season, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            anime_name,
+            episode_count,
+            info.get("score") if info else None,
+            json.dumps(info.get("genres")) if info else None,
+            info.get("year") if info else None,
+            info.get("season") if info else None,
+            info.get("status") if info else None
+        ))
+
+def sync_all_library():
+    """Pemindaian penuh seluruh folder anime di latar belakang."""
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Syncing library...")
+    found_data = []
+    found_names = []
+    for base_path in ANIME_PATHS:
+        if not os.path.exists(base_path):
+            continue
+        for name in os.listdir(base_path):
+            full_path = os.path.join(base_path, name)
+            if os.path.isdir(full_path):
+                found_names.append(name)
+                
+                # Hitung episode
+                episode_count = 0
+                for root, dirs, files in os.walk(full_path):
+                    for file in files:
+                        if file.lower().endswith(VIDEO_EXTENSIONS):
+                            episode_count += 1
+                
+                # Cek cache metadata dulu tanpa sleep
+                cache_file = os.path.join(METADATA_CACHE, f"{name}.json")
+                if not os.path.exists(cache_file):
+                    info = get_cached_anilist_info(name)
+                    time.sleep(0.7) # Delay hanya jika hit API
+                else:
+                    info = get_cached_anilist_info(name)
+
+                found_data.append((
+                    name,
+                    episode_count,
+                    info.get("score") if info else None,
+                    json.dumps(info.get("genres")) if info else None,
+                    info.get("year") if info else None,
+                    info.get("season") if info else None,
+                    info.get("status") if info else None
+                ))
+    
+    # Update database secara batch dalam satu koneksi
+    with sqlite3.connect(DB_PATH) as conn:
+        # Update/Insert data yang ditemukan
+        if found_data:
+            conn.executemany("""
+                INSERT OR REPLACE INTO anime_library (name, episodes, score, genres, year, season, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, found_data)
+
+        # Hapus entri di DB jika foldernya sudah tidak ada di disk
+        if found_names:
+            placeholders = ','.join(['?'] * len(found_names))
+            conn.execute(f"DELETE FROM anime_library WHERE name NOT IN ({placeholders})", found_names)
+        else:
+            conn.execute("DELETE FROM anime_library")
+            
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Sinkronisasi selesai. Terdeteksi {len(found_names)} anime.")
+
+def get_anime():
+    """Mengambil daftar anime dari database SQLite (Instan)."""
+    anime_list = []
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.row_factory = sqlite3.Row
+            cursor = conn.execute("SELECT * FROM anime_library ORDER BY name COLLATE NOCASE")
+            for row in cursor:
+                item = dict(row)
+                anime_list.append({
+                    "name": item["name"],
+                    "episodes": item["episodes"],
+                    "score": item["score"],
+                    "year": item["year"],
+                    "season": item["season"],
+                    "status": item["status"]
+                })
+    except Exception as e:
+        print(f"Database Query Error: {e}")
+    return anime_list
+
+@app.route("/schedule")
+def schedule():
+    airing_list = get_airing_schedule()
+    processed = []
+    for item in airing_list:
+        # Konversi timestamp ke waktu lokal HH:MM
+        airing_time = datetime.fromtimestamp(item['airingAt']).strftime('%H:%M')
+        processed.append({
+            'title': item['media']['title']['english'] or item['media']['title']['romaji'],
+            'poster': item['media']['coverImage']['extraLarge'],
+            'episode': item['episode'],
+            'time': airing_time,
+            'format': item['media']['format']
+        })
+    
+    return render_template(
+        "schedule.html",
+        schedule=processed,
+        today=datetime.now().strftime("%A, %d %B %Y")
+    )
+
+@app.route("/movies")
+def movies():
+
+    movie_path = MOVIE_PATH
+
+    movies = []
+
+    if not os.path.isdir(
+        movie_path
+    ):
+
+        return render_template(
+            "movies.html",
+            movies=movies
+        )
+
+    for file in os.listdir(movie_path):
+
+        if file.lower().endswith(
+            VIDEO_EXTENSIONS
+        ):
+            
+            clean_title = clean_movie_title(file)
+
+            movie_info = get_cached_anilist_info(
+            clean_title
+            )
+
+            movies.append({
+
+                "title": clean_title,
+
+                "file": file,
+
+                "poster":
+                    f"/poster/{clean_title}",
+
+                "score":
+                    movie_info.get(
+                        "score"
+                    ) if movie_info else None,
+
+                "year":
+                    movie_info.get(
+                        "year"
+                    ) if movie_info else None
+            })
+
+    return render_template(
+        "movies.html",
+        movies=movies
+    )
+
+@app.route("/movie/<path:filename>")
+def movie_detail_page(filename):
+
+    video_path = safe_join_media_path(
+        MOVIE_PATH,
+        filename
+    )
+
+    if (
+        not video_path
+        or
+        not os.path.isfile(video_path)
+        or
+        not video_path.lower().endswith(VIDEO_EXTENSIONS)
+    ):
+        return "Film tidak ditemukan", 404
+
+    clean_title = clean_movie_title(filename)
+    anime_info = get_cached_anilist_info(clean_title)
+
+    # Ambil durasi dan resolusi
+    episode_info = get_episode_cache("Movies", video_path)
+
+    # Buat list episode buatan (hanya 1 item)
+    episodes = [{
+        "file": filename,
+        "episode": 1,
+        "thumbnail": f"/thumbnail/Movies/{filename}",
+        "duration": episode_info["duration"],
+        "resolution": episode_info["resolution"]
+    }]
+
+    return render_template(
+        "anime.html",
+        anime_name=clean_title,      # Digunakan untuk metadata/poster
+        folder_name="Movies",       # Digunakan untuk mencari file di disk
+        episodes=episodes,
+        anime_info=anime_info
+    )
+
+@app.route("/")
+def index():
+
+    status_filter = request.args.get(
+        "status",
+        "ALL"
+    )
+
+    anime_list = get_anime()
+
+    all_count = len(anime_list)
+
+    releasing_count = len([
+        anime
+        for anime in anime_list
+        if anime.get("status") == "RELEASING"
+    ])
+
+    finished_count = len([
+        anime
+        for anime in anime_list
+        if anime.get("status") == "FINISHED"
+    ])
+
+    featured_slides = []
+    if anime_list:
+        # Ambil maksimal 5 anime acak untuk slider
+        slider_candidates = random.sample(
+            anime_list, 
+            min(len(anime_list), 5)
+        )
+        for item in slider_candidates:
+            info = get_cached_anilist_info(item["name"])
+            featured_slides.append({
+                "anime": item,
+                "info": info
+            })
+
+    # Helper function to get history could be used here
+    history = load_history_data()
+    
+    continue_watching = []
+    for name, data in history.items():
+        continue_watching.append({
+            "name": name,
+            "episode": data["episode"],
+            "episode_num": data.get("episode_num"),
+            "time_str": data.get("time_str"), # Ambil time_str dari history
+            "updated_at": data["updated_at"]
+        })
+    
+    continue_watching.sort(key=lambda x: x["updated_at"], reverse=True)
+    continue_watching = continue_watching[:6]
+
+    return render_template(
+        "index.html",
+        anime_list=anime_list,
+        featured_slides=featured_slides,
+        continue_watching=continue_watching,
+        status_filter=status_filter,
+
+        all_count=all_count,
+        releasing_count=releasing_count,
+        finished_count=finished_count
+    )
+
+
+@app.route("/poster/<anime_name>")
+def poster(anime_name):
+
+    safe_name = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
+    poster_path = os.path.join(
+        POSTER_CACHE,
+        f"{safe_name}.jpg"
+    )
+
+    if os.path.exists(
+        poster_path
+    ):
+        return send_file(
+            poster_path
+        )
+
+    poster_path = get_anilist_poster(
+        anime_name
+    )
+
+    if poster_path:
+        return send_file(
+            poster_path
+        )
+
+    return "", 404
+
+@app.route("/banner/<anime_name>")
+def banner(anime_name):
+
+    safe_name = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
+    banner_path = os.path.join(
+        "cache",
+        "banners",
+        f"{safe_name}.jpg"
+    )
+
+    if os.path.exists(
+        banner_path
+    ):
+        return send_file(
+            banner_path
+        )
+
+    get_anilist_poster(
+        anime_name
+    )
+
+    safe_name = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
+    if os.path.exists(
+        banner_path
+    ):
+        return send_file(
+            banner_path
+        )
+
+    poster_path = os.path.join(
+        "cache",
+        "posters",
+        f"{safe_name}.jpg"
+    )
+
+    if os.path.exists(
+        poster_path
+    ):
+        return send_file(
+            poster_path
+        )
+
+    return "", 404
+
+@app.route("/thumbnail/<anime_name>/<path:episode>")
+def thumbnail(
+    anime_name,
+    episode
+):
+
+    anime_path = find_anime_path(
+        anime_name
+    )
+
+    if not anime_path:
+        return "", 404
+
+    episode_path = safe_join_media_path(
+        anime_path,
+        episode
+    )
+
+    if (
+        not episode_path
+        or
+        not os.path.isfile(episode_path)
+        or
+        not episode_path.lower().endswith(VIDEO_EXTENSIONS)
+    ):
+
+        return "", 404
+
+    thumbnail_path = get_thumbnail(
+        episode_path
+    )
+
+    if thumbnail_path:
+        return send_file(
+            thumbnail_path
+        )
+
+    return "", 404
+
+@app.route("/anime/<anime_name>")
+def anime_detail(anime_name):
+
+    anime_path = find_anime_path(
+        anime_name
+    )
+
+    if not anime_path:
+        return "Anime tidak ditemukan"
+
+    has_season = False
+
+    for item in os.listdir(
+        anime_path
+    ):
+
+        item_path = os.path.join(
+            anime_path,
+            item
+        )
+
+        if os.path.isdir(
+            item_path
+        ):
+
+            has_season = True
+            break
+
+    if has_season:
+
+        return redirect(
+            f"/anime/{anime_name}/seasons"
+        )
+
+    episodes = []
+
+    video_files = []
+
+    for file in os.listdir(
+        anime_path
+    ):
+
+        if file.lower().endswith(
+            VIDEO_EXTENSIONS
+        ):
+
+            video_files.append(
+                file
+            )
+
+    video_files.sort(
+        key=get_episode_number
+    )
+
+    for index, file in enumerate(
+        video_files,
+        start=1
+    ):
+
+        video_path = os.path.join(
+            anime_path,
+            file
+        )
+
+        episode_info = get_episode_cache(
+            anime_name,
+            video_path
+        )
+
+        episodes.append({
+
+            "file": file,
+
+            "episode": index,
+
+            "thumbnail":
+                f"/thumbnail/{anime_name}/{file}",
+
+            "duration":
+                episode_info[
+                    "duration"
+                ],
+
+            "resolution":
+                episode_info[
+                    "resolution"
+                ]
+
+        })
+
+    anime_info = get_cached_anilist_info(
+        anime_name
+    )
+
+    print("ANIME INFO =", anime_info)
+
+    return render_template(
+        "anime.html",
+        anime_name=anime_name,
+        folder_name=anime_name,
+        episodes=episodes,
+        anime_info=anime_info
+    )
+
+
+@app.route(
+    "/player/<anime_name>/<path:episode>"
+)
+def player(
+    anime_name,
+    episode
+):
+
+    anime_path = find_anime_path(
+        anime_name
+    )
+
+    if not anime_path:
+        return "Anime tidak ditemukan"
+
+    current_video_path = safe_join_media_path(
+        anime_path,
+        episode
+    )
+
+    if (
+        not current_video_path
+        or
+        not os.path.isfile(current_video_path)
+        or
+        not current_video_path.lower().endswith(VIDEO_EXTENSIONS)
+    ):
+
+        abort(404)
+
+    episode_dir = os.path.dirname(
+        current_video_path
+    )
+
+    try:
+
+        season_name = os.path.relpath(
+            episode_dir,
+            anime_path
+        )
+
+    except ValueError:
+
+        abort(404)
+
+    if season_name == ".":
+
+        season_name = None
+
+    video_files = []
+
+    for file in os.listdir(
+        episode_dir
+    ):
+
+        if file.lower().endswith(
+            VIDEO_EXTENSIONS
+        ):
+
+            video_files.append(
+                file
+            )
+
+    video_files.sort(
+        key=get_episode_number
+    )
+
+    episodes = []
+
+    for index, file in enumerate(
+        video_files,
+        start=1
+    ):
+
+        video_path = os.path.join(
+            episode_dir,
+            file
+        )
+
+        relative_file = file
+
+        if season_name:
+
+            relative_file = os.path.join(
+                season_name,
+                file
+            )
+
+        relative_url = relative_file.replace(
+            os.sep,
+            "/"
+        )
+
+        episode_info = get_episode_cache(
+            anime_name,
+            video_path,
+            season_name
+        )
+
+        episodes.append({
+
+            "file": relative_url,
+
+            "episode": index,
+
+            "thumbnail":
+                f"/thumbnail/{anime_name}/{relative_url}",
+
+            "duration":
+                episode_info[
+                    "duration"
+                ],
+
+            "resolution":
+                episode_info[
+                    "resolution"
+                ]
+
+        })
+
+    current_index = 0
+
+    current_file = os.path.basename(
+        current_video_path
+    )
+
+    for i, file in enumerate(
+        video_files
+    ):
+
+        if file == current_file:
+
+            current_index = i
+            break
+
+    previous_episode = None
+    next_episode = None
+
+    if current_index > 0:
+
+        previous_episode = (
+            video_files[
+                current_index - 1
+            ]
+        )
+
+        if season_name:
+
+            previous_episode = os.path.join(
+                season_name,
+                previous_episode
+            ).replace(
+                os.sep,
+                "/"
+            )
+
+    if current_index < len(video_files) - 1:
+
+        next_episode = (
+            video_files[
+                current_index + 1
+            ]
+        )
+
+        if season_name:
+
+            next_episode = os.path.join(
+                season_name,
+                next_episode
+            ).replace(
+                os.sep,
+                "/"
+            )
+
+    back_url = f"/anime/{anime_name}"
+
+    if season_name:
+
+        season_url = season_name.replace(
+            os.sep,
+            "/"
+        )
+
+        back_url = f"/anime/{anime_name}/{season_url}"
+
+    # Ambil waktu tonton terakhir untuk fitur resume
+    history = load_history_data()
+    resume_time = 0
+    if anime_name in history:
+        h_data = history[anime_name]
+        # Hanya resume jika episode yang dibuka sama dengan yang terakhir ditonton
+        if h_data.get("episode") == episode:
+            resume_time = h_data.get("last_seconds", 0)
+
+    return render_template(
+
+        "player.html",
+
+        anime_name=anime_name,
+
+        episode=episode,
+
+        season_name=season_name,
+
+        back_url=back_url,
+
+        current_episode=
+            current_index + 1,
+
+        total_episodes=
+            len(video_files),
+
+        previous_episode=
+            previous_episode,
+
+        next_episode=
+            next_episode,
+            
+        resume_time=resume_time,
+        
+        episodes=episodes
+
+    )
+
+@app.route(
+    "/stream/<anime_name>/<path:episode>"
+)
+def stream_video(
+    anime_name,
+    episode
+):
+
+    anime_path = find_anime_path(
+        anime_name
+    )
+
+    video_path = safe_join_media_path(
+        anime_path,
+        episode
+    )
+
+    if (
+        not video_path
+        or
+        not os.path.isfile(video_path)
+        or
+        not video_path.lower().endswith(VIDEO_EXTENSIONS)
+    ):
+        print(f"DEBUG: Video path invalid or not found: {video_path}")
+        abort(404)
+
+    # Kembali menggunakan send_file untuk mendukung Range Requests (Seeking & Duration)
+    # Kita set mimetype secara manual untuk mengelabui browser agar mencoba memutar .mkv sebagai mp4
+    mime_type = "video/mp4"
+    if not video_path.lower().endswith('.mkv'):
+        mime_type = mimetypes.guess_type(video_path)[0] or "video/mp4"
+
+    return send_file(
+        video_path,
+        mimetype=mime_type,
+        conditional=True  # Penting: Mengaktifkan dukungan navigasi/seeking
+    )
+
+@app.route("/character_img/<anime_name>/<filename>")
+def character_img(anime_name, filename):
+    safe_anime = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
+    img_path = os.path.join(CHARACTER_CACHE, safe_anime, filename)
+    if os.path.exists(img_path):
+        return send_file(img_path)
+    abort(404)
+
+@app.route("/subtitle/<anime_name>/<path:episode>")
+def get_subtitle(anime_name, episode):
+    anime_path = find_anime_path(anime_name)
+    if not anime_path:
+        abort(404)
+        
+    video_path = safe_join_media_path(anime_path, episode)
+    if not video_path or not os.path.isfile(video_path):
+        abort(404)
+        
+    vtt_path = get_subtitle_vtt_path(anime_name, episode)
+    
+    # 1. Cek apakah cache VTT sudah ada
+    if os.path.exists(vtt_path):
+        print(f"Subtitle cache ditemukan: {vtt_path}")
+        return send_file(vtt_path, mimetype="text/vtt")
+        
+    # 2. Jika tidak ada, buat menggunakan FFmpeg
+    if generate_subtitle_vtt(video_path, vtt_path):
+        return send_file(vtt_path, mimetype="text/vtt")
+        
+    # 3. Jika gagal/tidak ada subtitle, abaikan (404 tidak akan menghentikan video)
+    abort(404)
+
+@app.route("/anime/<anime_name>/seasons")
+def season_list(anime_name):
+
+    anime_path = find_anime_path(
+        anime_name
+    )
+
+    if not anime_path:
+        return "Anime tidak ditemukan"
+
+    seasons = []
+
+    for item in os.listdir(anime_path):
+
+        season_path = os.path.join(
+            anime_path,
+            item
+        )
+
+        if os.path.isdir(
+            season_path
+        ):
+
+            episode_count = 0
+
+            for file in os.listdir(
+                season_path
+            ):
+
+                if file.lower().endswith(
+                    VIDEO_EXTENSIONS
+                ):
+
+                    episode_count += 1
+
+            info = get_season_anilist_info(
+                anime_name,
+                item
+            )
+
+            seasons.append({
+
+                "name": item,
+
+                "title":
+                    info.get("title")
+                    if info else item,
+
+                "year":
+                    info.get("year")
+                    if info else None,
+
+                "season":
+                    info.get("season")
+                    if info else None,
+
+                "score":
+                    info.get("score")
+                    if info else None,
+
+                "status":
+                    info.get("status")
+                    if info else None,
+
+                "episodes": episode_count
+            })
+
+    seasons.sort(
+        key=lambda x: get_episode_number(
+            x["name"]
+        )
+    )
+
+    return render_template(
+        "seasons.html",
+        anime_name=anime_name,
+        seasons=seasons
+    )
+
+@app.route("/anime/<anime_name>/<season_name>")
+def season_detail(
+    anime_name,
+    season_name
+):
+
+    anime_path = find_anime_path(
+        anime_name
+    )
+
+    if not anime_path:
+        return "Anime tidak ditemukan"
+
+    season_path = safe_join_media_path(
+        anime_path,
+        season_name
+    )
+
+    if (
+        not season_path
+        or
+        not os.path.isdir(
+        season_path
+        )
+    ):
+        return "Season tidak ditemukan"
+
+    episodes = []
+
+    video_files = []
+
+    for file in os.listdir(
+        season_path
+    ):
+
+        if file.lower().endswith(
+            VIDEO_EXTENSIONS
+        ):
+
+            video_files.append(
+                file
+            )
+
+    video_files.sort(
+        key=get_episode_number
+    )
+
+    for index, file in enumerate(
+        video_files,
+        start=1
+    ):
+
+        video_path = os.path.join(
+            season_path,
+            file
+        )
+
+        episode_info = get_episode_cache(
+            anime_name,
+            video_path,
+            season_name
+        )
+
+        relative_file = os.path.join(
+            season_name,
+            file
+        ).replace(
+            os.sep,
+            "/"
+        )
+
+        episodes.append({
+
+            "file": relative_file,
+
+            "episode": index,
+
+            "thumbnail":
+                f"/thumbnail/{anime_name}/{relative_file}",
+
+            "duration":
+                episode_info[
+                    "duration"
+                ],
+
+            "resolution":
+                episode_info[
+                    "resolution"
+                ]
+        })
+
+    anime_info = get_season_anilist_info(
+        anime_name,
+        season_name
+    )
+
+    return render_template(
+        "anime.html",
+        anime_name=anime_name,
+        season_name=season_name,
+        folder_name=anime_name,
+        episodes=episodes,
+        anime_info=anime_info
+    )
+
+@app.route("/play/<anime_name>/<path:episode>")
+def play_episode(anime_name, episode):
+
+    anime_path = find_anime_path(
+        anime_name
+    )
+
+    if not anime_path:
+        return jsonify({
+            "status": "anime_not_found"
+        })
+
+    episode_path = safe_join_media_path(
+        anime_path,
+        episode
+    )
+
+    if (
+        not episode_path
+        or
+        not os.path.isfile(episode_path)
+        or
+        not episode_path.lower().endswith(VIDEO_EXTENSIONS)
+    ):
+        return jsonify({
+            "status": "episode_not_found"
+        })
+
+    try:
+
+        subprocess.Popen([
+            VLC_PATH,
+            episode_path
+        ])
+
+        # Update history for VLC
+        episode_num = get_episode_number(os.path.basename(episode))
+        update_watch_history(anime_name, episode, episode_num)
+        update_discord_rpc(anime_name, episode_num)
+
+        return jsonify({
+            "status": "playing"
+        })
+
+    except Exception as e:
+
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        })
+
+@app.route("/screenshot", methods=["POST"])
+def save_screenshot():
+    data = request.get_json()
+    img_data = data.get("image")
+    if not img_data:
+        return jsonify({"status": "error", "message": "No image data"}), 400
+
+    try:
+        # Menghapus header data URL (data:image/png;base64,)
+        header, encoded = img_data.split(",", 1)
+        binary_data = base64.b64decode(encoded)
+
+        now = datetime.now()
+        # Format milidetik 3 digit
+        ms = str(now.microsecond // 1000).zfill(3)
+        filename = now.strftime("vlcsnap-%Y-%m-%d-%Hh%Mm%Ss") + ms + ".png"
+        
+        # Menggunakan folder Pictures user yang sedang aktif agar lebih dinamis
+        save_path = os.path.join(os.path.expanduser("~"), "Pictures")
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        
+        full_path = os.path.join(save_path, filename)
+        with open(full_path, "wb") as f:
+            f.write(binary_data)
+        
+        return jsonify({"status": "success", "path": full_path})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/update_progress", methods=["POST"])
+def update_progress():
+    data = request.get_json()
+    anime_name = data.get("anime_name")
+    episode = data.get("episode")
+    episode_num = int(data.get("episode_num", 0))
+    time_str = data.get("time_str")
+    last_seconds = data.get("last_seconds", 0)
+    
+    if anime_name and episode:
+        update_watch_history(anime_name, episode, episode_num, time_str, last_seconds)
+        update_discord_rpc(anime_name, episode_num, time_str)
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error"}), 400
+
+@app.route("/clear_rpc", methods=["POST"])
+def clear_rpc_route():
+    """Endpoint untuk menghapus status Discord secara manual."""
+    clear_discord_rpc()
+    return jsonify({"status": "success"})
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_file(
+        os.path.join(app.root_path, 'static', 'arcana.jpg'),
+        mimetype='image/png'
+    )
+
+def load_history_data():
+    if not os.path.exists(WATCH_HISTORY_FILE):
+        return {}
+    try:
+        with open(WATCH_HISTORY_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
+
+class LibraryHandler(FileSystemEventHandler):
+    def process_event(self, event_path):
+        for base in ANIME_PATHS:
+            if event_path.startswith(base):
+                try:
+                    relative = os.path.relpath(event_path, base)
+                    parts = relative.split(os.sep)
+                    if parts and parts[0] != "." and parts[0] != "":
+                        print(f"[{datetime.now().strftime('%H:%M:%S')}] Watchdog event for anime: {parts[0]}. Triggering sync_anime_to_db.")
+                        sync_anime_to_db(parts[0])
+                        return # Found the anime, no need to check other base paths
+                except ValueError: # path is not in base
+                    continue
+        # If no specific anime was found, or if it was a top-level directory change/deletion
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Watchdog event for {event_path} did not resolve to a specific anime. Triggering full sync.")
+        sync_all_library()
+
+    def on_created(self, event): self.process_event(event.src_path)
+    def on_deleted(self, event): self.process_event(event.src_path)
+    def on_moved(self, event):
+        self.process_event(event.src_path) # Old path might be a deletion
+        self.process_event(event.dest_path) # New path might be a creation/modification
+    def on_modified(self, event):
+        # Proses jika ada perubahan pada folder atau file video
+        if event.is_directory:
+            self.process_event(event.src_path)
+        elif any(event.src_path.lower().endswith(ext) for ext in VIDEO_EXTENSIONS):
+            self.process_event(event.src_path)
+
+def start_scanner():
+    """Menjalankan sinkronisasi awal dan memulai observer watchdog."""
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Performing initial full library sync...")
+    sync_all_library() # Initial full sync
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Initial full library sync complete.")
+
+    observer = Observer()
+    handler = LibraryHandler()
+    for path in ANIME_PATHS:
+        if os.path.exists(path):
+            observer.schedule(handler, path, recursive=True)
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Monitoring folder: {path}")
+        else:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Warning: Configured ANIME_PATH does not exist: {path}")
+    observer.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
+
+def periodic_sync_task(interval_seconds=900): # Sync every 15 minutes
+    """Melakukan sinkronisasi penuh secara berkala sebagai pengaman."""
+    while True:
+        time.sleep(interval_seconds)
+        try:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Performing periodic full library sync...")
+            sync_all_library()
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Periodic full library sync complete.")
+        except Exception as e:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Periodic sync failed: {e}")
+
+if __name__ == "__main__":
+    # Start background tasks if app.py is run directly
+    # init_db() is called when app.py is imported, so no need to call it here again.
+    scanner_thread = threading.Thread(target=start_scanner, daemon=True)
+    scanner_thread.start()
+
+    periodic_sync_thread = threading.Thread(target=periodic_sync_task, daemon=True)
+    periodic_sync_thread.start()
+
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=False
+    )
