@@ -39,6 +39,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 MOVIE_PATH = r"D:\Fajar\Anime\Watchlist\Movies"
 VLC_PATH = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+DISCORD_RPC_ENABLED = True
 
 POSTER_CACHE = os.path.join(BASE_DIR, "cache", "posters")
 BANNER_CACHE = os.path.join(BASE_DIR, "cache", "banners")
@@ -49,6 +50,63 @@ EPISODE_CACHE = os.path.join(BASE_DIR, "cache", "episodes")
 SUBTITLE_CACHE = os.path.join(BASE_DIR, "cache", "subtitles")
 DB_PATH = os.path.join(BASE_DIR, "cache", "library.db")
 WATCH_HISTORY_FILE = os.path.join(BASE_DIR, "cache", "watch_history.json")
+SETTINGS_FILE = os.path.join(BASE_DIR, "cache", "settings.json")
+
+def get_default_settings():
+    return {
+        "watchlist_path": r"D:\Fajar\Anime\Watchlist",
+        "ongoing_path": r"D:\Fajar\Anime\Onggoing",
+        "movie_path": r"D:\Fajar\Anime\Watchlist\Movies",
+        "vlc_path": r"C:\Program Files\VideoLAN\VLC\vlc.exe",
+        "discord_rpc_enabled": True
+    }
+
+def load_settings():
+    defaults = get_default_settings()
+
+    if not os.path.exists(SETTINGS_FILE):
+        return defaults
+
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            settings = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return defaults
+
+    if not isinstance(settings, dict):
+        return defaults
+
+    merged = defaults.copy()
+    merged.update(settings)
+    return merged
+
+def save_settings(settings):
+    os.makedirs(
+        os.path.dirname(SETTINGS_FILE),
+        exist_ok=True
+    )
+
+    with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(
+            settings,
+            f,
+            indent=4
+        )
+
+def apply_settings(settings):
+    global ANIME_PATHS, MOVIE_PATH, VLC_PATH, DISCORD_RPC_ENABLED
+
+    defaults = get_default_settings()
+    merged = defaults.copy()
+    merged.update(settings or {})
+
+    ANIME_PATHS = [
+        merged["watchlist_path"],
+        merged["ongoing_path"],
+    ]
+    MOVIE_PATH = merged["movie_path"]
+    VLC_PATH = merged["vlc_path"]
+    DISCORD_RPC_ENABLED = merged["discord_rpc_enabled"]
 
 def init_db():
     os.makedirs(
@@ -109,6 +167,7 @@ def init_db():
             conn.execute("ALTER TABLE anime_library ADD COLUMN status TEXT")
 
 init_db()
+apply_settings(load_settings())
 
 VIDEO_EXTENSIONS = (
     ".mp4",
@@ -1110,6 +1169,77 @@ def sync_all_library():
             conn.execute("DELETE FROM anime_library")
             
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Sinkronisasi selesai. Terdeteksi {len(found_names)} anime.")
+
+@app.route("/settings")
+def settings_page():
+    settings = load_settings()
+
+    return render_template(
+        "settings.html",
+        settings=settings,
+        saved=request.args.get("saved") == "1"
+    )
+
+@app.route("/settings", methods=["POST"])
+def update_settings():
+    settings = {
+        "watchlist_path": request.form.get("watchlist_path", "").strip(),
+        "ongoing_path": request.form.get("ongoing_path", "").strip(),
+        "movie_path": request.form.get("movie_path", "").strip(),
+        "vlc_path": request.form.get("vlc_path", "").strip(),
+        "discord_rpc_enabled": "discord_rpc_enabled" in request.form
+    }
+
+    save_settings(settings)
+    apply_settings(settings)
+
+    return redirect("/settings?saved=1")
+
+def pick_windows_path(picker_type):
+    root = None
+
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)
+        root.update()
+
+        if picker_type == "file":
+            selected_path = filedialog.askopenfilename(
+                parent=root,
+                filetypes=[
+                    ("Executable files", "*.exe"),
+                    ("All files", "*.*")
+                ]
+            )
+        else:
+            selected_path = filedialog.askdirectory(parent=root)
+
+        return jsonify({"path": selected_path or ""})
+
+    except Exception as e:
+        return jsonify({
+            "path": "",
+            "error": str(e)
+        })
+
+    finally:
+        if root is not None:
+            try:
+                root.destroy()
+            except Exception:
+                pass
+
+@app.route("/settings/pick-folder")
+def pick_settings_folder():
+    return pick_windows_path("folder")
+
+@app.route("/settings/pick-file")
+def pick_settings_file():
+    return pick_windows_path("file")
 
 def get_anime():
     """Mengambil daftar anime dari database SQLite (Instan)."""

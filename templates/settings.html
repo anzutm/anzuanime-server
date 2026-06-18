@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Anzu Anime{% endblock %}
+
+{% block content %}
+<section class="collection-section settings-page">
+    <div class="collection-glow"></div>
+
+    <div class="collection-top settings-top">
+        <div class="collection-heading">
+            <div class="section-title">
+                <div class="section-line"></div>
+                <h2 class="section-heading">Settings</h2>
+            </div>
+            <p class="section-subtitle">Manage library folders and playback integration.</p>
+        </div>
+    </div>
+
+    <div class="settings-shell">
+        {% if saved %}
+        <div class="settings-success">
+            Settings saved successfully.
+        </div>
+        {% endif %}
+
+        <div class="settings-picker-message" id="settingsPickerMessage" aria-live="polite"></div>
+
+        <form method="POST" action="/settings" class="settings-form">
+            <div class="settings-grid">
+                <section class="settings-card">
+                    <div class="settings-card-head">
+                        <span class="settings-kicker">Library</span>
+                        <h3>Library Folders</h3>
+                        <p>Choose the local folders Anzu Anime should scan.</p>
+                    </div>
+
+                    <div class="settings-field">
+                        <label class="settings-label" for="watchlist_path">Watchlist Path</label>
+                        <div class="settings-input-row">
+                            <input
+                                class="settings-input"
+                                id="watchlist_path"
+                                type="text"
+                                name="watchlist_path"
+                                value="{{ settings.watchlist_path }}"
+                                autocomplete="off"
+                            >
+                            <button
+                                class="settings-browse-btn"
+                                type="button"
+                                data-picker="folder"
+                                data-target="watchlist_path"
+                            >
+                                Browse Folder
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-field">
+                        <label class="settings-label" for="ongoing_path">Ongoing Path</label>
+                        <div class="settings-input-row">
+                            <input
+                                class="settings-input"
+                                id="ongoing_path"
+                                type="text"
+                                name="ongoing_path"
+                                value="{{ settings.ongoing_path }}"
+                                autocomplete="off"
+                            >
+                            <button
+                                class="settings-browse-btn"
+                                type="button"
+                                data-picker="folder"
+                                data-target="ongoing_path"
+                            >
+                                Browse Folder
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-field">
+                        <label class="settings-label" for="movie_path">Movie Path</label>
+                        <div class="settings-input-row">
+                            <input
+                                class="settings-input"
+                                id="movie_path"
+                                type="text"
+                                name="movie_path"
+                                value="{{ settings.movie_path }}"
+                                autocomplete="off"
+                            >
+                            <button
+                                class="settings-browse-btn"
+                                type="button"
+                                data-picker="folder"
+                                data-target="movie_path"
+                            >
+                                Browse Folder
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="settings-side">
+                    <section class="settings-card settings-card-compact">
+                        <div class="settings-card-head">
+                            <span class="settings-kicker">Playback</span>
+                            <h3>Playback</h3>
+                            <p>Select the VLC executable used for external playback.</p>
+                        </div>
+
+                        <div class="settings-field">
+                            <label class="settings-label" for="vlc_path">VLC Path</label>
+                            <div class="settings-input-row">
+                                <input
+                                    class="settings-input"
+                                    id="vlc_path"
+                                    type="text"
+                                    name="vlc_path"
+                                    value="{{ settings.vlc_path }}"
+                                    autocomplete="off"
+                                >
+                                <button
+                                    class="settings-browse-btn"
+                                    type="button"
+                                    data-picker="file"
+                                    data-target="vlc_path"
+                                >
+                                    Browse File
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-card settings-card-compact">
+                        <div class="settings-card-head">
+                            <span class="settings-kicker">Integration</span>
+                            <h3>Integration</h3>
+                            <p>Control local integrations used while watching.</p>
+                        </div>
+
+                        <label class="settings-checkbox-row">
+                            <input
+                                type="checkbox"
+                                name="discord_rpc_enabled"
+                                {% if settings.discord_rpc_enabled %}checked{% endif %}
+                            >
+                            <span>
+                                <strong>Discord Rich Presence</strong>
+                                <small>Show current playback status on Discord.</small>
+                            </span>
+                        </label>
+                    </section>
+                </div>
+            </div>
+
+            <div class="settings-footer">
+                <p class="settings-note">
+                    Restart may be recommended after changing core paths, but settings are applied immediately where possible.
+                </p>
+
+                <div class="settings-actions">
+                    <button type="submit" class="settings-save-btn">Save Settings</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const message = document.getElementById('settingsPickerMessage');
+    const buttons = document.querySelectorAll('.settings-browse-btn');
+
+    function showPickerMessage(text, isError) {
+        if (!message) {
+            if (isError) alert(text);
+            return;
+        }
+
+        message.textContent = text;
+        message.classList.toggle('error', Boolean(isError));
+        message.classList.toggle('active', Boolean(text));
+    }
+
+    buttons.forEach((button) => {
+        button.addEventListener('click', async function() {
+            const target = document.getElementById(this.dataset.target);
+            const endpoint = this.dataset.picker === 'file'
+                ? '/settings/pick-file'
+                : '/settings/pick-folder';
+            const originalText = this.textContent;
+
+            showPickerMessage('', false);
+            this.disabled = true;
+            this.textContent = 'Opening...';
+
+            try {
+                const response = await fetch(endpoint);
+                const data = await response.json();
+
+                if (data.error) {
+                    showPickerMessage(data.error, true);
+                    return;
+                }
+
+                if (data.path && target) {
+                    target.value = data.path;
+                }
+            } catch (error) {
+                showPickerMessage('Unable to open picker. You can still type the path manually.', true);
+            } finally {
+                this.disabled = false;
+                this.textContent = originalText;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
