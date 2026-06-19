@@ -6992,6 +6992,227 @@ body {
     z-index: 8;
 }
 
+/* Anime detail hero alignment */
+.detail-page-container,
+.character-section,
+.anime-header,
+.episode-grid,
+.related-section {
+    width: min(1760px, calc(100% - 48px));
+    max-width: 1760px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body:has(.hero-foreground) {
+    padding-top: 5px;
+}
+
+.hero {
+    height: min(720px, 78vh);
+    min-height: 600px;
+    margin-bottom: 34px;
+}
+
+.hero-overlay {
+    justify-content: center;
+    padding: 96px 0 52px;
+}
+
+.hero-foreground {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    gap: 18px;
+}
+
+.hero:has(.hero-foreground)::before {
+    content: none;
+    display: none;
+}
+
+.anime-floating-back {
+    position: fixed;
+    top: 22px;
+    left: max(18px, calc((100vw - 1760px) / 2 + 24px));
+    z-index: 20000;
+    width: max-content;
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 14px;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.032)),
+        rgba(2,3,12,.72);
+    border-color: rgba(255,255,255,.14);
+    box-shadow:
+        0 18px 48px rgba(0,0,0,.42),
+        0 0 28px rgba(0,0,255,.16),
+        inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+.detail-hero-content {
+    width: 100%;
+    margin: 0;
+    padding-top: 0;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+}
+
+.hero-poster-shell {
+    width: 100%;
+    align-self: start;
+}
+
+.hero-poster {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    max-height: 430px;
+    aspect-ratio: 2 / 3;
+}
+
+.hero-details {
+    align-self: start;
+    max-width: none;
+    padding: 24px;
+    border-radius: 24px;
+}
+
+.detail-kicker {
+    margin-bottom: 10px;
+    color: var(--cyan);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.detail-panel-top {
+    gap: 12px;
+}
+
+.title-row {
+    margin-bottom: 12px;
+}
+
+.title-row h1 {
+    font-size: clamp(34px, 4vw, 58px);
+    line-height: 1.04;
+}
+
+.detail-meta {
+    gap: 10px;
+}
+
+.anime-description {
+    max-width: none;
+}
+
+.info-grid {
+    grid-template-columns: repeat(5, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.info-card {
+    height: 86px;
+    border-radius: 18px;
+}
+
+.info-card h3 {
+    font-size: 18px;
+}
+
+@media(max-width: 1180px) {
+    .detail-hero-content {
+        grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    }
+}
+
+@media(max-width: 900px) {
+    .detail-page-container,
+    .character-section,
+    .anime-header,
+    .episode-grid,
+    .related-section {
+        width: min(100% - 32px, 1760px);
+    }
+
+    .hero {
+        position: relative;
+        height: auto;
+        min-height: 0;
+    }
+
+    .hero-banner {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+    }
+
+    .hero-overlay {
+        position: relative;
+        padding: 96px 0 38px;
+    }
+
+    .detail-hero-content {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .hero-poster-shell {
+        display: block;
+        width: min(220px, 58vw);
+    }
+
+    .hero-poster {
+        max-height: 330px;
+    }
+
+    .hero-details {
+        padding: 20px;
+    }
+}
+
+@media(max-width: 640px) {
+    .hero-overlay {
+        padding-top: 82px;
+    }
+
+    .hero-foreground {
+        gap: 14px;
+    }
+
+    .anime-floating-back {
+        top: 14px;
+        left: 14px;
+        min-height: 38px;
+        padding: 0 14px;
+        font-size: 13px;
+    }
+
+    .hero-poster-shell {
+        width: min(190px, 62vw);
+    }
+
+    .hero-details {
+        padding: 16px;
+    }
+
+    .detail-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 /* Episode card polish */
 .episode-grid {
     gap: clamp(18px, 1.7vw, 28px);

@@ -12,6 +12,14 @@
 </head>
 
 <body>
+<a
+    href="/"
+    class="back-btn anime-floating-back"
+    aria-label="Kembali ke beranda"
+>
+    &larr; Kembali
+</a>
+
 <div class="hero">
 
     <img
@@ -22,13 +30,7 @@
 
     <div class="hero-overlay">
 
-        <a
-            href="/"
-            class="back-btn"
-            aria-label="Kembali ke beranda"
-        >
-            &larr; Kembali
-        </a>
+        <div class="detail-page-container hero-foreground">
 
         {% if anime_info %}
 
@@ -46,6 +48,10 @@
             </div>
 
             <div class="hero-details">
+
+                <div class="detail-kicker">
+                    Now Viewing
+                </div>
 
                 <div class="detail-panel-top">
                     <div class="title-row">
@@ -103,7 +109,7 @@
 
                     {{ anime_info.description
                         | striptags
-                        | truncate(200)
+                        | truncate(300)
                     }}
 
                 </p>
@@ -148,6 +154,8 @@
         </h1>
 
         {% endif %}
+
+        </div>
 
     </div> <!-- End hero-overlay -->
 </div> <!-- End hero -->
