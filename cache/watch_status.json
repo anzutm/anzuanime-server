@@ -88,5 +88,28 @@
             "current_seconds": 160.958202,
             "updated_at": "2026-06-18T19:19:01.099667"
         }
+    },
+    "Meitantei Precure!": {
+        "Kuramanime-PRCR_ALT20-01-720p.mkv": {
+            "watched": false,
+            "progress": 23.0,
+            "duration": 1458.733,
+            "current_seconds": 340.112839,
+            "updated_at": "2026-06-19T15:31:43.930030"
+        },
+        "Kuramanime-PRCR_ALT20-02-720p.mp4": {
+            "watched": false,
+            "progress": 0,
+            "duration": 1447.832993,
+            "current_seconds": 2.123054,
+            "updated_at": "2026-06-19T15:31:46.346323"
+        },
+        "Kuramanime-PRCR_ALT20-03-720p.mkv": {
+            "watched": false,
+            "progress": 0,
+            "duration": 1458.85,
+            "current_seconds": 3.43165,
+            "updated_at": "2026-06-19T15:31:50.062739"
+        }
     }
 }
