@@ -3725,10 +3725,8 @@ body::after {
 .collection-glow {
     width: 560px;
     height: 220px;
-    background:
-        radial-gradient(ellipse at left, rgba(0,0,255,.28), transparent 62%),
-        radial-gradient(ellipse at right, rgba(0,216,255,.16), transparent 68%);
-    filter: blur(18px);
+    background: none;
+    filter: none;
 }
 
 .toolbar-line {
