@@ -1,115 +1,18 @@
 {
-    "Koisuru Asteroid": {
-        "[Kusonime] Koisuru Asteroid BD - 01.mkv": {
+    "Shunkashuutou Daikousha Haru no Mai": {
+        "[LENDRIVE] Shunkashuutou Daikousha - 02 [1080p HEVC][Dualsubs].mkv": {
+            "watched": false,
+            "progress": 2.0,
+            "duration": 1420.129,
+            "current_seconds": 29.359829,
+            "updated_at": "2026-06-19T15:38:44.086991"
+        },
+        "[LENDRIVE] Shunkashuutou Daikousha - 01 [1080p HEVC][Dualsubs].mkv": {
             "watched": true,
             "progress": 100,
-            "duration": 1421.142,
-            "current_seconds": 1416.704267,
-            "updated_at": "2026-06-19T13:14:00.063548"
-        },
-        "[Kusonime] Koisuru Asteroid BD - 02.mkv": {
-            "watched": true,
-            "progress": 82.0,
-            "duration": 1422.73,
-            "current_seconds": 1172.17037,
-            "updated_at": "2026-06-19T13:14:06.992255"
-        },
-        "[Kusonime] Koisuru Asteroid BD - 05.mkv": {
-            "watched": false,
-            "progress": 0,
-            "duration": 1421.184,
-            "current_seconds": 3.091991,
-            "updated_at": "2026-06-19T13:13:45.355571"
-        },
-        "[Kusonime] Koisuru Asteroid BD - 03.mkv": {
-            "watched": false,
-            "progress": 1.0,
-            "duration": 1422.0,
-            "current_seconds": 8.352756,
-            "updated_at": "2026-06-19T13:14:15.975599"
-        },
-        "[Kusonime] Koisuru Asteroid BD - 06.mkv": {
-            "watched": false,
-            "progress": 0,
-            "duration": 1421.227,
-            "current_seconds": 3.676156,
-            "updated_at": "2026-06-19T13:13:49.365617"
-        },
-        "[Kusonime] Koisuru Asteroid BD - 07.mkv": {
-            "watched": false,
-            "progress": 0,
-            "duration": 1422.02,
-            "current_seconds": 3.360154,
-            "updated_at": "2026-06-19T13:13:53.169213"
-        },
-        "[Kusonime] Koisuru Asteroid BD - 08.mkv": {
-            "watched": false,
-            "progress": 0,
-            "duration": 1421.98,
-            "current_seconds": 4.524754,
-            "updated_at": "2026-06-19T13:02:24.615216"
-        },
-        "[Kusonime] Koisuru Asteroid BD - 04.mkv": {
-            "watched": false,
-            "progress": 0,
-            "duration": 1421.184,
-            "current_seconds": 2.440144,
-            "updated_at": "2026-06-19T13:13:41.806151"
-        }
-    },
-    "Yuru Yuri": {
-        "Season 3/[Kusonime] Yuru Yuri S3 BD - 01.mkv": {
-            "watched": true,
-            "progress": 96.0,
-            "duration": 1435.017,
-            "current_seconds": 1370.52392,
-            "updated_at": "2026-06-18T11:59:33.087085"
-        },
-        "Season 3/[Kusonime] Yuru Yuri S3 BD - 02.mkv": {
-            "watched": false,
-            "progress": 26.0,
-            "duration": 1435.0,
-            "current_seconds": 366.881484,
-            "updated_at": "2026-06-18T11:59:53.014751"
-        }
-    },
-    "Tsuki ga Michibiku Isekai Douchuu 2nd season": {
-        "[Anitoki] TMID 01 [720p] [h265] [F99DFBA3].mkv": {
-            "watched": true,
-            "progress": 99.0,
-            "duration": 1420.069,
-            "current_seconds": 1401.769324,
-            "updated_at": "2026-06-18T19:16:43.808597"
-        },
-        "[Anitoki] TMID 02 [720p] [h265] [F99DFBA3].mkv": {
-            "watched": false,
-            "progress": 11.0,
-            "duration": 1420.267,
-            "current_seconds": 160.958202,
-            "updated_at": "2026-06-18T19:19:01.099667"
-        }
-    },
-    "Meitantei Precure!": {
-        "Kuramanime-PRCR_ALT20-01-720p.mkv": {
-            "watched": false,
-            "progress": 23.0,
-            "duration": 1458.733,
-            "current_seconds": 340.112839,
-            "updated_at": "2026-06-19T15:31:43.930030"
-        },
-        "Kuramanime-PRCR_ALT20-02-720p.mp4": {
-            "watched": false,
-            "progress": 0,
-            "duration": 1447.832993,
-            "current_seconds": 2.123054,
-            "updated_at": "2026-06-19T15:31:46.346323"
-        },
-        "Kuramanime-PRCR_ALT20-03-720p.mkv": {
-            "watched": false,
-            "progress": 0,
-            "duration": 1458.85,
-            "current_seconds": 3.43165,
-            "updated_at": "2026-06-19T15:31:50.062739"
+            "duration": 1420.115,
+            "current_seconds": 1420.115,
+            "updated_at": "2026-06-19T15:38:14.392714"
         }
     }
 }

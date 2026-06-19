@@ -1,9 +1,30 @@
 {
-    "Meitantei Precure!": {
-        "episode": "Kuramanime-PRCR_ALT20-03-720p.mkv",
-        "episode_num": 3,
-        "updated_at": "2026-06-19T15:31:46.445201",
-        "time_str": "00:00 / 24:18",
-        "last_seconds": 0
+    "Koori no Jouheki": {
+        "episode": "[LENDRIVE] Koori no Jouheki - 09 [1080p HEVC][Dualsubs].mkv",
+        "episode_num": 9,
+        "updated_at": "2026-06-19T15:34:43.303597",
+        "time_str": "07:06 / 25:22",
+        "last_seconds": 426.470097
+    },
+    "Jishou Akuyaku Reijou na Konyakusha no Kansatsu Kiroku": {
+        "episode": "[LENDRIVE] Jishou Akuyaku Reijou - 02 [1080p HEVC][Dualsubs].mkv",
+        "episode_num": 2,
+        "updated_at": "2026-06-19T15:35:43.351470",
+        "time_str": "06:44 / 23:40",
+        "last_seconds": 404.797431
+    },
+    "Kamiina Botan, Yoeru Sugata wa Yuri no Hana": {
+        "episode": "[LENDRIVE]_Kamiina_Botan_-_08_[1080p_HEVC_10bit][Dualsubs].mkv",
+        "episode_num": 8,
+        "updated_at": "2026-06-19T15:36:05.532780",
+        "time_str": "12:50 / 23:40",
+        "last_seconds": 770.161892
+    },
+    "Shunkashuutou Daikousha Haru no Mai": {
+        "episode": "[LENDRIVE] Shunkashuutou Daikousha - 02 [1080p HEVC][Dualsubs].mkv",
+        "episode_num": 2,
+        "updated_at": "2026-06-19T15:38:29.500831",
+        "time_str": "00:14 / 23:40",
+        "last_seconds": 14.863506
     }
 }
