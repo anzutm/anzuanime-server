@@ -12,7 +12,13 @@ cache/thumbnails/
 cache/library.db
 cache/library.db-*
 cache/watch_history.json
+cache/watch_history.json.bak
+cache/watch_history.json.corrupt-*
+cache/.watch_history.json.tmp-*
 cache/watch_status.json
+cache/watch_status.json.bak
+cache/watch_status.json.corrupt-*
+cache/.watch_status.json.tmp-*
 cache/settings.json
 
 .env

@@ -21,10 +21,10 @@
         </div>
         <nav class="nav-center">
             <ul class="nav-links">
-                <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Beranda</a></li>
+                <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
                 <li><a href="/movies" class="nav-link {% if request.path == '/movies' %}active{% endif %}">Movies</a></li>
-                <li><a href="/schedule" class="nav-link {% if request.path == '/schedule' %}active{% endif %}">Jadwal</a></li>
-                <li><a href="/settings" class="nav-link {% if request.path == '/settings' %}active{% endif %}">Settings</a></li>
+                <li><a href="/schedule" class="nav-link {% if request.path == '/schedule' %}active{% endif %}">Schedule</a></li>
+                <li><a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a></li>
             </ul>
         </nav>
         <div class="nav-right">
@@ -33,7 +33,7 @@
                 <input type="text" id="animeSearch" placeholder="Cari koleksi...">
             </div>
             <div class="user-action">
-                <div class="profile-circle">👤</div>
+                <a href="/settings" class="profile-circle" aria-label="Settings" title="Settings">&#9881;</a>
             </div>
         </div>
     </header>

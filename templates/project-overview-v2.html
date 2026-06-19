@@ -1,0 +1,644 @@
+{% extends "base.html" %}
+
+{% block title %}Anzuanime Server v2.0 Overview{% endblock %}
+
+{% block extra_head %}
+    <style>
+        .overview-page {
+            --bg: #03040A;
+            --surface: rgba(12, 17, 33, 0.74);
+            --surface-strong: rgba(18, 25, 45, 0.9);
+            --line: rgba(133, 190, 255, 0.18);
+            --line-warm: rgba(245, 182, 88, 0.2);
+            --text: #eef6ff;
+            --muted: #9baac4;
+            --soft: #c7d5ee;
+            --cyan: #53dcff;
+            --blue: #6b8cff;
+            --violet: #b27aff;
+            --gold: #f5b658;
+            --rose: #ff7ea8;
+            --green: #55dfa4;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+            --radius: 22px;
+            position: relative;
+            width: min(1320px, calc(100% - 64px));
+            margin: 32px auto 0;
+            padding: 36px 0 60px;
+            overflow-x: hidden;
+            color: var(--text);
+            border: 1px solid rgba(133, 190, 255, 0.12);
+            border-radius: 28px;
+            background: rgba(3, 4, 10, 0.54);
+            box-shadow: 0 26px 88px rgba(0, 0, 0, 0.32);
+        }
+
+        .overview-page,
+        .overview-page *,
+        .overview-page *::before,
+        .overview-page *::after {
+            box-sizing: border-box;
+        }
+
+        .overview-page::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 42%);
+            pointer-events: none;
+        }
+
+        .overview-page a {
+            color: inherit;
+        }
+
+        .overview-container {
+            width: min(980px, calc(100% - 112px));
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .overview-hero {
+            position: relative;
+            min-height: auto;
+            display: flex;
+            align-items: flex-start;
+            padding: 50px 0 6px;
+            overflow: hidden;
+        }
+
+        .overview-hero-content::before {
+            content: "";
+            position: absolute;
+            inset: 4px 0 auto;
+            height: 36%;
+            background:
+                radial-gradient(circle at 18% 20%, rgba(83, 220, 255, 0.07), transparent 20rem),
+                radial-gradient(circle at 82% 18%, rgba(245, 182, 88, 0.045), transparent 18rem);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .overview-hero-content {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1.45fr) minmax(220px, 0.55fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .overview-hero-content > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-lockup {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.055);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+        }
+
+        .brand-lockup img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        .brand-lockup span {
+            color: var(--soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .overview-page h1 {
+            margin: 10px 0 8px;
+            max-width: 560px;
+            font-size: clamp(2rem, 3.8vw, 3.2rem);
+            line-height: 1.04;
+            letter-spacing: 0;
+        }
+
+        .hero-lede {
+            max-width: 600px;
+            margin: 0;
+            color: var(--soft);
+            font-size: clamp(0.92rem, 1.2vw, 1rem);
+        }
+
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 12px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 25px;
+            padding: 4px 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            color: #eaf8ff;
+            background: rgba(255, 255, 255, 0.055);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .badge.primary {
+            border-color: rgba(83, 220, 255, 0.36);
+            background: linear-gradient(135deg, rgba(83, 220, 255, 0.2), rgba(107, 140, 255, 0.12));
+        }
+
+        .badge.gold {
+            border-color: rgba(245, 182, 88, 0.34);
+            background: linear-gradient(135deg, rgba(245, 182, 88, 0.18), rgba(255, 126, 168, 0.1));
+        }
+
+        .hero-card {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: var(--radius);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035)),
+                rgba(8, 12, 24, 0.78);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(22px);
+            padding: 14px;
+        }
+
+        .hero-card h2 {
+            margin: 0 0 6px;
+            font-size: 0.98rem;
+        }
+
+        .hero-card p {
+            margin: 0 0 10px;
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .stat {
+            min-height: 54px;
+            padding: 9px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.045);
+        }
+
+        .stat strong {
+            display: block;
+            margin-bottom: 3px;
+            color: var(--cyan);
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .stat span {
+            color: var(--muted);
+            font-size: 0.72rem;
+        }
+
+        .overview-main {
+            padding: 0 0 76px;
+        }
+
+        .overview-section {
+            margin-top: 14px;
+        }
+
+        .overview-section-head {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .section-kicker {
+            margin: 0 0 6px;
+            color: var(--gold);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: clamp(1.7rem, 3vw, 2.45rem);
+            line-height: 1.1;
+        }
+
+        .section-subtitle {
+            max-width: 660px;
+            margin: 10px 0 0;
+            color: var(--muted);
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .overview-grid.two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .overview-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 100%;
+            padding: 22px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background:
+                linear-gradient(160deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.03)),
+                var(--surface);
+            box-shadow: 0 18px 54px rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(18px);
+        }
+
+        .overview-card::after {
+            content: "";
+            position: absolute;
+            inset: auto 18px 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(83, 220, 255, 0.34), transparent);
+            opacity: 0.8;
+        }
+
+        .overview-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.08rem;
+        }
+
+        .overview-card p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .overview-card ul {
+            display: grid;
+            gap: 8px;
+            margin: 12px 0 0;
+            padding-left: 18px;
+            color: var(--soft);
+        }
+
+        .feature-card {
+            border-color: rgba(245, 182, 88, 0.16);
+        }
+
+        .feature-card h3 {
+            color: #fff5dd;
+        }
+
+        .compact-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            color: var(--soft);
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .chip.green {
+            border-color: rgba(85, 223, 164, 0.26);
+            color: #dfffee;
+            background: rgba(85, 223, 164, 0.1);
+        }
+
+        .chip.blue {
+            border-color: rgba(83, 220, 255, 0.28);
+            color: #def8ff;
+            background: rgba(83, 220, 255, 0.09);
+        }
+
+        .chip.rose {
+            border-color: rgba(255, 126, 168, 0.25);
+            color: #ffe6ee;
+            background: rgba(255, 126, 168, 0.09);
+        }
+
+        .release {
+            margin-top: 38px;
+            padding: 28px;
+            border: 1px solid var(--line-warm);
+            border-radius: 28px;
+            background:
+                linear-gradient(135deg, rgba(245, 182, 88, 0.13), rgba(83, 220, 255, 0.08) 48%, rgba(178, 122, 255, 0.1)),
+                var(--surface-strong);
+            box-shadow: var(--shadow);
+        }
+
+        .release h2 {
+            margin: 0 0 10px;
+            font-size: clamp(1.8rem, 3vw, 2.55rem);
+        }
+
+        .release p {
+            max-width: 920px;
+            margin: 0;
+            color: var(--soft);
+            font-size: 1.05rem;
+        }
+
+        .footer {
+            padding: 34px 0 44px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .overview-container {
+                width: min(100% - 72px, 980px);
+            }
+
+            .overview-hero {
+                min-height: auto;
+                padding: 0 0 10px;
+            }
+
+            .overview-hero-content {
+                grid-template-columns: 1fr;
+            }
+
+            .overview-grid,
+            .overview-grid.two {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .overview-container {
+                width: min(100% - 32px, 980px);
+            }
+
+            .overview-page {
+                width: min(100% - 24px, 1320px);
+                margin-top: 18px;
+                padding-top: 26px;
+                border-radius: 22px;
+            }
+
+            .hero-card,
+            .overview-card,
+            .release {
+                border-radius: 18px;
+                padding: 14px;
+            }
+
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .overview-section-head {
+                display: block;
+            }
+
+            .brand-lockup span {
+                font-size: 0.72rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="overview-page">
+    <header class="overview-hero">
+        <div class="overview-container overview-hero-content">
+            <div>
+                <div class="brand-lockup">
+                    <img src="/static/logo_transparent_cropped.png" alt="Anzuanime logo">
+                    <span>Release Overview</span>
+                </div>
+                <h1>Anzuanime Server v2.0</h1>
+                <p class="hero-lede">
+                    A local-first Flask anime library server with a polished cinematic interface,
+                    rich metadata caching, watch progress tracking, settings management, and a
+                    smoother custom player experience.
+                </p>
+                <div class="badges" aria-label="Release highlights">
+                    <span class="badge primary">Flask Local Server</span>
+                    <span class="badge">Plyr Video Player</span>
+                    <span class="badge gold">AniList Metadata</span>
+                    <span class="badge">Windows Library Workflow</span>
+                    <span class="badge primary">Watch Status</span>
+                </div>
+            </div>
+
+            <aside class="hero-card">
+                <h2>v2.0 Snapshot</h2>
+                <p>
+                    This release brings the project closer to a complete personal anime media app:
+                    smoother playback, stronger visual identity, and practical local management tools.
+                </p>
+                <div class="stat-grid">
+                    <div class="stat">
+                        <strong>8</strong>
+                        <span>Core templates reviewed</span>
+                    </div>
+                    <div class="stat">
+                        <strong>3</strong>
+                        <span>Local data systems</span>
+                    </div>
+                    <div class="stat">
+                        <strong>v2.0</strong>
+                        <span>Git tag available</span>
+                    </div>
+                    <div class="stat">
+                        <strong>0</strong>
+                        <span>Files changed for this review page except this HTML file</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </header>
+
+    <div class="overview-container overview-main">
+        <section class="overview-section">
+            <div class="overview-section-head">
+                <div>
+                    <p class="section-kicker">Project Overview</p>
+                    <h2 class="section-title">A cinematic local anime library</h2>
+                    <p class="section-subtitle">
+                        Anzuanime Server v2.0 combines Flask routes, Jinja templates, local media scanning,
+                        AniList enrichment, cached assets, and a custom player into one cohesive desktop-friendly app.
+                    </p>
+                </div>
+            </div>
+            <div class="overview-grid">
+                <article class="overview-card feature-card">
+                    <h3>Main Features</h3>
+                    <ul>
+                        <li>Homepage featured slider, Continue Watching, Anime Collection, filters, and search.</li>
+                        <li>Movies, Schedule, Seasons, Anime Detail, Player, and Settings pages.</li>
+                        <li>Watch history, watch status, settings, and cache maintenance support.</li>
+                    </ul>
+                </article>
+                <article class="overview-card feature-card">
+                    <h3>Backend Features</h3>
+                    <ul>
+                        <li>SQLite library sync and local folder scanning.</li>
+                        <li>AniList posters, banners, metadata, characters, relations, and schedule data.</li>
+                        <li>Thumbnail, resolution, duration, subtitle, VLC, and Discord RPC integration.</li>
+                    </ul>
+                </article>
+                <article class="overview-card feature-card">
+                    <h3>Frontend/UI Features</h3>
+                    <ul>
+                        <li>Dark glass/neon visual system with cinematic page treatments.</li>
+                        <li>Shared base layout for most pages, with special standalone player/detail layouts.</li>
+                        <li>Responsive cards, polished badges, subtle scrollbars, and cleaner hover states.</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="overview-section">
+            <div class="overview-section-head">
+                <div>
+                    <p class="section-kicker">Experience</p>
+                    <h2 class="section-title">Detail pages and playback feel app-like</h2>
+                </div>
+            </div>
+            <div class="overview-grid two">
+                <article class="overview-card">
+                    <h3>Anime Detail Page Features</h3>
+                    <p>
+                        The anime detail page includes a large banner, poster, glass detail panel,
+                        status and metadata, genres, description, character cards, episode list,
+                        recommendations, related anime, season navigation, and watched/progress badges.
+                    </p>
+                    <div class="compact-list">
+                        <span class="chip blue">Hero Banner</span>
+                        <span class="chip">Characters</span>
+                        <span class="chip">Episode Cards</span>
+                        <span class="chip green">Watched Badges</span>
+                    </div>
+                </article>
+                <article class="overview-card">
+                    <h3>Video Player Features</h3>
+                    <p>
+                        The player uses Plyr with resume support, soft episode switching, subtitle updates,
+                        browser URL updates, active episode cards, VLC launch support, screenshots,
+                        Discord RPC, and watch progress reporting.
+                    </p>
+                    <div class="compact-list">
+                        <span class="chip blue">Plyr</span>
+                        <span class="chip">Subtitles</span>
+                        <span class="chip">VLC</span>
+                        <span class="chip rose">Screenshots</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="overview-section">
+            <div class="overview-section-head">
+                <div>
+                    <p class="section-kicker">Local Control</p>
+                    <h2 class="section-title">Settings, cache, and local data</h2>
+                </div>
+            </div>
+            <div class="overview-grid">
+                <article class="overview-card">
+                    <h3>Settings Page</h3>
+                    <p>
+                        Settings cover watchlist, ongoing, movie, and VLC paths, plus Discord Rich Presence.
+                        Native Windows folder and file pickers make local setup easier while manual input remains available.
+                    </p>
+                </article>
+                <article class="overview-card">
+                    <h3>Cache and Local Data</h3>
+                    <p>
+                        The app uses cache folders for posters, banners, characters, episodes, metadata,
+                        subtitles, and thumbnails, alongside JSON files for settings, watch history,
+                        and watch status.
+                    </p>
+                </article>
+                <article class="overview-card">
+                    <h3>Watch Progress System</h3>
+                    <p>
+                        Watch history powers Continue Watching and resume behavior. Watch status tracks
+                        per-episode progress and watched state, then surfaces that state in anime cards
+                        and the player carousel.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="overview-section">
+            <div class="overview-section-head">
+                <div>
+                    <p class="section-kicker">Review Notes</p>
+                    <h2 class="section-title">Strengths and future polish</h2>
+                </div>
+            </div>
+            <div class="overview-grid two">
+                <article class="overview-card">
+                    <h3>Strengths of v2.0</h3>
+                    <ul>
+                        <li>Strong local Windows integration and media-library workflow.</li>
+                        <li>Polished cinematic UI with a cohesive Anzuanime identity.</li>
+                        <li>Smooth player navigation without full reloads.</li>
+                        <li>Practical cache-first metadata and asset system.</li>
+                        <li>Configurable settings and conservative cache cleanup.</li>
+                    </ul>
+                </article>
+                <article class="overview-card">
+                    <h3>Possible Future Improvements</h3>
+                    <ul>
+                        <li>Split the large backend file into focused modules.</li>
+                        <li>Add route smoke tests for core pages and APIs.</li>
+                        <li>Add cache cleanup dry-run and local data backup/export tools.</li>
+                        <li>Improve scanner, subtitle, cache, and RPC logging.</li>
+                        <li>Document dependency versions and localhost-only safety expectations.</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="release" aria-labelledby="release-notes">
+            <p class="section-kicker">Short Release Notes</p>
+            <h2 id="release-notes">Anzuanime Server v2.0</h2>
+            <p>
+                v2.0 introduces a polished dark cinematic UI, improved anime detail pages,
+                smoother episode cards, a custom player with instant episode switching,
+                watch history and watch status tracking, configurable local settings,
+                Windows folder and file pickers, Discord RPC support, AniList-powered metadata caching,
+                and safe orphan cache cleanup.
+            </p>
+        </section>
+    </div>
+</div>
+{% endblock %}

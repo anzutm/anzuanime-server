@@ -53,6 +53,16 @@ DB_PATH = os.path.join(BASE_DIR, "cache", "library.db")
 WATCH_HISTORY_FILE = os.path.join(BASE_DIR, "cache", "watch_history.json")
 WATCH_STATUS_FILE = os.path.join(BASE_DIR, "cache", "watch_status.json")
 SETTINGS_FILE = os.path.join(BASE_DIR, "cache", "settings.json")
+WATCH_DATA_LOCK = threading.RLock()
+
+PROTECTED_CACHE_FILES = {
+    os.path.abspath(DB_PATH),
+    os.path.abspath(SETTINGS_FILE),
+    os.path.abspath(WATCH_HISTORY_FILE),
+    os.path.abspath(WATCH_STATUS_FILE),
+    os.path.abspath(f"{WATCH_HISTORY_FILE}.bak"),
+    os.path.abspath(f"{WATCH_STATUS_FILE}.bak"),
+}
 
 def get_default_settings():
     return {
@@ -139,6 +149,27 @@ def is_path_inside_cache(path):
     except ValueError:
         return False
 
+def is_protected_cache_file(path):
+    candidate = os.path.abspath(path)
+    if candidate in PROTECTED_CACHE_FILES:
+        return True
+
+    cache_root = os.path.abspath(os.path.join(BASE_DIR, "cache"))
+    try:
+        if os.path.commonpath([cache_root, candidate]) != cache_root:
+            return False
+    except ValueError:
+        return False
+
+    filename = os.path.basename(candidate)
+    return (
+        filename.startswith("watch_history.json.")
+        or filename.startswith("watch_status.json.")
+        or filename.startswith(".watch_history.json.tmp-")
+        or filename.startswith(".watch_status.json.tmp-")
+        or filename.startswith("library.db-")
+    )
+
 def cleanup_orphan_cache():
     summary = {
         "removed_files": 0,
@@ -166,6 +197,12 @@ def cleanup_orphan_cache():
         return summary
 
     def remove_file_if_safe(path, label):
+        if is_protected_cache_file(path):
+            summary["skipped"] += 1
+            summary["details"].append(f"Skipped protected cache file: {label}")
+            print(f"Cache cleanup skipped protected file: {path}")
+            return
+
         if not is_path_inside_cache(path) or not os.path.isfile(path):
             summary["skipped"] += 1
             summary["details"].append(f"Skipped unsafe file: {label}")
@@ -255,6 +292,10 @@ def cleanup_orphan_cache():
     summary["skipped"] += 1
     summary["details"].append(
         "Skipped thumbnails because thumbnail cache files are hashed by video path."
+    )
+    summary["skipped"] += 1
+    summary["details"].append(
+        "Skipped protected watch/settings/database files and watch data backups."
     )
 
     return summary
@@ -1213,53 +1254,139 @@ def generate_subtitle_vtt(video_path, vtt_path):
         print(f"Error saat membuat subtitle: {e}")
         return False
 
-def update_watch_history(anime_name, episode, episode_num, time_str=None, last_seconds=0):
-    history = {}
-    if os.path.exists(WATCH_HISTORY_FILE):
-        try:
-            with open(WATCH_HISTORY_FILE, "r", encoding="utf-8") as f:
-                history = json.load(f)
-        except:
-            pass
-    
-    history[anime_name] = {
-        "episode": episode,
-        "episode_num": episode_num,
-        "updated_at": datetime.now().isoformat(),
-        "time_str": time_str,
-        "last_seconds": last_seconds
-    }
-    
-    with open(WATCH_HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, indent=4)
+def get_watch_backup_file(path):
+    return f"{path}.bak"
 
-def load_watch_status():
-    if not os.path.exists(WATCH_STATUS_FILE):
-        return {}
+def get_corrupt_watch_file(path):
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    corrupt_path = f"{path}.corrupt-{timestamp}"
+    index = 1
+
+    while os.path.exists(corrupt_path):
+        corrupt_path = f"{path}.corrupt-{timestamp}-{index}"
+        index += 1
+
+    return corrupt_path
+
+def read_json_dict_file(path, label):
+    if not os.path.exists(path):
+        return None, "missing"
 
     try:
-        with open(WATCH_STATUS_FILE, "r", encoding="utf-8") as f:
-            status_data = json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return {}
+        if os.path.getsize(path) == 0:
+            return None, "empty"
 
-    if not isinstance(status_data, dict):
-        return {}
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        return None, f"invalid JSON: {e}"
+    except OSError as e:
+        return None, f"OS error: {e}"
 
-    return status_data
+    if not isinstance(data, dict):
+        return None, "JSON root is not an object"
 
-def save_watch_status(status_data):
-    os.makedirs(
-        os.path.dirname(WATCH_STATUS_FILE),
-        exist_ok=True
+    return data, None
+
+def atomic_write_json_file(path, data, label):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    tmp_path = os.path.join(
+        os.path.dirname(path),
+        f".{os.path.basename(path)}.tmp-{os.getpid()}-{threading.get_ident()}"
     )
 
-    with open(WATCH_STATUS_FILE, "w", encoding="utf-8") as f:
-        json.dump(
-            status_data,
-            f,
-            indent=4
-        )
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+            f.write("\n")
+            f.flush()
+            os.fsync(f.fileno())
+
+        os.replace(tmp_path, path)
+        print(f"{label} saved atomically: {path}")
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+def preserve_corrupt_watch_file(path, label, reason):
+    if not os.path.exists(path):
+        return
+
+    corrupt_path = get_corrupt_watch_file(path)
+
+    try:
+        os.replace(path, corrupt_path)
+        print(f"{label} preserved as corrupt file: {corrupt_path} ({reason})")
+    except OSError as e:
+        print(f"{label} could not preserve corrupt file {path}: {e}")
+
+def load_watch_json_file(path, label):
+    with WATCH_DATA_LOCK:
+        data, error = read_json_dict_file(path, label)
+
+        if error is None:
+            return data
+
+        backup_path = get_watch_backup_file(path)
+
+        if error == "missing":
+            print(f"{label} file missing, checking backup: {backup_path}")
+        else:
+            print(f"{label} file could not be loaded ({error}), checking backup.")
+            preserve_corrupt_watch_file(path, label, error)
+
+        backup_data, backup_error = read_json_dict_file(backup_path, f"{label} backup")
+
+        if backup_error is None:
+            print(f"{label} recovered from backup: {backup_path}")
+            try:
+                atomic_write_json_file(path, backup_data, label)
+            except OSError as e:
+                print(f"{label} recovery loaded backup but could not restore main file: {e}")
+            return backup_data
+
+        print(f"{label} backup unavailable or invalid ({backup_error}); using empty data.")
+        return {}
+
+def save_watch_json_file(path, data, label):
+    if not isinstance(data, dict):
+        raise ValueError(f"{label} data must be a dictionary")
+
+    with WATCH_DATA_LOCK:
+        atomic_write_json_file(path, data, label)
+
+        backup_path = get_watch_backup_file(path)
+        try:
+            atomic_write_json_file(backup_path, data, f"{label} backup")
+        except OSError as e:
+            print(f"{label} saved, but backup write failed: {e}")
+
+def save_watch_history(history):
+    save_watch_json_file(WATCH_HISTORY_FILE, history, "Watch history")
+
+def update_watch_history(anime_name, episode, episode_num, time_str=None, last_seconds=0):
+    with WATCH_DATA_LOCK:
+        history = load_history_data()
+
+        history[anime_name] = {
+            "episode": episode,
+            "episode_num": episode_num,
+            "updated_at": datetime.now().isoformat(),
+            "time_str": time_str,
+            "last_seconds": last_seconds
+        }
+
+        save_watch_history(history)
+
+def load_watch_status():
+    return load_watch_json_file(WATCH_STATUS_FILE, "Watch status")
+
+def save_watch_status(status_data):
+    save_watch_json_file(WATCH_STATUS_FILE, status_data, "Watch status")
 
 def get_episode_watch_status(anime_name, episode):
     status_data = load_watch_status()
@@ -1271,22 +1398,23 @@ def get_episode_watch_status(anime_name, episode):
     )
 
 def update_episode_watch_status(anime_name, episode, data):
-    status_data = load_watch_status()
-    anime_status = status_data.setdefault(anime_name, {})
-    episode_status = anime_status.setdefault(episode, {
-        "watched": False,
-        "progress": 0,
-        "duration": 0
-    })
+    with WATCH_DATA_LOCK:
+        status_data = load_watch_status()
+        anime_status = status_data.setdefault(anime_name, {})
+        episode_status = anime_status.setdefault(episode, {
+            "watched": False,
+            "progress": 0,
+            "duration": 0
+        })
 
-    episode_status.setdefault("watched", False)
-    episode_status.setdefault("progress", 0)
-    episode_status.setdefault("duration", 0)
-    episode_status.update(data or {})
-    episode_status["updated_at"] = datetime.now().isoformat()
+        episode_status.setdefault("watched", False)
+        episode_status.setdefault("progress", 0)
+        episode_status.setdefault("duration", 0)
+        episode_status.update(data or {})
+        episode_status["updated_at"] = datetime.now().isoformat()
 
-    save_watch_status(status_data)
-    return episode_status
+        save_watch_status(status_data)
+        return episode_status
 
 def mark_episode_watched(anime_name, episode):
     return update_episode_watch_status(
@@ -1503,6 +1631,10 @@ def get_anime():
     except Exception as e:
         print(f"Database Query Error: {e}")
     return anime_list
+
+@app.route("/about")
+def about():
+    return render_template("project-overview-v2.html")
 
 @app.route("/schedule")
 def schedule():
@@ -2638,13 +2770,7 @@ def favicon():
     )
 
 def load_history_data():
-    if not os.path.exists(WATCH_HISTORY_FILE):
-        return {}
-    try:
-        with open(WATCH_HISTORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {}
+    return load_watch_json_file(WATCH_HISTORY_FILE, "Watch history")
 
 class LibraryHandler(FileSystemEventHandler):
     def process_event(self, event_path):
