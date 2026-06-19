@@ -7,11 +7,11 @@
         "last_seconds": 14.559811
     },
     "Koisuru Asteroid": {
-        "episode": "[Kusonime] Koisuru Asteroid BD - 01.mkv",
-        "episode_num": 1,
-        "updated_at": "2026-06-18T11:15:27.398280",
-        "time_str": "13:57 / 23:41",
-        "last_seconds": 837.49169
+        "episode": "[Kusonime] Koisuru Asteroid BD - 08.mkv",
+        "episode_num": 8,
+        "updated_at": "2026-06-19T13:02:19.956458",
+        "time_str": "00:00 / 23:41",
+        "last_seconds": 0
     },
     "Ponkotsu Fuuki Iin to Skirt take ga Futekisetsu na JK no Hanashi": {
         "episode": "[LENDRIVE] Ponkotsu - 10 [1080p HEVC][Dualsubs].mkv",
@@ -152,11 +152,11 @@
         "last_seconds": 567.054124
     },
     "Yuru Yuri": {
-        "episode": "Season 3/[Kusonime] Yuru Yuri S3 BD - 06.mkv",
-        "episode_num": 6,
-        "updated_at": "2026-06-17T19:07:10.020847",
-        "time_str": "15:13 / 23:56",
-        "last_seconds": 913.105145
+        "episode": "Season 3/[Kusonime] Yuru Yuri S3 BD - 02.mkv",
+        "episode_num": 2,
+        "updated_at": "2026-06-18T11:59:51.642179",
+        "time_str": "06:05 / 23:55",
+        "last_seconds": 365.534911
     },
     "Arknights Rise from Ember": {
         "episode": "[Kusonime] Arknights Rise from Ember - 02.mkv",
@@ -164,5 +164,12 @@
         "updated_at": "2026-06-18T00:54:14.184943",
         "time_str": "11:01 / 23:40",
         "last_seconds": 661.105802
+    },
+    "Tsuki ga Michibiku Isekai Douchuu 2nd season": {
+        "episode": "[Anitoki] TMID 02 [720p] [h265] [F99DFBA3].mkv",
+        "episode_num": 2,
+        "updated_at": "2026-06-18T19:19:00.287315",
+        "time_str": "02:40 / 23:40",
+        "last_seconds": 160.816321
     }
 }

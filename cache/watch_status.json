@@ -1,0 +1,85 @@
+{
+    "Koisuru Asteroid": {
+        "[Kusonime] Koisuru Asteroid BD - 01.mkv": {
+            "watched": true,
+            "progress": 100,
+            "duration": 1421.142,
+            "current_seconds": 1421.142,
+            "updated_at": "2026-06-18T11:53:02.450164"
+        },
+        "[Kusonime] Koisuru Asteroid BD - 02.mkv": {
+            "watched": false,
+            "progress": 17.0,
+            "duration": 1422.73,
+            "current_seconds": 246.895373,
+            "updated_at": "2026-06-19T13:01:42.106954"
+        },
+        "[Kusonime] Koisuru Asteroid BD - 05.mkv": {
+            "watched": false,
+            "progress": 0,
+            "duration": 1421.184,
+            "current_seconds": 4.814941,
+            "updated_at": "2026-06-19T13:02:14.690212"
+        },
+        "[Kusonime] Koisuru Asteroid BD - 03.mkv": {
+            "watched": false,
+            "progress": 2.0,
+            "duration": 1422.0,
+            "current_seconds": 25.570445,
+            "updated_at": "2026-06-19T13:02:08.966504"
+        },
+        "[Kusonime] Koisuru Asteroid BD - 06.mkv": {
+            "watched": false,
+            "progress": 0,
+            "duration": 1421.227,
+            "current_seconds": 1.071212,
+            "updated_at": "2026-06-19T13:02:16.852718"
+        },
+        "[Kusonime] Koisuru Asteroid BD - 07.mkv": {
+            "watched": false,
+            "progress": 0,
+            "duration": 1422.02,
+            "current_seconds": 1.155703,
+            "updated_at": "2026-06-19T13:02:19.010276"
+        },
+        "[Kusonime] Koisuru Asteroid BD - 08.mkv": {
+            "watched": false,
+            "progress": 0,
+            "duration": 1421.98,
+            "current_seconds": 4.524754,
+            "updated_at": "2026-06-19T13:02:24.615216"
+        }
+    },
+    "Yuru Yuri": {
+        "Season 3/[Kusonime] Yuru Yuri S3 BD - 01.mkv": {
+            "watched": true,
+            "progress": 96.0,
+            "duration": 1435.017,
+            "current_seconds": 1370.52392,
+            "updated_at": "2026-06-18T11:59:33.087085"
+        },
+        "Season 3/[Kusonime] Yuru Yuri S3 BD - 02.mkv": {
+            "watched": false,
+            "progress": 26.0,
+            "duration": 1435.0,
+            "current_seconds": 366.881484,
+            "updated_at": "2026-06-18T11:59:53.014751"
+        }
+    },
+    "Tsuki ga Michibiku Isekai Douchuu 2nd season": {
+        "[Anitoki] TMID 01 [720p] [h265] [F99DFBA3].mkv": {
+            "watched": true,
+            "progress": 99.0,
+            "duration": 1420.069,
+            "current_seconds": 1401.769324,
+            "updated_at": "2026-06-18T19:16:43.808597"
+        },
+        "[Anitoki] TMID 02 [720p] [h265] [F99DFBA3].mkv": {
+            "watched": false,
+            "progress": 11.0,
+            "duration": 1420.267,
+            "current_seconds": 160.958202,
+            "updated_at": "2026-06-18T19:19:01.099667"
+        }
+    }
+}

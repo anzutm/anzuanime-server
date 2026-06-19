@@ -261,8 +261,18 @@
     </div>
 
     <div class="episode-card-footer">
-        <div>
+        <div class="episode-footer-row">
             <strong>Episode {{ ep.episode }}</strong>
+
+            {% if ep.watched %}
+            <span class="watch-status-badge">
+                Watched
+            </span>
+            {% elif ep.progress and ep.progress > 0 %}
+            <span class="watch-progress-badge">
+                Progress {{ ep.progress }}%
+            </span>
+            {% endif %}
         </div>
     </div>
 

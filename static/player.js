@@ -41,6 +41,7 @@ player.on('ended', () => {
 });
 
 let rpcInterval;
+let watchProgressInterval;
 
 function formatTime(seconds) {
     if (isNaN(seconds)) return "00:00";
@@ -72,6 +73,31 @@ function updateStatus() {
     });
 }
 
+function sendWatchProgress(useKeepalive = false) {
+    const currentTime = player.currentTime || 0;
+    const duration = player.duration || 0;
+
+    if (!window.ANIME_NAME || !window.EPISODE_PATH || !duration || isNaN(duration)) {
+        return;
+    }
+
+    const progress = Math.round((currentTime / duration) * 100);
+    const payload = {
+        anime_name: window.ANIME_NAME,
+        episode: window.EPISODE_PATH,
+        progress: Math.max(0, Math.min(100, progress)),
+        duration: duration,
+        current_seconds: currentTime
+    };
+
+    fetch('/api/watch-status/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: useKeepalive
+    }).catch(() => {});
+}
+
 // Fungsi untuk menghapus status Discord
 function clearStatus() {
     fetch('/clear_rpc', { method: 'POST' });
@@ -79,18 +105,24 @@ function clearStatus() {
 
 player.on('play', () => {
     updateStatus();
+    sendWatchProgress();
     if (rpcInterval) clearInterval(rpcInterval);
+    if (watchProgressInterval) clearInterval(watchProgressInterval);
     // Update status ke Discord setiap 15 detik agar sinkron (Limit Discord RPC)
     rpcInterval = setInterval(updateStatus, 15000);
+    watchProgressInterval = setInterval(sendWatchProgress, 30000);
 });
 
 player.on('pause', () => {
     if (rpcInterval) clearInterval(rpcInterval);
+    if (watchProgressInterval) clearInterval(watchProgressInterval);
+    sendWatchProgress();
     clearStatus();
 });
 
 // Hapus status Discord saat pengguna menutup tab atau pindah halaman
 window.addEventListener('beforeunload', () => {
+    sendWatchProgress(true);
     // Navigator.sendBeacon lebih handal untuk request saat unload halaman
     navigator.sendBeacon('/clear_rpc');
 });

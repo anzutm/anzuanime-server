@@ -171,9 +171,21 @@
 
             <div class="player-card-info">
 
-                <h3>
-                    Episode {{ ep.episode }}
-                </h3>
+                <div class="player-card-row">
+                    <h3>
+                        Episode {{ ep.episode }}
+                    </h3>
+
+                    {% if ep.watched %}
+                    <span class="watch-status-badge">
+                        Watched
+                    </span>
+                    {% elif ep.progress and ep.progress > 0 %}
+                    <span class="watch-progress-badge">
+                        Progress {{ ep.progress }}%
+                    </span>
+                    {% endif %}
+                </div>
 
             </div>
 

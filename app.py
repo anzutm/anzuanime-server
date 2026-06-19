@@ -50,6 +50,7 @@ EPISODE_CACHE = os.path.join(BASE_DIR, "cache", "episodes")
 SUBTITLE_CACHE = os.path.join(BASE_DIR, "cache", "subtitles")
 DB_PATH = os.path.join(BASE_DIR, "cache", "library.db")
 WATCH_HISTORY_FILE = os.path.join(BASE_DIR, "cache", "watch_history.json")
+WATCH_STATUS_FILE = os.path.join(BASE_DIR, "cache", "watch_status.json")
 SETTINGS_FILE = os.path.join(BASE_DIR, "cache", "settings.json")
 
 def get_default_settings():
@@ -1082,6 +1083,81 @@ def update_watch_history(anime_name, episode, episode_num, time_str=None, last_s
     with open(WATCH_HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=4)
 
+def load_watch_status():
+    if not os.path.exists(WATCH_STATUS_FILE):
+        return {}
+
+    try:
+        with open(WATCH_STATUS_FILE, "r", encoding="utf-8") as f:
+            status_data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+    if not isinstance(status_data, dict):
+        return {}
+
+    return status_data
+
+def save_watch_status(status_data):
+    os.makedirs(
+        os.path.dirname(WATCH_STATUS_FILE),
+        exist_ok=True
+    )
+
+    with open(WATCH_STATUS_FILE, "w", encoding="utf-8") as f:
+        json.dump(
+            status_data,
+            f,
+            indent=4
+        )
+
+def get_episode_watch_status(anime_name, episode):
+    status_data = load_watch_status()
+
+    return (
+        status_data
+        .get(anime_name, {})
+        .get(episode, {})
+    )
+
+def update_episode_watch_status(anime_name, episode, data):
+    status_data = load_watch_status()
+    anime_status = status_data.setdefault(anime_name, {})
+    episode_status = anime_status.setdefault(episode, {
+        "watched": False,
+        "progress": 0,
+        "duration": 0
+    })
+
+    episode_status.setdefault("watched", False)
+    episode_status.setdefault("progress", 0)
+    episode_status.setdefault("duration", 0)
+    episode_status.update(data or {})
+    episode_status["updated_at"] = datetime.now().isoformat()
+
+    save_watch_status(status_data)
+    return episode_status
+
+def mark_episode_watched(anime_name, episode):
+    return update_episode_watch_status(
+        anime_name,
+        episode,
+        {
+            "watched": True,
+            "progress": 100
+        }
+    )
+
+def mark_episode_unwatched(anime_name, episode):
+    return update_episode_watch_status(
+        anime_name,
+        episode,
+        {
+            "watched": False,
+            "progress": 0
+        }
+    )
+
 def sync_anime_to_db(anime_name):
     """Memindai satu folder anime dan memperbarui database SQLite.
        Fungsi ini dipanggil oleh background scanner."""
@@ -1623,6 +1699,11 @@ def anime_detail(anime_name):
             video_path
         )
 
+        watch_status = get_episode_watch_status(
+            anime_name,
+            file
+        )
+
         episodes.append({
 
             "file": file,
@@ -1640,7 +1721,19 @@ def anime_detail(anime_name):
             "resolution":
                 episode_info[
                     "resolution"
-                ]
+                ],
+
+            "watched":
+                watch_status.get(
+                    "watched",
+                    False
+                ),
+
+            "progress":
+                watch_status.get(
+                    "progress",
+                    0
+                )
 
         })
 
@@ -1758,6 +1851,11 @@ def player(
             season_name
         )
 
+        watch_status = get_episode_watch_status(
+            anime_name,
+            relative_url
+        )
+
         episodes.append({
 
             "file": relative_url,
@@ -1775,7 +1873,19 @@ def player(
             "resolution":
                 episode_info[
                     "resolution"
-                ]
+                ],
+
+            "watched":
+                watch_status.get(
+                    "watched",
+                    False
+                ),
+
+            "progress":
+                watch_status.get(
+                    "progress",
+                    0
+                )
 
         })
 
@@ -1853,6 +1963,11 @@ def player(
         if h_data.get("episode") == episode:
             resume_time = h_data.get("last_seconds", 0)
 
+    current_watch_status = get_episode_watch_status(
+        anime_name,
+        episode
+    )
+
     return render_template(
 
         "player.html",
@@ -1878,6 +1993,8 @@ def player(
             next_episode,
             
         resume_time=resume_time,
+
+        current_watch_status=current_watch_status,
         
         episodes=episodes
 
@@ -2104,6 +2221,11 @@ def season_detail(
             "/"
         )
 
+        watch_status = get_episode_watch_status(
+            anime_name,
+            relative_file
+        )
+
         episodes.append({
 
             "file": relative_file,
@@ -2121,7 +2243,19 @@ def season_detail(
             "resolution":
                 episode_info[
                     "resolution"
-                ]
+                ],
+
+            "watched":
+                watch_status.get(
+                    "watched",
+                    False
+                ),
+
+            "progress":
+                watch_status.get(
+                    "progress",
+                    0
+                )
         })
 
     anime_info = get_season_anilist_info(
@@ -2233,6 +2367,97 @@ def update_progress():
         update_discord_rpc(anime_name, episode_num, time_str)
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400
+
+def get_watch_status_payload():
+    data = request.get_json(silent=True) or {}
+    anime_name = data.get("anime_name")
+    episode = data.get("episode")
+
+    if not anime_name or not episode:
+        return None, None, data
+
+    return anime_name, episode, data
+
+@app.route("/api/watch-status/mark-watched", methods=["POST"])
+def api_mark_episode_watched():
+    anime_name, episode, _ = get_watch_status_payload()
+
+    if not anime_name or not episode:
+        return jsonify({
+            "ok": False,
+            "error": "Missing anime_name or episode"
+        }), 400
+
+    mark_episode_watched(anime_name, episode)
+
+    return jsonify({
+        "ok": True,
+        "watched": True
+    })
+
+@app.route("/api/watch-status/mark-unwatched", methods=["POST"])
+def api_mark_episode_unwatched():
+    anime_name, episode, _ = get_watch_status_payload()
+
+    if not anime_name or not episode:
+        return jsonify({
+            "ok": False,
+            "error": "Missing anime_name or episode"
+        }), 400
+
+    mark_episode_unwatched(anime_name, episode)
+
+    return jsonify({
+        "ok": True,
+        "watched": False
+    })
+
+@app.route("/api/watch-status/progress", methods=["POST"])
+def api_update_watch_status_progress():
+    anime_name, episode, data = get_watch_status_payload()
+
+    if not anime_name or not episode:
+        return jsonify({
+            "ok": False,
+            "error": "Missing anime_name or episode"
+        }), 400
+
+    current_status = get_episode_watch_status(anime_name, episode)
+
+    try:
+        progress = float(data.get("progress", 0))
+    except (TypeError, ValueError):
+        progress = 0
+
+    try:
+        duration = float(data.get("duration", 0))
+    except (TypeError, ValueError):
+        duration = 0
+
+    try:
+        current_seconds = float(data.get("current_seconds", 0))
+    except (TypeError, ValueError):
+        current_seconds = 0
+
+    progress = max(0, min(100, progress))
+    watched = True if progress >= 90 else bool(current_status.get("watched", False))
+
+    status = update_episode_watch_status(
+        anime_name,
+        episode,
+        {
+            "watched": watched,
+            "progress": progress,
+            "duration": duration,
+            "current_seconds": current_seconds
+        }
+    )
+
+    return jsonify({
+        "ok": True,
+        "watched": status.get("watched", False),
+        "progress": status.get("progress", 0)
+    })
 
 @app.route("/clear_rpc", methods=["POST"])
 def clear_rpc_route():
