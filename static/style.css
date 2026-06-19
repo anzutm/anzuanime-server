@@ -6866,7 +6866,7 @@ body:has(.featured-anime) {
 
 .episode-grid .episode-thumbnail,
 .player-thumb {
-    transform: none !important;
+    transform: translateZ(0) !important;
     transform-origin: center center;
     backface-visibility: hidden;
     filter: none !important;
@@ -6963,25 +6963,24 @@ body:has(.featured-anime) {
 .episode-grid .episode-card:hover,
 .player-episode-card:hover {
     z-index: 30;
-    transform: translateY(-5px) scale(1) !important;
+    transform: translate3d(0, -7px, 0) scale(1) !important;
     border-color: rgba(255,255,255,.24);
     box-shadow:
-        0 26px 56px rgba(0,0,0,.58),
-        0 0 38px rgba(0,0,255,.26),
-        0 0 42px rgba(0,216,255,.12),
-        0 0 18px rgba(255,111,181,.08),
+        0 30px 64px rgba(0,0,0,.60),
+        0 0 34px rgba(0,216,255,.18),
+        0 0 28px rgba(255,190,96,.07),
         var(--glass-highlight);
 }
 
 .episode-grid .episode-card:hover .episode-thumbnail,
 .player-episode-card:hover .player-thumb {
-    transform: none !important;
+    transform: translateZ(0) !important;
     filter: none !important;
 }
 
 .episode-grid .episode-card:hover .episode-overlay,
 .player-episode-card:hover .episode-overlay {
-    filter: brightness(1.045);
+    filter: none !important;
 }
 
 .episode-grid .episode-card:hover .play-circle,
