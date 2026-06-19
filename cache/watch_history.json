@@ -1,10 +1,10 @@
 {
     "Koori no Jouheki": {
-        "episode": "[LENDRIVE] Koori no Jouheki - 09 [1080p HEVC][Dualsubs].mkv",
-        "episode_num": 9,
-        "updated_at": "2026-06-19T15:34:43.303597",
-        "time_str": "07:06 / 25:22",
-        "last_seconds": 426.470097
+        "episode": "[LENDRIVE] Koori no Jouheki - 02 [1080p HEVC][Dualsubs].mkv",
+        "episode_num": 2,
+        "updated_at": "2026-06-19T15:47:34.729889",
+        "time_str": "12:31 / 25:20",
+        "last_seconds": 751.177389
     },
     "Jishou Akuyaku Reijou na Konyakusha no Kansatsu Kiroku": {
         "episode": "[LENDRIVE] Jishou Akuyaku Reijou - 02 [1080p HEVC][Dualsubs].mkv",
@@ -26,5 +26,12 @@
         "updated_at": "2026-06-19T15:38:29.500831",
         "time_str": "00:14 / 23:40",
         "last_seconds": 14.863506
+    },
+    "Koisuru Asteroid": {
+        "episode": "[Kusonime] Koisuru Asteroid BD - 03.mkv",
+        "episode_num": 3,
+        "updated_at": "2026-06-19T15:51:46.654095",
+        "time_str": "01:22 / 23:42",
+        "last_seconds": 82.456031
     }
 }

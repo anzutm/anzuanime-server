@@ -8014,6 +8014,173 @@ body:has(.hero-foreground) {
     }
 }
 
+/* Subtle color balance pass */
+:root {
+    --accent-gold: rgba(255, 190, 96, .72);
+    --accent-gold-soft: rgba(255, 190, 96, .13);
+    --accent-rose-soft: rgba(255, 118, 166, .11);
+    --accent-emerald: rgba(52, 211, 153, .78);
+    --accent-emerald-soft: rgba(52, 211, 153, .13);
+}
+
+body {
+    background:
+        radial-gradient(circle at 12% 8%, rgba(0, 216, 255, .115) 0%, transparent 26%),
+        radial-gradient(circle at 88% 14%, rgba(255, 118, 166, .095) 0%, transparent 28%),
+        radial-gradient(circle at 74% 80%, rgba(51, 51, 255, .070) 0%, transparent 29%),
+        radial-gradient(circle at 18% 76%, rgba(255, 190, 96, .080) 0%, transparent 24%),
+        linear-gradient(180deg, #000003 0%, #03040A 44%, #000003 100%);
+}
+
+.topbar,
+.glass,
+.card,
+.continue-card,
+.episode-card,
+.character-card,
+.related-card,
+.season-card,
+.info-card,
+.player-episode-card,
+.settings-card {
+    box-shadow:
+        0 18px 58px rgba(0,0,0,.48),
+        0 0 24px rgba(0,216,255,.065),
+        0 0 28px rgba(255,190,96,.035),
+        var(--glass-highlight);
+}
+
+.nav-link.active {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.095), rgba(255,255,255,.040)),
+        rgba(0,216,255,.090);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 0 16px rgba(0,216,255,.18),
+        0 0 12px rgba(255,190,96,.055);
+}
+
+.nav-link::after {
+    background: linear-gradient(90deg, rgba(0,216,255,0), rgba(0,216,255,.82), rgba(255,190,96,.68));
+    box-shadow: 0 0 12px rgba(0,216,255,.24);
+}
+
+.featured-kicker,
+.poster-status-chip,
+.resume-count-badge,
+.continue-badge,
+.rel-type-badge {
+    color: rgba(255,242,217,.96);
+    background:
+        linear-gradient(135deg, var(--accent-gold-soft), var(--accent-rose-soft)),
+        rgba(255,255,255,.050);
+    border-color: rgba(255,190,96,.20);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.13),
+        0 10px 26px rgba(0,0,0,.30),
+        0 0 16px rgba(255,190,96,.075);
+}
+
+.section-line {
+    background: linear-gradient(180deg, rgba(0,216,255,.86), rgba(255,190,96,.70));
+    box-shadow:
+        0 0 18px rgba(0,216,255,.28),
+        0 0 16px rgba(255,190,96,.10);
+}
+
+.watch-btn,
+.play-btn,
+.play-mini-btn,
+.settings-save-btn {
+    background:
+        linear-gradient(135deg, #00D8FF 0%, #3333FF 62%, rgba(255,190,96,.62) 100%);
+    box-shadow:
+        0 16px 34px rgba(0,0,0,.38),
+        0 0 22px rgba(0,216,255,.18),
+        0 0 14px rgba(255,190,96,.08);
+}
+
+.play-circle {
+    background:
+        linear-gradient(135deg, rgba(0,216,255,.94), var(--primary-hover) 66%, rgba(255,190,96,.66));
+    box-shadow:
+        0 14px 32px rgba(0,0,0,.42),
+        0 0 24px rgba(0,216,255,.22),
+        0 0 12px rgba(255,190,96,.08);
+}
+
+.progress-fill,
+.watch-progress-badge {
+    background:
+        linear-gradient(90deg, rgba(0,216,255,.88), rgba(51,51,255,.74));
+}
+
+.watch-progress-badge {
+    color: rgba(220,248,255,.96);
+    border-color: rgba(0,216,255,.28);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        0 0 18px rgba(0,216,255,.13);
+}
+
+.watch-status-badge,
+.status-badge.finished,
+.rel-status.finished {
+    color: rgba(206,255,232,.98);
+    background:
+        linear-gradient(135deg, var(--accent-emerald-soft), rgba(0,216,255,.060)),
+        rgba(255,255,255,.045);
+    border-color: rgba(52,211,153,.30);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 0 16px rgba(52,211,153,.12);
+}
+
+.status-badge.releasing,
+.rel-status.releasing {
+    color: rgba(220,248,255,.96);
+    background:
+        linear-gradient(135deg, rgba(0,216,255,.13), rgba(51,51,255,.08)),
+        rgba(255,255,255,.045);
+    border-color: rgba(0,216,255,.26);
+}
+
+.genre-tag:nth-child(3n+2),
+.featured-meta span:nth-child(2),
+.anime-meta span:nth-child(2) {
+    border-color: rgba(255,190,96,.22);
+    background:
+        linear-gradient(135deg, rgba(255,190,96,.075), rgba(255,255,255,.032)),
+        rgba(2,3,12,.38);
+}
+
+.genre-tag:nth-child(3n),
+.featured-meta span:nth-child(3),
+.anime-meta span:nth-child(3) {
+    border-color: rgba(255,118,166,.18);
+    background:
+        linear-gradient(135deg, rgba(255,118,166,.060), rgba(255,255,255,.030)),
+        rgba(2,3,12,.38);
+}
+
+.episode-grid .episode-card:hover,
+.player-episode-card:hover,
+.related-card:hover {
+    box-shadow:
+        0 26px 66px rgba(0,0,0,.58),
+        0 0 32px rgba(0,216,255,.18),
+        0 0 28px rgba(255,190,96,.065),
+        var(--glass-highlight);
+}
+
+.settings-card {
+    background:
+        radial-gradient(circle at 15% 0%, rgba(0,216,255,.085), transparent 34%),
+        radial-gradient(circle at 84% 8%, rgba(255,190,96,.070), transparent 30%),
+        linear-gradient(145deg, rgba(255,255,255,.078), rgba(255,255,255,.026)),
+        rgba(9,7,6,.74);
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
