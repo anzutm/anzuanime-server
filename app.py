@@ -9,6 +9,7 @@ import sqlite3
 import hashlib
 import random
 import base64
+import shutil
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -108,6 +109,155 @@ def apply_settings(settings):
     MOVIE_PATH = merged["movie_path"]
     VLC_PATH = merged["vlc_path"]
     DISCORD_RPC_ENABLED = merged["discord_rpc_enabled"]
+
+def get_existing_anime_names():
+    existing_names = set()
+
+    for base_path in ANIME_PATHS:
+        if not base_path or not os.path.isdir(base_path):
+            continue
+
+        try:
+            for name in os.listdir(base_path):
+                full_path = os.path.join(base_path, name)
+                if os.path.isdir(full_path):
+                    existing_names.add(name)
+        except OSError:
+            continue
+
+    return existing_names
+
+def safe_cache_name(name):
+    return re.sub(r'[<>:"/\\|?*]', "_", name or "")
+
+def is_path_inside_cache(path):
+    cache_root = os.path.abspath(os.path.join(BASE_DIR, "cache"))
+    candidate = os.path.abspath(path)
+
+    try:
+        return os.path.commonpath([cache_root, candidate]) == cache_root
+    except ValueError:
+        return False
+
+def cleanup_orphan_cache():
+    summary = {
+        "removed_files": 0,
+        "removed_dirs": 0,
+        "skipped": 0,
+        "details": []
+    }
+
+    existing_anime_names = get_existing_anime_names()
+    existing_safe_names = {
+        safe_cache_name(name)
+        for name in existing_anime_names
+    }
+    available_base_paths = [
+        path
+        for path in ANIME_PATHS
+        if path and os.path.isdir(path)
+    ]
+
+    if not available_base_paths:
+        summary["skipped"] += 1
+        summary["details"].append(
+            "Skipped cleanup because no configured anime folders are available."
+        )
+        return summary
+
+    def remove_file_if_safe(path, label):
+        if not is_path_inside_cache(path) or not os.path.isfile(path):
+            summary["skipped"] += 1
+            summary["details"].append(f"Skipped unsafe file: {label}")
+            return
+
+        try:
+            os.remove(path)
+            summary["removed_files"] += 1
+            summary["details"].append(f"Removed file: {label}")
+        except OSError as e:
+            summary["skipped"] += 1
+            summary["details"].append(f"Skipped file {label}: {e}")
+
+    def remove_dir_if_safe(path, label):
+        if not is_path_inside_cache(path) or not os.path.isdir(path):
+            summary["skipped"] += 1
+            summary["details"].append(f"Skipped unsafe folder: {label}")
+            return
+
+        try:
+            shutil.rmtree(path)
+            summary["removed_dirs"] += 1
+            summary["details"].append(f"Removed folder: {label}")
+        except OSError as e:
+            summary["skipped"] += 1
+            summary["details"].append(f"Skipped folder {label}: {e}")
+
+    def clean_named_files(cache_dir, label):
+        if not os.path.isdir(cache_dir):
+            summary["skipped"] += 1
+            summary["details"].append(f"Skipped missing cache folder: {label}")
+            return
+
+        for filename in os.listdir(cache_dir):
+            path = os.path.join(cache_dir, filename)
+            if not os.path.isfile(path):
+                summary["skipped"] += 1
+                continue
+
+            stem, _ = os.path.splitext(filename)
+            if stem not in existing_safe_names:
+                remove_file_if_safe(path, f"{label}/{filename}")
+
+    def clean_named_dirs(cache_dir, label):
+        if not os.path.isdir(cache_dir):
+            summary["skipped"] += 1
+            summary["details"].append(f"Skipped missing cache folder: {label}")
+            return
+
+        for folder_name in os.listdir(cache_dir):
+            path = os.path.join(cache_dir, folder_name)
+            if not os.path.isdir(path):
+                summary["skipped"] += 1
+                continue
+
+            if folder_name not in existing_safe_names:
+                remove_dir_if_safe(path, f"{label}/{folder_name}")
+
+    def clean_episode_files():
+        if not os.path.isdir(EPISODE_CACHE):
+            summary["skipped"] += 1
+            summary["details"].append("Skipped missing cache folder: episodes")
+            return
+
+        for filename in os.listdir(EPISODE_CACHE):
+            path = os.path.join(EPISODE_CACHE, filename)
+            if not os.path.isfile(path) or not filename.lower().endswith(".json"):
+                summary["skipped"] += 1
+                continue
+
+            stem = os.path.splitext(filename)[0]
+            matches_existing = any(
+                stem == safe_name or stem.startswith(f"{safe_name}_")
+                for safe_name in existing_safe_names
+            )
+
+            if not matches_existing:
+                remove_file_if_safe(path, f"episodes/{filename}")
+
+    clean_named_files(POSTER_CACHE, "posters")
+    clean_named_files(BANNER_CACHE, "banners")
+    clean_named_files(METADATA_CACHE, "metadata")
+    clean_named_dirs(CHARACTER_CACHE, "characters")
+    clean_named_dirs(SUBTITLE_CACHE, "subtitles")
+    clean_episode_files()
+
+    summary["skipped"] += 1
+    summary["details"].append(
+        "Skipped thumbnails because thumbnail cache files are hashed by video path."
+    )
+
+    return summary
 
 def init_db():
     os.makedirs(
@@ -1253,7 +1403,11 @@ def settings_page():
     return render_template(
         "settings.html",
         settings=settings,
-        saved=request.args.get("saved") == "1"
+        saved=request.args.get("saved") == "1",
+        cache_cleaned=request.args.get("cache_cleaned") == "1",
+        cache_removed_files=request.args.get("removed_files", "0"),
+        cache_removed_dirs=request.args.get("removed_dirs", "0"),
+        cache_skipped=request.args.get("skipped", "0")
     )
 
 @app.route("/settings", methods=["POST"])
@@ -1270,6 +1424,17 @@ def update_settings():
     apply_settings(settings)
 
     return redirect("/settings?saved=1")
+
+@app.route("/settings/cleanup-cache", methods=["POST"])
+def cleanup_cache_settings():
+    summary = cleanup_orphan_cache()
+
+    return redirect(
+        "/settings?cache_cleaned=1"
+        f"&removed_files={summary['removed_files']}"
+        f"&removed_dirs={summary['removed_dirs']}"
+        f"&skipped={summary['skipped']}"
+    )
 
 def pick_windows_path(picker_type):
     root = None

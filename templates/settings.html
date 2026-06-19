@@ -23,6 +23,12 @@
         </div>
         {% endif %}
 
+        {% if cache_cleaned %}
+        <div class="settings-success">
+            Orphan cache cleaned. Removed {{ cache_removed_files }} files and {{ cache_removed_dirs }} folders. Skipped {{ cache_skipped }} item{% if cache_skipped != '1' %}s{% endif %}.
+        </div>
+        {% endif %}
+
         <div class="settings-picker-message" id="settingsPickerMessage" aria-live="polite"></div>
 
         <form method="POST" action="/settings" class="settings-form">
@@ -164,6 +170,28 @@
                 </div>
             </div>
         </form>
+
+        <section class="settings-card settings-maintenance-card">
+            <div class="settings-card-head">
+                <span class="settings-kicker">Maintenance</span>
+                <h3>Cache Maintenance</h3>
+                <p>
+                    Removes cached posters, banners, metadata, character images, subtitles, and episode cache for anime folders that no longer exist.
+                </p>
+            </div>
+
+            <div class="settings-maintenance-footer">
+                <p class="settings-note">
+                    This only removes files inside the local cache directory. Thumbnail cleanup is skipped because thumbnails are stored by hashed video path.
+                </p>
+
+                <form method="POST" action="/settings/cleanup-cache" class="settings-maintenance-actions">
+                    <button type="submit" class="settings-cleanup-btn">
+                        Clean Orphan Cache
+                    </button>
+                </form>
+            </div>
+        </section>
     </div>
 </section>
 {% endblock %}
@@ -172,7 +200,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const message = document.getElementById('settingsPickerMessage');
-    const buttons = document.querySelectorAll('.settings-browse-btn');
+    const buttons = document.querySelectorAll('.settings-browse-btn[data-picker][data-target]');
 
     function showPickerMessage(text, isError) {
         if (!message) {

@@ -7584,7 +7584,8 @@ body:has(.hero-foreground) {
 }
 
 .settings-browse-btn,
-.settings-save-btn {
+.settings-save-btn,
+.settings-cleanup-btn {
     min-height: 48px;
     border: 1px solid rgba(0,216,255,.26);
     border-radius: 8px;
@@ -7600,7 +7601,8 @@ body:has(.hero-foreground) {
     transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease, opacity .22s ease;
 }
 
-.settings-browse-btn {
+.settings-browse-btn,
+.settings-cleanup-btn {
     padding: 0 16px;
     white-space: nowrap;
 }
@@ -7615,7 +7617,8 @@ body:has(.hero-foreground) {
 }
 
 .settings-browse-btn:hover,
-.settings-save-btn:hover {
+.settings-save-btn:hover,
+.settings-cleanup-btn:hover {
     transform: translateY(-2px);
     border-color: rgba(0,216,255,.55);
     box-shadow:
@@ -7721,6 +7724,29 @@ body:has(.hero-foreground) {
     line-height: 1.65;
 }
 
+.settings-maintenance-card {
+    margin-top: 24px;
+}
+
+.settings-maintenance-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+}
+
+.settings-maintenance-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.settings-cleanup-btn {
+    border-color: rgba(255,190,96,.30);
+    background:
+        linear-gradient(145deg, rgba(255,190,96,.16), rgba(0,216,255,.07)),
+        rgba(0,0,0,.28);
+}
+
 @media(max-width: 980px) {
     .settings-grid {
         grid-template-columns: 1fr;
@@ -7759,10 +7785,19 @@ body:has(.hero-foreground) {
         padding: 20px;
     }
 
+    .settings-maintenance-footer {
+        grid-template-columns: 1fr;
+    }
+
     .settings-actions {
         align-items: stretch;
         flex-direction: column;
         justify-content: stretch;
+    }
+
+    .settings-maintenance-actions,
+    .settings-cleanup-btn {
+        width: 100%;
     }
 }
 
