@@ -8214,6 +8214,147 @@ body {
         rgba(9,7,6,.74);
 }
 
+/* Homepage Anime Collection card hover polish */
+.collection-section > .grid .card {
+    overflow: hidden;
+    transform: translateY(0) scale(1);
+    transition:
+        transform .38s cubic-bezier(0.16,1,0.3,1),
+        border-color .38s cubic-bezier(0.16,1,0.3,1),
+        box-shadow .38s cubic-bezier(0.16,1,0.3,1),
+        background .38s cubic-bezier(0.16,1,0.3,1);
+}
+
+.collection-section > .grid .card::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: 3;
+    pointer-events: none;
+    border-radius: inherit;
+    background:
+        linear-gradient(125deg, transparent 0%, rgba(255,255,255,.13) 36%, transparent 58%);
+    opacity: 0;
+    transform: translateX(-42%);
+    transition:
+        opacity .38s cubic-bezier(0.16,1,0.3,1),
+        transform .62s cubic-bezier(0.16,1,0.3,1);
+}
+
+.collection-section > .grid .card:hover,
+.collection-section > .grid .card:focus-within {
+    transform: translateY(-7px) scale(1.018);
+    border-color: rgba(0,216,255,.30);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.090), rgba(255,255,255,.040)),
+        rgba(6,8,20,.82);
+    box-shadow:
+        0 28px 72px rgba(0,0,0,.56),
+        0 0 30px rgba(0,216,255,.14),
+        0 0 24px rgba(255,190,96,.06),
+        var(--glass-highlight);
+}
+
+.collection-section > .grid .card:hover::after,
+.collection-section > .grid .card:focus-within::after {
+    opacity: .72;
+    transform: translateX(42%);
+}
+
+.collection-section > .grid .poster {
+    display: block;
+    transform: scale(1);
+    filter: saturate(1.02) contrast(1.02);
+    backface-visibility: hidden;
+    transition:
+        transform .55s cubic-bezier(0.16,1,0.3,1),
+        filter .55s cubic-bezier(0.16,1,0.3,1);
+}
+
+.collection-section > .grid .card:hover .poster,
+.collection-section > .grid .card:focus-within .poster {
+    transform: scale(1.035);
+    filter: saturate(1.09) contrast(1.04) brightness(1.03);
+}
+
+.collection-section > .grid .poster-overlay {
+    z-index: 4;
+    opacity: 0;
+    background:
+        linear-gradient(
+            to top,
+            rgba(0,0,4,.60) 0%,
+            rgba(0,0,8,.30) 24%,
+            rgba(0,0,8,.10) 44%,
+            rgba(0,0,0,0) 72%
+        );
+    transition:
+        opacity .38s cubic-bezier(0.16,1,0.3,1),
+        background .38s cubic-bezier(0.16,1,0.3,1);
+}
+
+.collection-section > .grid .card:hover .poster-overlay,
+.collection-section > .grid .card:focus-within .poster-overlay {
+    opacity: 1;
+    background:
+        linear-gradient(
+            to top,
+            rgba(0,0,4,.78) 0%,
+            rgba(0,0,8,.52) 18%,
+            rgba(0,0,8,.25) 36%,
+            rgba(0,0,0,.075) 58%,
+            rgba(0,0,0,0) 78%
+        ),
+        radial-gradient(ellipse at 18% 92%, rgba(0,216,255,.18), transparent 42%),
+        radial-gradient(ellipse at 84% 92%, rgba(255,190,96,.10), transparent 38%);
+}
+
+.collection-section > .grid .poster-overlay h3,
+.collection-section > .grid .poster-card-meta,
+.collection-section > .grid .play-hover-btn {
+    transform: translateY(14px);
+    opacity: 0;
+    transition:
+        transform .36s cubic-bezier(0.16,1,0.3,1),
+        opacity .36s cubic-bezier(0.16,1,0.3,1),
+        filter .36s cubic-bezier(0.16,1,0.3,1);
+}
+
+.collection-section > .grid .poster-card-meta {
+    transition-delay: .035s;
+}
+
+.collection-section > .grid .play-hover-btn {
+    transition-delay: .07s;
+}
+
+.collection-section > .grid .card:hover .poster-overlay h3,
+.collection-section > .grid .card:hover .poster-card-meta,
+.collection-section > .grid .card:hover .play-hover-btn,
+.collection-section > .grid .card:focus-within .poster-overlay h3,
+.collection-section > .grid .card:focus-within .poster-card-meta,
+.collection-section > .grid .card:focus-within .play-hover-btn {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.collection-section > .grid .poster-card-meta span {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.11), rgba(255,255,255,.050)),
+        rgba(0,0,0,.26);
+    border-color: rgba(255,255,255,.16);
+}
+
+.collection-section > .grid .play-hover-btn {
+    border-color: rgba(0,216,255,.34);
+    background:
+        linear-gradient(135deg, rgba(0,216,255,.82), rgba(51,51,255,.66), rgba(255,190,96,.40));
+    box-shadow:
+        0 14px 30px rgba(0,0,0,.36),
+        0 0 18px rgba(0,216,255,.13),
+        inset 0 1px 0 rgba(255,255,255,.20);
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
