@@ -49,7 +49,7 @@
         
         <div class="player-title-stack">
             <h1>{{ anime_name }}</h1> {# Display name, no need to urlencode #}
-            <p class="player-episode-line">Episode {{ current_episode }} dari {{ total_episodes }}</p>
+            <p class="player-episode-line" id="playerEpisodeLine">Episode {{ current_episode }} dari {{ total_episodes }}</p>
         </div>
 
         <div class="player-header-meta" aria-label="Playback status">
@@ -89,17 +89,27 @@
                     </button>
                     <div class="nav-divider"></div>
 
-                    {% if previous_episode %}
-                    <a class="nav-btn prev" href="/player/{{ anime_name | urlencode }}/{{ previous_episode }}">
+                    <a
+                        id="prevEpisodeLink"
+                        class="nav-btn prev"
+                        href="{% if previous_episode %}/player/{{ anime_name | urlencode }}/{{ previous_episode }}{% else %}#{% endif %}"
+                        data-player-nav
+                        data-episode-path="{{ previous_episode or '' }}"
+                        {% if not previous_episode %}hidden aria-disabled="true"{% endif %}
+                    >
                         <span>&lsaquo;</span> Prev
                     </a>
-                    {% endif %}
                     
-                    {% if next_episode %}
-                    <a class="nav-btn next" href="/player/{{ anime_name | urlencode }}/{{ next_episode }}">
+                    <a
+                        id="nextEpisodeLink"
+                        class="nav-btn next"
+                        href="{% if next_episode %}/player/{{ anime_name | urlencode }}/{{ next_episode }}{% else %}#{% endif %}"
+                        data-player-nav
+                        data-episode-path="{{ next_episode or '' }}"
+                        {% if not next_episode %}hidden aria-disabled="true"{% endif %}
+                    >
                         Next <span>&rsaquo;</span>
                     </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -126,6 +136,9 @@
         <a
 
             href="/player/{{ anime_name | urlencode }}/{{ ep.file }}"
+            data-player-nav
+            data-episode-path="{{ ep.file }}"
+            data-episode-num="{{ ep.episode }}"
 
             class="player-episode-card
 
@@ -210,6 +223,7 @@
     data-anime-name="{{ anime_name }}"
     data-episode-path="{{ episode }}"
     data-current-ep="{{ current_episode }}"
+    data-total-ep="{{ total_episodes }}"
     data-next-ep="{{ next_episode }}"
     data-resume-time="{{ resume_time or 0 }}">
 </div>
@@ -220,6 +234,7 @@
         window.ANIME_NAME = config.animeName;
         window.EPISODE_PATH = config.episodePath;
         window.CURRENT_EP_NUM = config.currentEp;
+        window.TOTAL_EPISODES = config.totalEp;
         window.NEXT_EP_PATH = (config.nextEp && config.nextEp !== 'None') ? config.nextEp : null;
         window.RESUME_TIME = parseFloat(config.resumeTime || 0);
     })();

@@ -6992,7 +6992,99 @@ body {
     z-index: 8;
 }
 
+/* Episode card polish */
+.episode-grid {
+    gap: clamp(18px, 1.7vw, 28px);
+    align-items: stretch;
+}
+
+.player-episode-grid {
+    gap: clamp(16px, 1.4vw, 24px);
+    scroll-snap-type: x proximity;
+}
+
+.episode-grid .episode-card,
+.player-episode-card {
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.064), rgba(255,255,255,.024)),
+        rgba(5,7,18,.76);
+    border-color: rgba(255,255,255,.11);
+}
+
+.player-episode-card {
+    flex-basis: clamp(320px, 31vw, 410px);
+    scroll-snap-align: start;
+}
+
+.episode-card-footer,
+.player-card-info {
+    padding: 14px 16px 16px;
+}
+
+.episode-card-footer > .episode-footer-row,
+.player-card-info > .player-card-row {
+    min-height: 28px;
+}
+
+.watch-status-badge,
+.watch-progress-badge {
+    max-width: 48%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.duration-badge,
+.resolution-badge {
+    max-width: calc(50% - 22px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.thumbnail-wrapper,
+.player-thumb-wrapper {
+    border-color: rgba(255,255,255,.10);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.07),
+        0 14px 34px rgba(0,0,0,.26);
+}
+
 @media(max-width: 640px) {
+    .episode-grid {
+        gap: 16px;
+    }
+
+    .player-episode-grid {
+        gap: 14px;
+        padding-inline: 2px;
+    }
+
+    .player-episode-card {
+        flex-basis: min(82vw, 340px);
+    }
+
+    .episode-card-footer,
+    .player-card-info {
+        padding: 12px 13px 14px;
+    }
+
+    .episode-card-footer > .episode-footer-row,
+    .player-card-info > .player-card-row {
+        gap: 8px;
+    }
+
+    .watch-status-badge,
+    .watch-progress-badge {
+        max-width: 52%;
+        padding: 5px 8px;
+        font-size: 10px;
+    }
+
+    .duration-badge,
+    .resolution-badge {
+        max-width: calc(50% - 18px);
+    }
+
     .episode-overlay,
     .episode-grid .episode-overlay {
         height: 76px;

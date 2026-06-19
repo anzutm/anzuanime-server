@@ -4,43 +4,43 @@
             "watched": true,
             "progress": 100,
             "duration": 1421.142,
-            "current_seconds": 1421.142,
-            "updated_at": "2026-06-18T11:53:02.450164"
+            "current_seconds": 1416.704267,
+            "updated_at": "2026-06-19T13:14:00.063548"
         },
         "[Kusonime] Koisuru Asteroid BD - 02.mkv": {
-            "watched": false,
-            "progress": 17.0,
+            "watched": true,
+            "progress": 82.0,
             "duration": 1422.73,
-            "current_seconds": 246.895373,
-            "updated_at": "2026-06-19T13:01:42.106954"
+            "current_seconds": 1172.17037,
+            "updated_at": "2026-06-19T13:14:06.992255"
         },
         "[Kusonime] Koisuru Asteroid BD - 05.mkv": {
             "watched": false,
             "progress": 0,
             "duration": 1421.184,
-            "current_seconds": 4.814941,
-            "updated_at": "2026-06-19T13:02:14.690212"
+            "current_seconds": 3.091991,
+            "updated_at": "2026-06-19T13:13:45.355571"
         },
         "[Kusonime] Koisuru Asteroid BD - 03.mkv": {
             "watched": false,
-            "progress": 2.0,
+            "progress": 1.0,
             "duration": 1422.0,
-            "current_seconds": 25.570445,
-            "updated_at": "2026-06-19T13:02:08.966504"
+            "current_seconds": 8.352756,
+            "updated_at": "2026-06-19T13:14:15.975599"
         },
         "[Kusonime] Koisuru Asteroid BD - 06.mkv": {
             "watched": false,
             "progress": 0,
             "duration": 1421.227,
-            "current_seconds": 1.071212,
-            "updated_at": "2026-06-19T13:02:16.852718"
+            "current_seconds": 3.676156,
+            "updated_at": "2026-06-19T13:13:49.365617"
         },
         "[Kusonime] Koisuru Asteroid BD - 07.mkv": {
             "watched": false,
             "progress": 0,
             "duration": 1422.02,
-            "current_seconds": 1.155703,
-            "updated_at": "2026-06-19T13:02:19.010276"
+            "current_seconds": 3.360154,
+            "updated_at": "2026-06-19T13:13:53.169213"
         },
         "[Kusonime] Koisuru Asteroid BD - 08.mkv": {
             "watched": false,
@@ -48,6 +48,13 @@
             "duration": 1421.98,
             "current_seconds": 4.524754,
             "updated_at": "2026-06-19T13:02:24.615216"
+        },
+        "[Kusonime] Koisuru Asteroid BD - 04.mkv": {
+            "watched": false,
+            "progress": 0,
+            "duration": 1421.184,
+            "current_seconds": 2.440144,
+            "updated_at": "2026-06-19T13:13:41.806151"
         }
     },
     "Yuru Yuri": {

@@ -1,4 +1,10 @@
 const videoElement = document.getElementById('player');
+const sourceElement = videoElement.querySelector('source');
+let subtitleTrack = videoElement.querySelector('track');
+const episodeLine = document.getElementById('playerEpisodeLine');
+const prevEpisodeLink = document.getElementById('prevEpisodeLink');
+const nextEpisodeLink = document.getElementById('nextEpisodeLink');
+let isSoftSwitching = false;
 
 // 1. Inisialisasi Plyr
 const player = new Plyr(videoElement, {
@@ -35,8 +41,7 @@ videoElement.addEventListener('error', (e) => {
 // Auto Next
 player.on('ended', () => {
     if (window.NEXT_EP_PATH && window.NEXT_EP_PATH !== 'None') {
-        const epPath = window.NEXT_EP_PATH.split('/').map(encodeURIComponent).join('/');
-        window.location.href = `/player/${encodeURIComponent(window.ANIME_NAME)}/${epPath}`;
+        switchEpisode(window.NEXT_EP_PATH, { autoplay: true });
     }
 });
 
@@ -98,6 +103,132 @@ function sendWatchProgress(useKeepalive = false) {
     }).catch(() => {});
 }
 
+function encodeEpisodePath(path) {
+    return path.split('/').map(encodeURIComponent).join('/');
+}
+
+function getEpisodeCards() {
+    return Array.from(document.querySelectorAll('.player-episode-card[data-episode-path]'));
+}
+
+function getEpisodeState(episodePath) {
+    const cards = getEpisodeCards();
+    const index = cards.findIndex(card => card.dataset.episodePath === episodePath);
+    const card = index >= 0 ? cards[index] : null;
+
+    return {
+        cards,
+        index,
+        card,
+        previous: index > 0 ? cards[index - 1] : null,
+        next: index >= 0 && index < cards.length - 1 ? cards[index + 1] : null
+    };
+}
+
+function updateEpisodeLink(link, card) {
+    if (!link) return;
+
+    if (!card) {
+        link.hidden = true;
+        link.setAttribute('aria-disabled', 'true');
+        link.href = '#';
+        link.dataset.episodePath = '';
+        return;
+    }
+
+    link.hidden = false;
+    link.removeAttribute('aria-disabled');
+    link.href = card.href;
+    link.dataset.episodePath = card.dataset.episodePath;
+}
+
+function updatePlayerEpisodeState(episodePath) {
+    const state = getEpisodeState(episodePath);
+
+    if (!state.card) {
+        return null;
+    }
+
+    state.cards.forEach(card => card.classList.remove('active'));
+    state.card.classList.add('active');
+    state.card.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+    });
+
+    window.EPISODE_PATH = episodePath;
+    window.CURRENT_EP_NUM = state.card.dataset.episodeNum || String(state.index + 1);
+    window.NEXT_EP_PATH = state.next ? state.next.dataset.episodePath : null;
+    window.RESUME_TIME = 0;
+
+    if (episodeLine) {
+        episodeLine.textContent = `Episode ${window.CURRENT_EP_NUM} dari ${window.TOTAL_EPISODES || state.cards.length}`;
+    }
+
+    updateEpisodeLink(prevEpisodeLink, state.previous);
+    updateEpisodeLink(nextEpisodeLink, state.next);
+
+    return state;
+}
+
+function replaceSubtitleTrack(src) {
+    if (!subtitleTrack) return;
+
+    const newTrack = subtitleTrack.cloneNode(false);
+    newTrack.src = src;
+    subtitleTrack.remove();
+    videoElement.appendChild(newTrack);
+    subtitleTrack = newTrack;
+}
+
+function switchEpisode(episodePath, options = {}) {
+    if (!episodePath || episodePath === window.EPISODE_PATH || !sourceElement) {
+        return false;
+    }
+
+    const state = getEpisodeState(episodePath);
+    if (!state.card) {
+        return false;
+    }
+
+    const shouldPushState = options.pushState !== false;
+    const shouldAutoplay = options.autoplay !== undefined ? options.autoplay : !player.paused;
+    const encodedEpisode = encodeEpisodePath(episodePath);
+    const playerUrl = `/player/${encodeURIComponent(window.ANIME_NAME)}/${encodedEpisode}`;
+
+    sendWatchProgress();
+    if (rpcInterval) clearInterval(rpcInterval);
+    if (watchProgressInterval) clearInterval(watchProgressInterval);
+
+    isSoftSwitching = true;
+    updatePlayerEpisodeState(episodePath);
+
+    player.once('canplay', () => {
+        isSoftSwitching = false;
+        updateStatus();
+        sendWatchProgress();
+
+        if (shouldAutoplay) {
+            player.play().catch(() => {});
+        }
+    });
+
+    sourceElement.src = `/stream/${encodeURIComponent(window.ANIME_NAME)}/${encodedEpisode}`;
+    replaceSubtitleTrack(`/subtitle/${encodeURIComponent(window.ANIME_NAME)}/${encodedEpisode}`);
+    videoElement.load();
+
+    window.setTimeout(() => {
+        isSoftSwitching = false;
+    }, 2500);
+
+    if (shouldPushState) {
+        history.pushState({ episodePath }, '', playerUrl);
+    }
+
+    return true;
+}
+
 // Fungsi untuk menghapus status Discord
 function clearStatus() {
     fetch('/clear_rpc', { method: 'POST' });
@@ -114,6 +245,10 @@ player.on('play', () => {
 });
 
 player.on('pause', () => {
+    if (isSoftSwitching) {
+        return;
+    }
+
     if (rpcInterval) clearInterval(rpcInterval);
     if (watchProgressInterval) clearInterval(watchProgressInterval);
     sendWatchProgress();
@@ -127,8 +262,42 @@ window.addEventListener('beforeunload', () => {
     navigator.sendBeacon('/clear_rpc');
 });
 
+history.replaceState({ episodePath: window.EPISODE_PATH }, '', window.location.href);
+
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('[data-player-nav]');
+    if (!link || link.getAttribute('aria-disabled') === 'true') {
+        return;
+    }
+
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+        return;
+    }
+
+    const episodePath = link.dataset.episodePath;
+    if (!episodePath) {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (!switchEpisode(episodePath)) {
+        window.location.href = link.href;
+    }
+});
+
+window.addEventListener('popstate', (event) => {
+    const episodePath = event.state && event.state.episodePath;
+    if (episodePath) {
+        switchEpisode(episodePath, {
+            pushState: false,
+            autoplay: false
+        });
+    }
+});
+
 function playInVLC() {
-    const epPath = window.EPISODE_PATH.split('/').map(encodeURIComponent).join('/');
+    const epPath = encodeEpisodePath(window.EPISODE_PATH);
     const url = `/play/${encodeURIComponent(window.ANIME_NAME)}/${epPath}`;
 
     fetch(url)
