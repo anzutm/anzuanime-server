@@ -34,7 +34,7 @@ player.on('ready', () => {
 videoElement.addEventListener('error', (e) => {
     const error = videoElement.error;
     console.error('Video Error Code:', error.code, 'Message:', error.message);
-    showToast('Codec tidak didukung atau file rusak. Gunakan VLC.');
+    showToast('Unsupported codec or damaged file. Use VLC.');
     document.querySelector('.video-player-container').style.borderColor = '#ef4444';
 });
 
@@ -163,7 +163,7 @@ function updatePlayerEpisodeState(episodePath) {
     window.RESUME_TIME = 0;
 
     if (episodeLine) {
-        episodeLine.textContent = `Episode ${window.CURRENT_EP_NUM} dari ${window.TOTAL_EPISODES || state.cards.length}`;
+        episodeLine.textContent = `Episode ${window.CURRENT_EP_NUM} of ${window.TOTAL_EPISODES || state.cards.length}`;
     }
 
     updateEpisodeLink(prevEpisodeLink, state.previous);
@@ -304,9 +304,9 @@ function playInVLC() {
         .then(res => res.json())
         .then(data => {
             if(data.status === 'playing') {
-                showToast('Membuka video di VLC...');
+                showToast('Opening video in VLC...');
             } else {
-                showToast('Gagal membuka VLC');
+                showToast('Unable to open VLC');
             }
         });
 }
@@ -344,15 +344,15 @@ window.addEventListener('keydown', (e) => {
         .then(res => res.json())
         .then(data => {
             if(data.status === 'success') {
-                showToast('Screenshot berhasil disimpan!');
-                console.log('Screenshot disimpan ke:', data.path);
+                showToast('Screenshot saved successfully!');
+                console.log('Screenshot saved to:', data.path);
             } else {
-                showToast('Gagal menyimpan screenshot');
+                showToast('Unable to save screenshot');
             }
         })
         .catch(err => {
-            showToast('Terjadi kesalahan sistem saat menyimpan');
-            console.error('Gagal menyimpan screenshot:', err);
+            showToast('A system error occurred while saving');
+            console.error('Unable to save screenshot:', err);
         });
     }
 });

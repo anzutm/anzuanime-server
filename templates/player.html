@@ -43,17 +43,16 @@
                 href="{{ back_url or '/anime/' + (anime_name | urlencode) }}"
                 class="player-back"
             >
-                &larr; Kembali
+                &larr; Back
             </a>
         </div>
         
         <div class="player-title-stack">
             <h1>{{ anime_name }}</h1> {# Display name, no need to urlencode #}
-            <p class="player-episode-line" id="playerEpisodeLine">Episode {{ current_episode }} dari {{ total_episodes }}</p>
+            <p class="player-episode-line" id="playerEpisodeLine">Episode {{ current_episode }} of {{ total_episodes }}</p>
         </div>
 
         <div class="player-header-meta" aria-label="Playback status">
-            <span>Local Stream</span>
             <span>VLC Ready</span>
             {% if previous_episode or next_episode %}
             <span>Episode Nav</span>
@@ -70,10 +69,10 @@
                         kind="subtitles" 
                         src="/subtitle/{{ anime_name | urlencode }}/{{ episode }}" 
                         srclang="id" 
-                        label="Indonesia" 
+                        label="Indonesian" 
                         default
                     >
-                    <p>Browser Anda tidak mendukung codec video ini (H.265/10-bit). Gunakan tombol <b>Buka di VLC</b> untuk menonton.</p>
+                    <p>Your browser does not support this video codec (H.265/10-bit). Use <b>Open in VLC</b> to watch.</p>
                 </video>
             </div>
             
@@ -85,7 +84,7 @@
                     <div class="nav-divider"></div>
 
                     <button onclick="playInVLC()" class="nav-btn vlc-quick-btn">
-                        <span class="vlc-icon">&#9654;</span> Buka di VLC
+                        <span class="vlc-icon">&#9654;</span> Open in VLC
                     </button>
                     <div class="nav-divider"></div>
 
@@ -121,6 +120,7 @@
 
     <div class="episode-header">
         <div class="section-title">
+            <span class="player-section-eyebrow">Episode Queue</span>
             <div class="section-line"></div>
             <h2>Episodes</h2>
         </div>
@@ -212,7 +212,7 @@
 
 <div id="screenshotToast" class="toast">
     <span class="toast-icon">📸</span>
-    <span id="toastMessage">Screenshot berhasil disimpan!</span>
+    <span id="toastMessage">Screenshot saved successfully!</span>
 </div>
 
 <!-- Player Libraries -->

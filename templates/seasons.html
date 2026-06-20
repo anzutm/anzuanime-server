@@ -18,64 +18,73 @@
                 href="/"
                 class="back-btn seasons-back-btn"
             >
-                &larr; Kembali
+                &larr; Back
             </a>
 
             <div class="seasons-hero-panel">
                 <div class="detail-kicker">Season Library</div>
                 <h1>{{ anime_name }}</h1>
-                <p>Pilih season untuk melihat episode</p>
+                <p>Choose a season to view episodes.</p>
             </div>
         </div>
     </div>
 </div>
 
-<div class="anime-header seasons-header">
-    <div class="section-title">
-        <div class="section-line"></div>
+<section class="seasons-library-section index-section-panel">
+    <div class="collection-glow"></div>
 
-        <div>
-            <h2>Available Seasons</h2>
-            <p class="section-subtitle">Pilih season yang ingin ditonton.</p>
-        </div>
-    </div>
-</div>
+    <div class="anime-header seasons-header">
+        <div class="section-title">
+            <div class="section-line"></div>
 
-<div class="episode-grid seasons-grid">
-    {% for season in seasons %}
-    <a
-        href="/anime/{{ anime_name }}/{{ season.name }}"
-        class="season-card"
-    >
-        <div class="season-cover">
-            <div class="season-number">
-                {{ loop.index }}
+            <div>
+                <span class="home-section-eyebrow">Season Library</span>
+                <h2>Available Seasons</h2>
+                <p class="section-subtitle">Choose the season you want to watch.</p>
             </div>
         </div>
 
-        <div class="season-info">
-            <h3>{{ season.title or season.name }}</h3>
+        <div class="seasons-count-badge">
+            {{ seasons|length }} Season{% if seasons|length != 1 %}s{% endif %} Available
+        </div>
+    </div>
 
-            <p>{{ season.name }}</p>
+    <div class="episode-grid seasons-grid">
+        {% for season in seasons %}
+        <a
+            href="/anime/{{ anime_name }}/{{ season.name }}"
+            class="season-card"
+        >
+            <div class="season-cover">
+                <div class="season-number">
+                    {{ loop.index }}
+                </div>
+            </div>
 
-            <div class="season-meta">
-                {% if season.score %}
-                <span>&starf; {{ "%.1f"|format(season.score / 10) }}</span>
-                {% endif %}
+            <div class="season-info">
+                <h3>{{ season.title or season.name }}</h3>
 
-                {% if season.year %}
-                <span>
-                    {% if season.season %}
-                        {{ season.season }}
+                <p>{{ season.name }}</p>
+
+                <div class="season-meta">
+                    {% if season.score %}
+                    <span>&starf; {{ "%.1f"|format(season.score / 10) }}</span>
                     {% endif %}
-                    {{ season.year }}
-                </span>
-                {% endif %}
 
-                <span>{{ season.episodes }} Episode</span>
+                    {% if season.year %}
+                    <span>
+                        {% if season.season %}
+                            {{ season.season }}
+                        {% endif %}
+                        {{ season.year }}
+                    </span>
+                    {% endif %}
+
+                    <span>{{ season.episodes }} Episodes</span>
+                </div>
             </div>
-        </div>
-    </a>
-    {% endfor %}
-</div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}

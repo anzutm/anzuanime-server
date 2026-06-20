@@ -27,7 +27,7 @@ def open_anime_archive(icon, item):
 def refresh_library(icon, item):
     """Memicu sinkronisasi library secara manual dari Tray."""
     threading.Thread(target=sync_all_library, daemon=True).start()
-    print("Sinkronisasi manual dipicu.")
+    print("Manual library sync started.")
 
 def quit_app(icon, item):
     """Menghentikan tray icon dan menutup aplikasi."""
@@ -67,9 +67,9 @@ if __name__ == "__main__":
         image,
         "Anzu Anime Server",
         menu=Menu(
-            MenuItem("Buka Dashboard", open_anime_archive, default=True),
+            MenuItem("Open Dashboard", open_anime_archive, default=True),
             MenuItem("Refresh Library", refresh_library),
-            MenuItem("Keluar", quit_app)
+            MenuItem("Exit", quit_app)
         )
     )
     icon.run()

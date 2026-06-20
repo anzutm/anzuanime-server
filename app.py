@@ -701,7 +701,7 @@ def get_thumbnail(video_path):
         thumbnail_path
     ):
         print(
-            "Thumbnail sudah ada:",
+            "Thumbnail already exists:",
             thumbnail_path
         )
 
@@ -741,7 +741,7 @@ def get_thumbnail(video_path):
         ):
 
             print(
-                "Thumbnail berhasil dibuat:"
+                "Thumbnail created successfully:"
             )
 
             print(
@@ -751,7 +751,7 @@ def get_thumbnail(video_path):
             return thumbnail_path
 
         print(
-            "Thumbnail tidak dibuat"
+            "Thumbnail was not created"
         )
 
     except Exception as e:
@@ -1042,7 +1042,7 @@ def update_discord_rpc(anime_name, episode_num, time_str=None):
             details=anime_name,
             state=state_text,
             large_image="anzu_logo", # Dikembalikan agar status lebih stabil muncul di Discord
-            buttons=[{"label": "Buka Anzu Anime", "url": "http://animearchive.local:5000"}]
+            buttons=[{"label": "Open Anzu Anime", "url": "http://animearchive.local:5000"}]
         )
     except Exception as e:
         print(f"Discord RPC Error: {e}")
@@ -1189,7 +1189,7 @@ def get_subtitle_vtt_path(anime_name, episode_path):
     return os.path.join(SUBTITLE_CACHE, safe_anime, vtt_filename)
 
 def generate_subtitle_vtt(video_path, vtt_path):
-    print(f"Subtitle sedang dibuat: {video_path}")
+    print(f"Creating subtitle: {video_path}")
     
     # Pastikan sub-direktori anime di dalam cache tersedia
     os.makedirs(os.path.dirname(vtt_path), exist_ok=True)
@@ -1243,15 +1243,15 @@ def generate_subtitle_vtt(video_path, vtt_path):
                 with open(vtt_path, "w", encoding="utf-8") as f:
                     f.writelines(cleaned_lines)
             except Exception as clean_err:
-                print(f"Warning: Gagal membersihkan subtitle: {clean_err}")
+                print(f"Warning: unable to clean subtitle: {clean_err}")
 
-            print(f"Subtitle berhasil dibuat dan dibersihkan: {vtt_path}")
+            print(f"Subtitle created and cleaned successfully: {vtt_path}")
             return True
         else:
-            print(f"Subtitle gagal dibuat (Mungkin tidak ada stream subtitle): {video_path}")
+            print(f"Subtitle was not created (subtitle stream may be unavailable): {video_path}")
             return False
     except Exception as e:
-        print(f"Error saat membuat subtitle: {e}")
+        print(f"Error while creating subtitle: {e}")
         return False
 
 def get_watch_backup_file(path):
@@ -1522,7 +1522,7 @@ def sync_all_library():
         else:
             conn.execute("DELETE FROM anime_library")
             
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Sinkronisasi selesai. Terdeteksi {len(found_names)} anime.")
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Sync complete. Detected {len(found_names)} anime.")
 
 @app.route("/settings")
 def settings_page():
@@ -1702,6 +1702,11 @@ def movies():
                 "year":
                     movie_info.get(
                         "year"
+                    ) if movie_info else None,
+
+                "description":
+                    movie_info.get(
+                        "description"
                     ) if movie_info else None
             })
 
@@ -1725,7 +1730,7 @@ def movie_detail_page(filename):
         or
         not video_path.lower().endswith(VIDEO_EXTENSIONS)
     ):
-        return "Film tidak ditemukan", 404
+        return "Movie not found", 404
 
     clean_title = clean_movie_title(filename)
     anime_info = get_cached_anilist_info(clean_title)
@@ -1935,7 +1940,7 @@ def anime_detail(anime_name):
     )
 
     if not anime_path:
-        return "Anime tidak ditemukan"
+        return "Anime not found"
 
     has_season = False
 
@@ -2062,7 +2067,7 @@ def player(
     )
 
     if not anime_path:
-        return "Anime tidak ditemukan"
+        return "Anime not found"
 
     current_video_path = safe_join_media_path(
         anime_path,
@@ -2376,7 +2381,7 @@ def season_list(anime_name):
     )
 
     if not anime_path:
-        return "Anime tidak ditemukan"
+        return "Anime not found"
 
     seasons = []
 
@@ -2458,7 +2463,7 @@ def season_detail(
     )
 
     if not anime_path:
-        return "Anime tidak ditemukan"
+        return "Anime not found"
 
     season_path = safe_join_media_path(
         anime_path,
@@ -2472,7 +2477,7 @@ def season_detail(
         season_path
         )
     ):
-        return "Season tidak ditemukan"
+        return "Season not found"
 
     episodes = []
 

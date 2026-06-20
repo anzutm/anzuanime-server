@@ -7,8 +7,9 @@
 <div class="featured-anime movie-hero">
     <div class="hero-ambient hero-ambient-left"></div>
     <div class="hero-ambient hero-ambient-right"></div>
-    {% set hero = movies[0] %}
-    <div class="featured-slide active">
+
+    {% for hero in movies[:5] %}
+    <div class="featured-slide {% if loop.first %}active{% endif %}">
         <img
             src="/banner/{{ hero.title }}"
             class="featured-banner"
@@ -23,7 +24,7 @@
 
                     <div class="featured-row">
                         <div class="hero-actions">
-                            <a href="/movie/{{ hero.file | urlencode }}" class="watch-btn">&#9654; Lihat Detail</a>
+                            <a href="/movie/{{ hero.file | urlencode }}" class="watch-btn">&#9654; View Details</a>
                         </div>
 
                         <div class="featured-meta">
@@ -42,6 +43,12 @@
                         <span>Browser/VLC</span>
                         <span>Cinematic Mode</span>
                     </div>
+
+                    {% if hero.description %}
+                    <p class="featured-description">
+                        {{ hero.description | striptags | truncate(170) }}
+                    </p>
+                    {% endif %}
                 </div>
 
                 <div class="featured-visual">
@@ -51,56 +58,36 @@
                         </div>
                         <div class="featured-side-panel">
                             <span class="side-panel-label">Featured</span>
-                            <strong>Movie</strong>
+                            <strong>{{ loop.index }}/{{ movies[:5]|length }}</strong>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    {% endfor %}
+
+    {% if movies|length > 1 %}
+    <div class="featured-dots movie-featured-dots">
+        {% for hero in movies[:5] %}
+        <div class="dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endif %}
 
-<dialog id="playerModal">
-    <div class="modal-shell">
-        <div class="modal-header">
-            <span class="modal-kicker">Playback</span>
-            <h2>Pilih Pemutar</h2>
-            <p>Pilih metode pemutaran untuk film ini</p>
-        </div>
-
-        <div class="player-option-list">
-            <button id="browserBtn" class="player-option">
-                <span class="player-icon">&#127760;</span>
-                <div class="player-text">
-                    <strong>Putar di Browser</strong>
-                    <small>Streaming langsung di Anzu Anime</small>
-                </div>
-            </button>
-
-            <button id="vlcBtn" class="player-option">
-                <span class="player-icon">&#9654;</span>
-                <div class="player-text">
-                    <strong>Buka di VLC</strong>
-                    <small>Gunakan VLC Media Player</small>
-                </div>
-            </button>
-        </div>
-
-        <button id="closeBtn">Batal</button>
-    </div>
-</dialog>
-
-<section class="collection-section">
+<section class="collection-section movie-collection-section index-section-panel">
     <div class="collection-glow"></div>
 
-    <div class="collection-top">
+    <div class="collection-top movie-collection-top">
         <div class="collection-heading">
+            <span class="home-section-eyebrow">Local Movies</span>
             <div class="section-title">
                 <div class="section-line"></div>
                 <h2 class="section-heading">Movie Collection</h2>
             </div>
-            <p class="section-subtitle">Koleksi film anime lokal yang tersedia di penyimpanan Anda.</p>
+            <p class="section-subtitle">A collection of local anime movies available in your storage.</p>
         </div>
     </div>
 
@@ -131,7 +118,7 @@
                         {% endif %}
                     </div>
 
-                    <button class="play-hover-btn">&#9654; Detail</button>
+                    <button class="play-hover-btn">&#9654; Details</button>
                 </div>
             </a>
         </div>
@@ -211,5 +198,41 @@ if (movieSearchInput) {
         });
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const movieSlides = document.querySelectorAll('.movie-hero .featured-slide');
+    const movieDots = document.querySelectorAll('.movie-featured-dots .dot');
+    let currentMovieSlide = 0;
+    let movieSlideInterval;
+
+    function showMovieSlide(index) {
+        if (!movieSlides[currentMovieSlide] || !movieDots[currentMovieSlide] || !movieSlides[index] || !movieDots[index]) {
+            return;
+        }
+
+        movieSlides[currentMovieSlide].classList.remove('active');
+        movieDots[currentMovieSlide].classList.remove('active');
+        currentMovieSlide = index;
+        movieSlides[currentMovieSlide].classList.add('active');
+        movieDots[currentMovieSlide].classList.add('active');
+    }
+
+    function startMovieSlider() {
+        movieSlideInterval = setInterval(() => {
+            showMovieSlide((currentMovieSlide + 1) % movieSlides.length);
+        }, 7000);
+    }
+
+    if (movieSlides.length > 1 && movieDots.length > 1) {
+        startMovieSlider();
+        movieDots.forEach((dot, idx) => {
+            dot.addEventListener('click', () => {
+                clearInterval(movieSlideInterval);
+                showMovieSlide(idx);
+                startMovieSlider();
+            });
+        });
+    }
+});
 </script>
 {% endblock %}

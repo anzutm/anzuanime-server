@@ -49,7 +49,7 @@
 
                     {% if slide.info and slide.info.description %}
                     <p class="featured-description">
-                        {{ slide.info.description | striptags | truncate(290) }}
+                        {{ slide.info.description | striptags | truncate(150) }}
                     </p>
                     {% endif %}
 
@@ -85,14 +85,15 @@
 
 {% endif %}
 
-<section class="continue-watching-section">
+<section class="continue-watching-section index-section-panel">
     <div class="resume-section-head">
         <div>
+            <span class="home-section-eyebrow">Resume</span>
             <div class="section-title">
                 <div class="section-line"></div>
-                <h2 class="section-heading">Lanjutkan Menonton</h2>
+                <h2 class="section-heading">Last Watched</h2>
             </div>
-            <p class="section-subtitle">Kembali ke episode terakhir tanpa kehilangan momentum.</p>
+            <p class="section-subtitle">Back to the last episode without losing momentum.</p>
         </div>
         <div class="resume-actions">
             <div class="resume-count-badge">
@@ -104,57 +105,60 @@
             </div>
         </div>
     </div>
-    <div class="continue-grid" id="continueGrid">
-        {% for item in continue_watching %}
-        <a href="/player/{{ item.name }}/{{ item.episode }}" class="continue-card">
-            <div class="continue-thumb">
-                <img src="/banner/{{ item.name }}" alt="{{ item.name }}">
-                <div class="continue-badge">Resume</div>
-                <div class="progress-bar-container">
-                    <div class="progress-fill" style="width: 100%;"></div>
+    <div class="continue-grid-shell">
+        <div class="continue-grid" id="continueGrid">
+            {% for item in continue_watching %}
+            <a href="/player/{{ item.name }}/{{ item.episode }}" class="continue-card">
+                <div class="continue-thumb">
+                    <img src="/banner/{{ item.name }}" alt="{{ item.name }}">
+                    <div class="continue-badge">Resume</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                    <div class="continue-overlay">
+                        <button class="play-mini-btn">&#9654;</button>
+                        <span class="continue-overlay-text">Continue</span>
+                    </div>
                 </div>
-                <div class="continue-overlay">
-                    <button class="play-mini-btn">&#9654;</button>
-                    <span class="continue-overlay-text">Continue</span>
+                <div class="continue-info">
+                    <div class="continue-title-row">
+                        <h3>{{ item.name }}</h3>
+                        <span>EP {{ item.episode_num }}</span>
+                    </div>
+                    <p>
+                        {% if item.time_str %}
+                        Last watched {{ item.time_str }}
+                        {% else %}
+                        Ready to continue
+                        {% endif %}
+                    </p>
                 </div>
-            </div>
-            <div class="continue-info">
-                <div class="continue-title-row">
-                    <h3>{{ item.name }}</h3>
-                    <span>EP {{ item.episode_num }}</span>
-                </div>
-                <p>
-                    {% if item.time_str %}
-                    Last watched {{ item.time_str }}
-                    {% else %}
-                    Ready to continue
-                    {% endif %}
-                </p>
-            </div>
-        </a>
-        {% endfor %}
+            </a>
+            {% endfor %}
 
-        {% if not continue_watching %}
-        <div class="continue-card empty">
-            <div class="empty-content">
-                <span>+</span>
-                <p>Mulai menonton untuk mengisi daftar ini</p>
+            {% if not continue_watching %}
+            <div class="continue-card empty">
+                <div class="empty-content">
+                    <span>+</span>
+                    <p>Start watching to fill this list</p>
+                </div>
             </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </section>
 
-<section class="collection-section">
+<section class="collection-section index-section-panel index-collection-section">
     <div class="collection-glow"></div>
 
-    <div class="collection-top">
+    <div class="collection-top index-collection-top">
         <div class="collection-heading">
+            <span class="home-section-eyebrow">Library</span>
             <div class="section-title">
                 <div class="section-line"></div>
                 <h2 class="section-heading">Anime Collection</h2>
             </div>
-            <p class="section-subtitle">Jelajahi perpustakaan anime lokal Anda dengan data real-time.</p>
+            <p class="section-subtitle">Explore your local anime library with real-time data.</p>
         </div>
     </div>
 
@@ -186,11 +190,43 @@
                 Finished ({{ finished_count }})
             </a>
         </div>
+
+        <div class="sort-control" id="animeSortControl">
+            <span class="sort-label">
+                <span class="sort-icon" aria-hidden="true">&#8645;</span>
+                Sort
+            </span>
+            <button
+                type="button"
+                class="sort-trigger"
+                id="animeSortTrigger"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+            >
+                <span id="animeSortLabel">Default</span>
+                <span class="sort-chevron">⌄</span>
+            </button>
+
+            <div class="sort-menu" id="animeSortMenu" role="listbox">
+                <button type="button" class="sort-option active" data-sort="default" role="option" aria-selected="true">Default</button>
+                <button type="button" class="sort-option" data-sort="title-asc" role="option">Title A-Z</button>
+                <button type="button" class="sort-option" data-sort="title-desc" role="option">Title Z-A</button>
+                <button type="button" class="sort-option" data-sort="score-desc" role="option">Highest Score</button>
+                <button type="button" class="sort-option" data-sort="episodes-desc" role="option">Most Episodes</button>
+            </div>
+        </div>
     </div>
 
-    <div class="grid">
+    <div class="grid" id="animeCollectionGrid">
         {% for anime in anime_list %}
-        <div class="card" data-status="{{ anime.status }}">
+        <div
+            class="card"
+            data-index="{{ loop.index0 }}"
+            data-title="{{ anime.name | lower }}"
+            data-score="{{ anime.score or 0 }}"
+            data-episodes="{{ anime.episodes or 0 }}"
+            data-status="{{ anime.status }}"
+        >
             <a
                 href="{% if anime.name == 'Movies' %}/movies{% else %}/anime/{{ anime.name }}{% endif %}"
                 onclick="this.querySelector('.poster').style.viewTransitionName = 'anime-poster'"
@@ -271,11 +307,59 @@
         const continueSection = document.querySelector('.continue-watching-section');
         const collectionHeading = document.querySelector('.collection-top');
         const toolbar = document.querySelector('.collection-toolbar');
-        const cards = document.querySelectorAll('.grid .card');
+        const collectionGrid = document.getElementById('animeCollectionGrid');
+        const cards = Array.from(document.querySelectorAll('#animeCollectionGrid .card'));
         const filterBtns = document.querySelectorAll('.filter-btn');
+        const sortControl = document.getElementById('animeSortControl');
+        const sortTrigger = document.getElementById('animeSortTrigger');
+        const sortLabel = document.getElementById('animeSortLabel');
+        const sortOptions = document.querySelectorAll('.sort-option');
 
         let currentStatus = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'ALL';
         let currentSearch = '';
+        let currentSort = 'default';
+
+        function getNumber(value) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        function sortCards() {
+            if (!collectionGrid) {
+                return;
+            }
+
+            const sortedCards = [...cards].sort((a, b) => {
+                const titleA = a.dataset.title || '';
+                const titleB = b.dataset.title || '';
+                const scoreA = getNumber(a.dataset.score);
+                const scoreB = getNumber(b.dataset.score);
+                const episodesA = getNumber(a.dataset.episodes);
+                const episodesB = getNumber(b.dataset.episodes);
+                const indexA = getNumber(a.dataset.index);
+                const indexB = getNumber(b.dataset.index);
+
+                if (currentSort === 'title-asc') {
+                    return titleA.localeCompare(titleB);
+                }
+
+                if (currentSort === 'title-desc') {
+                    return titleB.localeCompare(titleA);
+                }
+
+                if (currentSort === 'score-desc') {
+                    return scoreB - scoreA || titleA.localeCompare(titleB);
+                }
+
+                if (currentSort === 'episodes-desc') {
+                    return episodesB - episodesA || titleA.localeCompare(titleB);
+                }
+
+                return indexA - indexB;
+            });
+
+            sortedCards.forEach(card => collectionGrid.appendChild(card));
+        }
 
         function applyFilters() {
             const isSearching = currentSearch.length > 0;
@@ -285,9 +369,11 @@
             if (collectionHeading) collectionHeading.style.display = isSearching ? 'none' : 'block';
             if (toolbar) toolbar.style.marginTop = isSearching ? '80px' : '0';
 
+            sortCards();
+
             let visibleCount = 0;
             cards.forEach((card) => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
+                const title = card.dataset.title || '';
                 const status = card.getAttribute('data-status');
 
                 const matchesSearch = title.includes(currentSearch);
@@ -325,6 +411,41 @@
                 currentStatus = this.getAttribute('data-filter');
                 applyFilters();
             });
+        });
+
+        if (sortTrigger && sortControl) {
+            sortTrigger.addEventListener('click', function() {
+                const isOpen = sortControl.classList.toggle('open');
+                sortTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+        }
+
+        sortOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                sortOptions.forEach(item => {
+                    item.classList.remove('active');
+                    item.setAttribute('aria-selected', 'false');
+                });
+
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                currentSort = this.dataset.sort || 'default';
+                if (sortLabel) {
+                    sortLabel.textContent = this.textContent.trim();
+                }
+                if (sortControl && sortTrigger) {
+                    sortControl.classList.remove('open');
+                    sortTrigger.setAttribute('aria-expanded', 'false');
+                }
+                applyFilters();
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (sortControl && sortTrigger && !sortControl.contains(e.target)) {
+                sortControl.classList.remove('open');
+                sortTrigger.setAttribute('aria-expanded', 'false');
+            }
         });
 
         const continueGrid = document.getElementById('continueGrid');

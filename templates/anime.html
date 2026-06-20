@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ anime_name }}</title>
-    <style>html,body{background-color:#0b0907;color:#F3F4F5;}</style>
-    <meta name="theme-color" content="#0b0907">
+    <style>html,body{background-color:#050711;color:#F3F4F5;}</style>
+    <meta name="theme-color" content="#050711">
 
     <link rel="icon" type="image/png" href="/static/arcana.jpg">
     <link rel="stylesheet" href="/static/style.css">
@@ -15,9 +15,9 @@
 <a
     href="/"
     class="back-btn anime-floating-back"
-    aria-label="Kembali ke beranda"
+    aria-label="Back to home"
 >
-    &larr; Kembali
+    &larr; Back
 </a>
 
 <div class="hero">
@@ -109,7 +109,7 @@
 
                     {{ anime_info.description
                         | striptags
-                        | truncate(300)
+                        | truncate(400)
                     }}
 
                 </p>
@@ -289,7 +289,7 @@
 </div>
 
 {% if anime_info and anime_info.recommendations %}
-<div class="related-section" style="margin-top: 40px;">
+<div class="related-section recommendation-section">
     <div class="section-title">
         <div class="section-line"></div>
         <h2>Recommended Anime</h2>
@@ -317,7 +317,7 @@
 {% endif %}
 
 {% if anime_info and anime_info.relations %}
-<div class="related-section">
+<div class="related-section relation-section">
     <div class="section-title">
         <div class="section-line"></div>
         <h2>Related Anime</h2>
@@ -345,39 +345,28 @@
 {% endif %}
 
 <footer class="main-footer">
-    <div class="footer-surface-glow"></div>
-
-    <div class="footer-content">
-
-        <div class="footer-brand">
-            <h2>Anzuanime</h2>
-            <p>
-                Manajemen koleksi anime lokal Anda dengan integrasi data dari AniList secara real-time.
-            </p>
+        <div class="footer-surface-glow"></div>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h2>Animearchive</h2>
+                <p>Manage your local anime collection with real-time data integration.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Navigate</h3>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/movies">Movies</a></li>
+                </ul>
+            </div>
+            <div class="footer-meta">
+                <h3>System</h3>
+                <p>Data Provider: AniList API</p>
+                <p>Media Engine: VLC / HTML5</p>
+            </div>
         </div>
-
-        <div class="footer-links">
-            <h3>Navigasi</h3>
-            <ul>
-                <li><a href="/">Beranda</a></li>
-                <li><a href="/movies">Koleksi Film</a></li>
-            </ul>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Anzuanime. Personal Collection.</p>
         </div>
-
-        <div class="footer-meta">
-            <h3>Sistem</h3>
-            <p>Data Provider: AniList API</p>
-            <p>Media Engine: VLC / HTML5</p>
-        </div>
-
-    </div>
-
-    <div class="footer-bottom">
-        <p>
-            &copy; 2026 Anzuanime. Dibuat untuk kenyamanan menonton koleksi pribadi.
-        </p>
-    </div>
-
 </footer>
 
 <script>
