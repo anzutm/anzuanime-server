@@ -1687,15 +1687,6 @@ body{
 }
 
 
-.player-page{
-
-    max-width:1800px;
-
-    margin:auto;
-
-    padding:20px 40px;
-}
-
 .video-player{
 
     width:100%;
@@ -2102,8 +2093,6 @@ body{
 }
 
 .player-page {
-    max-width: 1400px;
-    margin: 40px auto;
     padding: 0 40px;
     position: relative;
     z-index: 10;
@@ -2111,8 +2100,6 @@ body{
 
 .player-header {
     display: flex;
-    align-items: center;
-    gap: 30px;
     margin-bottom: 30px;
 }
 
@@ -2135,18 +2122,13 @@ body{
 }
 
 .player-title-stack h1 {
-    font-size: 32px;
     font-weight: 800;
     margin: 0;
     letter-spacing: 0;
 }
 
 .video-player-container {
-    background: #000;
-    border-radius: 24px;
     /* overflow: hidden; */ /* Dihapus agar fungsi fullscreen Plyr dapat bekerja */
-    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .video-player {
@@ -2165,12 +2147,9 @@ body{
 }
 
 .player-status-bar {
-    padding: 20px 30px;
-    background: var(--bg2);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .status-left {
@@ -2229,8 +2208,6 @@ body{
     display:flex;
 
     justify-content:space-between;
-
-    margin-top:20px;
 }
 
 .player-episodes{
@@ -2253,17 +2230,12 @@ body{
 
     display:flex;
 
-    gap:20px;
-
     overflow-x:auto;
-
-    padding-bottom:10px;
 
     scrollbar-width:none;
 }
 
 .player-episode-card{
-    flex: 0 0 450px;
     text-decoration: none;
     color: white;
 }
@@ -3501,14 +3473,6 @@ body {
     margin-top: 0;
 }
 
-.player-episode-card.active {
-    border: 1px solid rgba(0,216,255,.62);
-    box-shadow:
-        0 0 0 1px rgba(0,0,255,.42),
-        0 0 45px rgba(0,0,255,.38),
-        0 22px 58px rgba(0,0,0,.54);
-}
-
 .main-footer {
     margin: 90px -10px 0;
     padding: 58px 44px 34px;
@@ -3583,8 +3547,7 @@ body {
         transform: translateY(-6px) scale(1.015);
     }
 
-    .continue-card,
-    .player-episode-card {
+    .continue-card {
         flex-basis: 320px;
     }
 
@@ -4088,10 +4051,6 @@ body {
 
 .player-header {
     align-items: center;
-    gap: 18px;
-    width: fit-content;
-    max-width: 100%;
-    padding: 10px;
     border-radius: 24px;
     background:
         linear-gradient(145deg, rgba(255,255,255,.070), rgba(255,255,255,.026)),
@@ -4108,14 +4067,8 @@ body {
     min-height: 44px;
 }
 
-.player-title-stack {
-    padding-right: 16px;
-}
-
 .player-title-stack h1 {
-    max-width: min(980px, 70vw);
     overflow: hidden;
-    font-size: 34px;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
@@ -4149,7 +4102,6 @@ body {
 }
 
 .player-status-bar {
-    min-height: 76px;
     gap: 16px;
     flex-wrap: wrap;
 }
@@ -4170,44 +4122,10 @@ body {
     margin: 0 auto;
 }
 
-.player-episode-grid {
-    --player-carousel-fade: 42px;
-    padding: 18px 6px 28px;
-    -webkit-mask-image:
-        linear-gradient(
-            to right,
-            transparent 0,
-            #000 var(--player-carousel-fade),
-            #000 calc(100% - var(--player-carousel-fade)),
-            transparent 100%
-        );
-    mask-image:
-        linear-gradient(
-            to right,
-            transparent 0,
-            #000 var(--player-carousel-fade),
-            #000 calc(100% - var(--player-carousel-fade)),
-            transparent 100%
-        );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-}
-
-.player-episode-card {
-    flex-basis: 420px;
-    border-radius: 24px;
-}
-
 .player-episode-card.active {
     background:
         linear-gradient(145deg, rgba(0,216,255,.12), rgba(255,255,255,.05)),
         rgba(5,7,18,.86);
-}
-
-.player-card-info {
-    padding: 16px;
 }
 
 .footer-content {
@@ -4326,13 +4244,6 @@ body {
         padding: 0 16px 32px;
     }
 
-    .player-episode-grid {
-        --player-carousel-fade: 26px;
-    }
-
-    .player-episode-card {
-        flex-basis: 310px;
-    }
 }
 
 @media(max-width: 640px) {
@@ -8310,7 +8221,7 @@ body:has(.hero-foreground) .character-section {
 }
 
 .player-episodes .player-episode-card {
-    flex-basis: clamp(310px, 27vw, 390px);
+    flex: 0 0 clamp(310px, 27vw, 390px);
     border-radius: 22px;
 }
 
@@ -8875,7 +8786,7 @@ body:has(.hero-foreground) .relation-section .related-grid:has(.related-card:onl
     }
 
     .player-episodes .player-episode-card {
-        flex-basis: min(82vw, 330px);
+        flex: 0 0 min(82vw, 330px);
     }
 }
 
