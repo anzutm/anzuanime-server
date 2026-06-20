@@ -129,51 +129,6 @@
 
 {% block scripts %}
 <script>
-let selectedMovie = "";
-
-const browserBtn = document.getElementById("browserBtn");
-if (browserBtn) {
-    browserBtn.onclick = function() {
-        window.location.href = "/player/Movies/" + encodeURIComponent(selectedMovie);
-    };
-}
-
-function openPlayerModal(file) {
-    selectedMovie = file;
-    const modal = document.getElementById("playerModal");
-    if (modal) {
-        modal.showModal();
-    }
-}
-
-const vlcBtn = document.getElementById("vlcBtn");
-if (vlcBtn) {
-    vlcBtn.onclick = function() {
-        fetch("/play/Movies/" + encodeURIComponent(selectedMovie));
-        const modal = document.getElementById("playerModal");
-        if (modal) {
-            modal.close();
-        }
-    };
-}
-
-const closeBtn = document.getElementById("closeBtn");
-if (closeBtn) {
-    closeBtn.onclick = function() {
-        const modal = document.getElementById("playerModal");
-        if (modal) {
-            modal.close();
-        }
-    };
-}
-
-window.addEventListener("pageshow", function() {
-    const modal = document.getElementById("playerModal");
-    if (modal && modal.open) {
-        modal.close();
-    }
-});
-
 const movieSearchInput = document.getElementById('animeSearch');
 if (movieSearchInput) {
     movieSearchInput.addEventListener('input', function(e) {

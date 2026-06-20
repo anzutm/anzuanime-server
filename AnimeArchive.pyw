@@ -2,7 +2,6 @@ import threading
 import webbrowser
 import sys
 import os
-import time
 from pystray import Icon, Menu, MenuItem # type: ignore
 from PIL import Image
 from app import app, sync_all_library, start_scanner, periodic_sync_task

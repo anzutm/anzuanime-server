@@ -2265,11 +2265,6 @@ def player(
         if h_data.get("episode") == episode:
             resume_time = h_data.get("last_seconds", 0)
 
-    current_watch_status = get_episode_watch_status(
-        anime_name,
-        episode
-    )
-
     return render_template(
 
         "player.html",
@@ -2295,8 +2290,6 @@ def player(
             next_episode,
             
         resume_time=resume_time,
-
-        current_watch_status=current_watch_status,
         
         episodes=episodes
 
