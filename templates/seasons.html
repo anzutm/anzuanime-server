@@ -8,14 +8,14 @@
 <div class="hero seasons-hero">
     <img
         class="hero-banner"
-        src="/banner/{{ anime_name }}"
+        src="{{ url_for('banner', anime_name=anime_name) }}"
         alt="{{ anime_name }}"
     >
 
     <div class="hero-overlay">
         <div class="seasons-hero-inner">
             <a
-                href="/"
+                href="{{ url_for('index') }}"
                 class="back-btn seasons-back-btn"
             >
                 &larr; Back
@@ -52,7 +52,7 @@
     <div class="episode-grid seasons-grid">
         {% for season in seasons %}
         <a
-            href="/anime/{{ anime_name }}/{{ season.name }}"
+            href="{{ url_for('season_detail', anime_name=anime_name, season_name=season.name) }}"
             class="season-card"
         >
             <div class="season-cover">

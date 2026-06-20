@@ -6,25 +6,25 @@
     <title>{% block title %}Anzu Anime{% endblock %}</title>
     <style>html,body{background-color:#0b0907;color:#F3F4F5;}</style>
     <meta name="theme-color" content="#0b0907">
-    <link rel="icon" type="image/png" href="/static/arcana.jpg">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='arcana.jpg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     {% block topbar %}
     <header class="topbar">
         <div class="nav-left">
-            <a href="/" class="brand">
-                <img src="/static/logo_transparent_cropped.png" alt="Anzuanime Logo" class="header-logo">
+            <a href="{{ url_for('index') }}" class="brand">
+                <img src="{{ url_for('static', filename='logo_transparent_cropped.png') }}" alt="Anzuanime Logo" class="header-logo">
                 <h1>Anzu<span>anime</span></h1>
             </a>
         </div>
         <nav class="nav-center">
             <ul class="nav-links">
-                <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
-                <li><a href="/movies" class="nav-link {% if request.path == '/movies' %}active{% endif %}">Movies</a></li>
-                <li><a href="/schedule" class="nav-link {% if request.path == '/schedule' %}active{% endif %}">Schedule</a></li>
-                <li><a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a></li>
+                <li><a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                <li><a href="{{ url_for('movies') }}" class="nav-link {% if request.path == '/movies' %}active{% endif %}">Movies</a></li>
+                <li><a href="{{ url_for('schedule') }}" class="nav-link {% if request.path == '/schedule' %}active{% endif %}">Schedule</a></li>
+                <li><a href="{{ url_for('about') }}" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a></li>
             </ul>
         </nav>
         <div class="nav-right">
@@ -33,7 +33,7 @@
                 <input type="text" id="animeSearch" placeholder="Search library...">
             </div>
             <div class="user-action">
-                <a href="/settings" class="profile-circle" aria-label="Settings" title="Settings">&#9881;</a>
+                <a href="{{ url_for('settings_page') }}" class="profile-circle" aria-label="Settings" title="Settings">&#9881;</a>
             </div>
         </div>
     </header>
@@ -53,8 +53,8 @@
             <div class="footer-links">
                 <h3>Navigate</h3>
                 <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/movies">Movies</a></li>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('movies') }}">Movies</a></li>
                 </ul>
             </div>
             <div class="footer-meta">

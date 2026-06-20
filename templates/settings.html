@@ -32,7 +32,7 @@
 
         <div class="settings-picker-message" id="settingsPickerMessage" aria-live="polite"></div>
 
-        <form method="POST" action="/settings" class="settings-form">
+        <form method="POST" action="{{ url_for('update_settings') }}" class="settings-form">
             <div class="settings-grid">
                 <section class="settings-card">
                     <div class="settings-card-head">
@@ -186,7 +186,7 @@
                     This only removes files inside the local cache directory. Thumbnail cleanup is skipped because thumbnails are stored by hashed video path.
                 </p>
 
-                <form method="POST" action="/settings/cleanup-cache" class="settings-maintenance-actions">
+                <form method="POST" action="{{ url_for('cleanup_cache_settings') }}" class="settings-maintenance-actions">
                     <button type="submit" class="settings-cleanup-btn">
                         Clean Orphan Cache
                     </button>

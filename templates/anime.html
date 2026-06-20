@@ -7,13 +7,13 @@
     <style>html,body{background-color:#050711;color:#F3F4F5;}</style>
     <meta name="theme-color" content="#050711">
 
-    <link rel="icon" type="image/png" href="/static/arcana.jpg">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='arcana.jpg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 <a
-    href="/"
+    href="{{ url_for('index') }}"
     class="back-btn anime-floating-back"
     aria-label="Back to home"
 >
@@ -24,7 +24,7 @@
 
     <img
         class="hero-banner"
-        src="/banner/{{ anime_name }}"
+        src="{{ url_for('banner', anime_name=anime_name) }}"
         alt="{{ anime_name }}"
     >
 
@@ -39,7 +39,7 @@
             <div class="hero-poster-shell">
                 <img
                     class="hero-poster"
-                    src="/poster/{{ anime_name }}"
+                    src="{{ url_for('poster', anime_name=anime_name) }}"
                     alt="{{ anime_name }}"
                 >
                 <div class="poster-status-chip">
@@ -175,7 +175,7 @@
         <div class="character-card">
             <div class="char-side character-profile character-main">
                 <div class="character-image-wrap">
-                    <img src="/character_img/{{ anime_name }}/{{ char.image_local }}" alt="{{ char.name }}" loading="lazy">
+                    <img src="{{ url_for('character_img', anime_name=anime_name, filename=char.image_local) }}" alt="{{ char.name }}" loading="lazy">
                 </div>
                 <div class="char-info">
                     <span class="char-name">{{ char.name }}</span>
@@ -186,7 +186,7 @@
             {% if char.va_name %}
             <div class="va-side character-profile voice-profile">
                 <div class="character-image-wrap voice-image-wrap">
-                    <img src="/character_img/{{ anime_name }}/{{ char.va_image_local }}" alt="{{ char.va_name }}" loading="lazy">
+                    <img src="{{ url_for('character_img', anime_name=anime_name, filename=char.va_image_local) }}" alt="{{ char.va_name }}" loading="lazy">
                 </div>
                 <div class="va-info">
                     <span class="va-name">{{ char.va_name }}</span>
@@ -354,8 +354,8 @@
             <div class="footer-links">
                 <h3>Navigate</h3>
                 <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/movies">Movies</a></li>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('movies') }}">Movies</a></li>
                 </ul>
             </div>
             <div class="footer-meta">
@@ -378,9 +378,13 @@ function encodeEpisodePath(path){
         .join("/");
 }
 
+const playerAnimeName = {{ (folder_name or anime_name) | tojson }};
+
 function playEpisode(ep){
     window.location.href =
-        "/player/{{ folder_name or anime_name }}/" +
+        "/player/" +
+        encodeURIComponent(playerAnimeName) +
+        "/" +
         encodeEpisodePath(ep);
 }
 </script>

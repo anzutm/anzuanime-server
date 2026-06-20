@@ -12,7 +12,7 @@
     {% for slide in featured_slides %}
     <div class="featured-slide {% if loop.first %}active{% endif %}">
         <img
-            src="/banner/{{ slide.anime.name }}"
+            src="{{ url_for('banner', anime_name=slide.anime.name) }}"
             class="featured-banner"
             alt="{{ slide.anime.name }}"
         >
@@ -26,7 +26,7 @@
                     <div class="featured-row">
                         {% if slide.info %}
                         <div class="hero-actions">
-                            <a href="/anime/{{ slide.anime.name }}" class="watch-btn">&#9654; Play Now</a>
+                            <a href="{{ url_for('anime_detail', anime_name=slide.anime.name) }}" class="watch-btn">&#9654; Play Now</a>
                         </div>
 
                         <div class="featured-meta">
@@ -63,7 +63,7 @@
                 <div class="featured-visual">
                     <div class="featured-poster-wrapper">
                         <div class="poster-glass-frame">
-                            <img src="/poster/{{ slide.anime.name }}" class="featured-poster-floating" alt="">
+                            <img src="{{ url_for('poster', anime_name=slide.anime.name) }}" class="featured-poster-floating" alt="">
                         </div>
                         <div class="featured-side-panel">
                             <span class="side-panel-label">Now Featuring</span>
@@ -108,9 +108,9 @@
     <div class="continue-grid-shell">
         <div class="continue-grid" id="continueGrid">
             {% for item in continue_watching %}
-            <a href="/player/{{ item.name }}/{{ item.episode }}" class="continue-card">
+            <a href="{{ url_for('player', anime_name=item.name, episode=item.episode) }}" class="continue-card">
                 <div class="continue-thumb">
-                    <img src="/banner/{{ item.name }}" alt="{{ item.name }}">
+                    <img src="{{ url_for('banner', anime_name=item.name) }}" alt="{{ item.name }}">
                     <div class="continue-badge">Resume</div>
                     <div class="progress-bar-container">
                         <div class="progress-fill" style="width: 100%;"></div>
@@ -228,12 +228,12 @@
             data-status="{{ anime.status }}"
         >
             <a
-                href="{% if anime.name == 'Movies' %}/movies{% else %}/anime/{{ anime.name }}{% endif %}"
+                href="{% if anime.name == 'Movies' %}{{ url_for('movies') }}{% else %}{{ url_for('anime_detail', anime_name=anime.name) }}{% endif %}"
                 onclick="this.querySelector('.poster').style.viewTransitionName = 'anime-poster'"
             >
                 <img
                     class="poster"
-                    src="/poster/{{ anime.name }}"
+                    src="{{ url_for('poster', anime_name=anime.name) }}"
                     alt="{{ anime.name }}"
                     loading="lazy"
                 >

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, jsonify, send_file, request, abort
+from flask import Flask, render_template, redirect, jsonify, send_file, request, abort, url_for
 import os
 import subprocess
 import requests
@@ -960,6 +960,16 @@ def find_anime_path(anime_name):
 
     return None
 
+def find_media_path(library_name):
+
+    if library_name == "Movies":
+        if MOVIE_PATH and os.path.isdir(MOVIE_PATH):
+            return MOVIE_PATH
+
+        return None
+
+    return find_anime_path(library_name)
+
 def get_season_anilist_info(anime_name, season_name):
 
     search_name = season_name
@@ -1854,8 +1864,7 @@ def banner(anime_name):
 
     safe_name = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
     banner_path = os.path.join(
-        "cache",
-        "banners",
+        BANNER_CACHE,
         f"{safe_name}.jpg"
     )
 
@@ -1879,8 +1888,7 @@ def banner(anime_name):
         )
 
     poster_path = os.path.join(
-        "cache",
-        "posters",
+        POSTER_CACHE,
         f"{safe_name}.jpg"
     )
 
@@ -1899,7 +1907,7 @@ def thumbnail(
     episode
 ):
 
-    anime_path = find_anime_path(
+    anime_path = find_media_path(
         anime_name
     )
 
@@ -2062,7 +2070,7 @@ def player(
     episode
 ):
 
-    anime_path = find_anime_path(
+    anime_path = find_media_path(
         anime_name
     )
 
@@ -2245,7 +2253,10 @@ def player(
                 "/"
             )
 
-    back_url = f"/anime/{anime_name}"
+    back_url = url_for(
+        "anime_detail",
+        anime_name=anime_name
+    )
 
     if season_name:
 
@@ -2254,7 +2265,11 @@ def player(
             "/"
         )
 
-        back_url = f"/anime/{anime_name}/{season_url}"
+        back_url = url_for(
+            "season_detail",
+            anime_name=anime_name,
+            season_name=season_url
+        )
 
     # Ambil waktu tonton terakhir untuk fitur resume
     history = load_history_data()
@@ -2303,7 +2318,7 @@ def stream_video(
     episode
 ):
 
-    anime_path = find_anime_path(
+    anime_path = find_media_path(
         anime_name
     )
 
@@ -2344,7 +2359,7 @@ def character_img(anime_name, filename):
 
 @app.route("/subtitle/<anime_name>/<path:episode>")
 def get_subtitle(anime_name, episode):
-    anime_path = find_anime_path(anime_name)
+    anime_path = find_media_path(anime_name)
     if not anime_path:
         abort(404)
         
@@ -2570,7 +2585,7 @@ def season_detail(
 @app.route("/play/<anime_name>/<path:episode>")
 def play_episode(anime_name, episode):
 
-    anime_path = find_anime_path(
+    anime_path = find_media_path(
         anime_name
     )
 
@@ -2764,7 +2779,7 @@ def clear_rpc_route():
 def favicon():
     return send_file(
         os.path.join(app.root_path, 'static', 'arcana.jpg'),
-        mimetype='image/png'
+        mimetype='image/jpeg'
     )
 
 def load_history_data():

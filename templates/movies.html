@@ -11,7 +11,7 @@
     {% for hero in movies[:5] %}
     <div class="featured-slide {% if loop.first %}active{% endif %}">
         <img
-            src="/banner/{{ hero.title }}"
+            src="{{ url_for('banner', anime_name=hero.title) }}"
             class="featured-banner"
             alt="{{ hero.title }}"
         >
@@ -24,7 +24,7 @@
 
                     <div class="featured-row">
                         <div class="hero-actions">
-                            <a href="/movie/{{ hero.file | urlencode }}" class="watch-btn">&#9654; View Details</a>
+                            <a href="{{ url_for('movie_detail_page', filename=hero.file) }}" class="watch-btn">&#9654; View Details</a>
                         </div>
 
                         <div class="featured-meta">
@@ -54,7 +54,7 @@
                 <div class="featured-visual">
                     <div class="featured-poster-wrapper">
                         <div class="poster-glass-frame">
-                            <img src="/poster/{{ hero.title }}" class="featured-poster-floating" alt="">
+                            <img src="{{ url_for('poster', anime_name=hero.title) }}" class="featured-poster-floating" alt="">
                         </div>
                         <div class="featured-side-panel">
                             <span class="side-panel-label">Featured</span>
@@ -98,10 +98,10 @@
     <div class="grid">
         {% for movie in movies %}
         <div class="card">
-            <a href="/movie/{{ movie.file | urlencode }}">
+            <a href="{{ url_for('movie_detail_page', filename=movie.file) }}">
                 <img
                     class="poster"
-                    src="{{ movie.poster }}"
+                    src="{{ url_for('poster', anime_name=movie.title) }}"
                     alt="{{ movie.title }}"
                     loading="lazy"
                 >

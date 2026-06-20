@@ -19,15 +19,15 @@
     <style>html{background-color:#0b0907;} body{background-color:transparent !important; color:#F3F4F5;}</style>
     <meta name="theme-color" content="#0b0907">
 
-    <link rel="icon" type="image/png" href="/static/arcana.jpg">
-    <link rel="stylesheet" href="/static/style.css?v={{ (range(1, 9999) | list | random) }}">
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='arcana.jpg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=(range(1, 9999) | list | random)) }}">
 
 </head>
 
 <body>
 
 <div class="player-backdrop">
-    <img src="/banner/{{ anime_name | urlencode }}" alt="{{ anime_name }}">
+    <img src="{{ url_for('banner', anime_name=anime_name) }}" alt="{{ anime_name }}">
 </div>
 
 <div class="player-cinema-shell">
@@ -35,7 +35,7 @@
 
     <header class="player-header">
         <div class="player-header-actions" aria-label="Player navigation">
-            <a href="/" class="player-back player-home">
+            <a href="{{ url_for('index') }}" class="player-back player-home">
                 <span class="player-home-icon" aria-hidden="true">&#8962;</span>
             </a>
 
@@ -64,10 +64,10 @@
         <div class="video-player-container">
             <div class="video-player">
                 <video id="player" playsinline controls crossorigin>
-                    <source src="/stream/{{ anime_name | urlencode }}/{{ episode }}" type="video/mp4">
+                    <source src="{{ url_for('stream_video', anime_name=anime_name, episode=episode) }}" type="video/mp4">
                     <track
                         kind="subtitles" 
-                        src="/subtitle/{{ anime_name | urlencode }}/{{ episode }}" 
+                        src="{{ url_for('get_subtitle', anime_name=anime_name, episode=episode) }}"
                         srclang="id" 
                         label="Indonesian" 
                         default
@@ -91,7 +91,7 @@
                     <a
                         id="prevEpisodeLink"
                         class="nav-btn prev"
-                        href="{% if previous_episode %}/player/{{ anime_name | urlencode }}/{{ previous_episode }}{% else %}#{% endif %}"
+                        href="{% if previous_episode %}{{ url_for('player', anime_name=anime_name, episode=previous_episode) }}{% else %}#{% endif %}"
                         data-player-nav
                         data-episode-path="{{ previous_episode or '' }}"
                         {% if not previous_episode %}hidden aria-disabled="true"{% endif %}
@@ -102,7 +102,7 @@
                     <a
                         id="nextEpisodeLink"
                         class="nav-btn next"
-                        href="{% if next_episode %}/player/{{ anime_name | urlencode }}/{{ next_episode }}{% else %}#{% endif %}"
+                        href="{% if next_episode %}{{ url_for('player', anime_name=anime_name, episode=next_episode) }}{% else %}#{% endif %}"
                         data-player-nav
                         data-episode-path="{{ next_episode or '' }}"
                         {% if not next_episode %}hidden aria-disabled="true"{% endif %}
@@ -135,7 +135,7 @@
         {% for ep in episodes %}
         <a
 
-            href="/player/{{ anime_name | urlencode }}/{{ ep.file }}"
+            href="{{ url_for('player', anime_name=anime_name, episode=ep.file) }}"
             data-player-nav
             data-episode-path="{{ ep.file }}"
             data-episode-num="{{ ep.episode }}"
@@ -240,7 +240,7 @@
     })();
 </script>
 
-<script src="/static/player.js"></script>
+<script src="{{ url_for('static', filename='player.js') }}"></script>
 
 </body>
 
