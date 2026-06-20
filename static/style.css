@@ -175,10 +175,6 @@ body{
         0 30px 70px rgba(0, 0, 0, 0.7);
 }
 
-.card:hover .poster {
-    transform: scale(1.08);
-}
-
 .card::before{
 
     content:"";
@@ -279,21 +275,7 @@ body{
 }
 
 .episode-card{
-    
-    overflow:hidden;
-
-    border-radius:18px;
-
-    background:var(--card);
-
-    backdrop-filter: var(--glass);
-    -webkit-backdrop-filter: var(--glass);
-
-    border:1px solid var(--border);
-
-    transition: all 0.5s var(--ease);
     opacity: 0; /* Mulai dari transparan untuk animasi masuk */
-    transform: translateY(0) scale(1);
 }
 
 @keyframes slideUpReveal {
@@ -325,8 +307,6 @@ body{
     width:100%;
     height:100%;
     object-fit:cover;
-    transform: scale(1);
-    transition: 0.6s var(--ease);
 }
 
 .episode-info{
@@ -609,26 +589,6 @@ body{
 .episode-overlay{
 
     position:absolute;
-
-    left:0;
-    right:0;
-    bottom:0;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:20px;
-
-    padding:15px 25px;
-
-    background:
-        linear-gradient(
-            to top,
-            rgba(0,0,0,.92),
-            rgba(0,0,0,.55),
-            transparent
-        );
 }
 
 .play-circle{
@@ -1519,19 +1479,11 @@ body{
 }
 
 .continue-card {
-    flex: 0 0 380px;
-    background: var(--card);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    transition: 0.3s;
-    text-decoration: none;
     color: inherit;
 }
 
 .continue-card:hover {
     border-color: var(--primary);
-    transform: translateY(-5px);
 }
 
 .continue-thumb {
@@ -1646,11 +1598,6 @@ body{
             rgba(0,0,0,.4),
             transparent
         );
-}
-
-.card:hover .poster-overlay{
-
-    opacity:1;
 }
 
 .poster-overlay h3{
@@ -2319,33 +2266,6 @@ body{
     flex: 0 0 450px;
     text-decoration: none;
     color: white;
-    overflow: hidden;
-    border-radius: 18px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    transition: .25s;
-}
-
-.player-episode-card:hover{
-
-    transform:
-        translateY(-4px);
-
-    border-color: var(--primary);
-}
-
-.player-episode-card.active{
-
-    border:2px solid var(--primary);
-
-    box-shadow:
-        0 0 25px
-        rgba(
-            0,
-            180,
-            255,
-            .35
-        );
 }
 
 .player-thumb-wrapper{
@@ -3041,105 +2961,36 @@ video::cue {
 }
 
 /* Related Anime Section */
-.related-section {
-    margin-top: 60px;
-    padding: 0 40px;
-    margin-bottom: 60px;
-}
-
 .related-grid {
     display: flex;
-    gap: 20px;
-    margin-top: 25px;
     overflow-x: auto;
-    padding-bottom: 25px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary) transparent;
-}
-
-.related-grid::-webkit-scrollbar {
-    height: 6px;
-}
-
-.related-grid::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-.related-card {
-    flex: 0 0 180px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    backdrop-filter: var(--glass);
-    overflow: hidden;
-    transition: all 0.5s var(--ease);
-}
-
-.related-card:hover {
-    transform: translateY(-8px);
-    border-color: var(--primary);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
 .rel-poster-wrapper {
     position: relative;
-    height: 250px;
-    overflow: hidden;
 }
 
 .rel-poster-wrapper img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.related-card:hover .rel-poster-wrapper img {
-    transform: scale(1.1);
 }
 
 .rel-type-badge {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(5, 7, 10, 0.7);
-    backdrop-filter: var(--glass);
-    color: var(--primary);
-    padding: 4px 10px;
-    border-radius: 8px;
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-    border: 1px solid var(--border);
-}
-
-.rel-info {
-    padding: 12px;
 }
 
 .rel-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 8px;
     display: -webkit-box;
     line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    line-height: 1.4;
-    height: 2.8em;
 }
-
-.rel-status {
-    font-size: 11px;
-    color: var(--text-secondary);
-    opacity: 0.6;
-}
-
-.rel-status.finished { color: #4ade80; opacity: 1; }
-.rel-status.releasing { color: var(--primary); opacity: 1; }
 
 /* Premium dark glassmorphism refinement */
 html {
@@ -3216,31 +3067,9 @@ body {
     box-shadow: none;
 }
 
-.nav-links {
-    gap: 10px;
-    padding: 6px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.045);
-    border: 1px solid rgba(255,255,255,.08);
-    box-shadow: var(--glass-highlight);
-}
-
 .nav-link {
     display: inline-flex;
     align-items: center;
-    min-height: 40px;
-    padding: 0 16px;
-    border-radius: 999px;
-    color: rgba(245, 247, 255, .68);
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: #fff;
-    background: rgba(255,255,255,.08);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.12),
-        0 0 22px rgba(0,0,255,.24);
 }
 
 .search-box input {
@@ -3387,7 +3216,6 @@ body {
 .continue-card > *,
 .episode-card > *,
 .character-card > *,
-.related-card > *,
 .season-card > *,
 .info-card > *,
 .player-episode-card > * {
@@ -3399,7 +3227,6 @@ body {
 .continue-card:hover,
 .episode-card:hover,
 .character-card:hover,
-.related-card:hover,
 .season-card:hover,
 .info-card:hover,
 .player-episode-card:hover {
@@ -3420,24 +3247,17 @@ body {
 }
 
 .poster,
-.episode-thumbnail,
-.continue-thumb img,
-.player-thumb,
-.rel-poster-wrapper img {
+.continue-thumb img {
     transition: transform .65s var(--ease), filter .65s var(--ease);
 }
 
 .card:hover .poster,
-.continue-card:hover .continue-thumb img,
-.episode-card:hover .episode-thumbnail,
-.player-episode-card:hover .player-thumb,
-.related-card:hover .rel-poster-wrapper img {
+.continue-card:hover .continue-thumb img {
     transform: scale(1.08);
     filter: saturate(1.12) contrast(1.05);
 }
 
 .poster-overlay,
-.episode-overlay,
 .continue-overlay {
     background:
         linear-gradient(to top, rgba(0,0,5,.96), rgba(0,0,12,.52) 52%, rgba(0,0,0,.08)),
@@ -3521,10 +3341,6 @@ body {
 }
 
 .continue-card {
-    flex: 0 0 380px;
-    width: 380px;
-    min-width: 380px;
-    max-width: 380px;
     min-height: 238px;
     overflow: visible;
     isolation: isolate;
@@ -3532,12 +3348,10 @@ body {
     transform-origin: center center;
     will-change: transform;
     text-decoration: none;
-    transition: all .35s cubic-bezier(0.16,1,0.3,1);
 }
 
 .continue-card:hover {
     z-index: 30;
-    transform: translateY(-8px) scale(1.025);
     box-shadow:
         0 24px 52px rgba(0,0,0,.58),
         0 0 34px rgba(0,0,255,.30),
@@ -3801,14 +3615,6 @@ body {
 .topbar {
     max-width: 1760px;
     margin: 0 auto;
-    background:
-        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.035) 48%, rgba(0,0,255,.055)),
-        rgba(2,3,12,.78);
-    box-shadow:
-        0 24px 80px rgba(0,0,0,.62),
-        0 0 44px rgba(0,0,255,.18),
-        0 0 70px rgba(0,216,255,.055),
-        var(--glass-highlight);
 }
 
 .topbar::before {
@@ -4275,19 +4081,6 @@ body {
     line-height: 1.25;
 }
 
-.related-card {
-    flex-basis: 190px;
-    border-radius: 24px;
-}
-
-.rel-poster-wrapper {
-    height: 270px;
-}
-
-.rel-info {
-    padding: 14px;
-}
-
 .player-page {
     max-width: 1540px;
     margin: -48px auto 28px;
@@ -4625,24 +4418,6 @@ body {
     box-shadow: none;
 }
 
-.nav-links {
-    gap: 6px;
-    background: rgba(255,255,255,.038);
-}
-
-.nav-link {
-    min-height: 38px;
-    padding-inline: 15px;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    background:
-        linear-gradient(135deg, rgba(255,255,255,.095), rgba(255,255,255,.045)),
-        rgba(0,0,255,.055);
-    color: #fff;
-}
-
 .nav-link::after {
     background: linear-gradient(90deg, rgba(255,184,77,.9), rgba(255,111,181,.72), var(--primary-hover));
 }
@@ -4960,16 +4735,6 @@ body:has(.featured-anime) {
     gap: 22px;
 }
 
-.episode-card {
-    background:
-        linear-gradient(145deg, rgba(255,255,255,.066), rgba(255,255,255,.028)),
-        rgba(4,6,18,.72);
-}
-
-.episode-card:hover {
-    border-color: rgba(255,255,255,.20);
-}
-
 .thumbnail-wrapper {
     border: 1px solid rgba(255,255,255,.08);
 }
@@ -4983,18 +4748,9 @@ body:has(.featured-anime) {
         rgba(0,0,0,.42);
 }
 
-.episode-overlay {
-    min-height: 92px;
-    background:
-        linear-gradient(to top, rgba(0,0,5,.96), rgba(0,0,10,.62), transparent),
-        radial-gradient(circle at 16% 78%, rgba(255,184,77,.13), transparent 32%);
-}
-
 .play-circle {
     width: 52px;
     height: 52px;
-    background:
-        linear-gradient(135deg, var(--primary), var(--primary-hover) 58%, rgba(255,111,181,.72));
 }
 
 .episode-meta h3 {
@@ -5693,27 +5449,6 @@ body:has(.featured-anime) {
     position: relative;
 }
 
-.continue-watching-section::before,
-.continue-watching-section::after {
-    content: "";
-    position: absolute;
-    top: 132px;
-    bottom: 14px;
-    width: 78px;
-    z-index: 12;
-    pointer-events: none;
-}
-
-.continue-watching-section::before {
-    left: -2px;
-    background: linear-gradient(90deg, #000003 0%, rgba(0,0,3,.82) 18%, transparent 100%);
-}
-
-.continue-watching-section::after {
-    right: -2px;
-    background: linear-gradient(270deg, #000003 0%, rgba(0,0,3,.82) 18%, transparent 100%);
-}
-
 .resume-actions {
     display: flex;
     align-items: center;
@@ -5992,11 +5727,6 @@ body:has(.featured-anime) {
 }
 
 @media(max-width: 900px) {
-    .continue-watching-section::before,
-    .continue-watching-section::after {
-        width: 34px;
-    }
-
     .resume-actions {
         width: 100%;
         justify-content: space-between;
@@ -6267,11 +5997,6 @@ body:has(.featured-anime) {
     border-radius: 30px;
 }
 
-.continue-watching-section::before,
-.continue-watching-section::after {
-    display: none;
-}
-
 .continue-grid-shell {
     position: relative;
 }
@@ -6297,11 +6022,6 @@ body:has(.featured-anime) {
     right: 0;
     background:
         linear-gradient(270deg, rgba(0,0,3,.54) 0%, rgba(0,0,3,.24) 48%, transparent 100%);
-}
-
-.continue-grid::before,
-.continue-grid::after {
-    display: none;
 }
 
 .continue-grid {
@@ -6413,11 +6133,6 @@ body:has(.featured-anime) {
     box-shadow: none;
 }
 
-.episode-overlay::before,
-.episode-overlay::after {
-    display: none;
-}
-
 .episode-card-footer {
     position: relative;
     z-index: 3;
@@ -6518,11 +6233,6 @@ body:has(.featured-anime) {
 }
 
 @media(max-width: 900px) {
-    .continue-watching-section::before,
-    .continue-watching-section::after {
-        width: 30px;
-    }
-
     .character-card {
         height: auto;
         min-height: 0;
@@ -6613,12 +6323,6 @@ body:has(.featured-anime) {
     box-shadow: none;
     pointer-events: none;
     transition: all .35s cubic-bezier(0.16,1,0.3,1);
-}
-
-.episode-overlay::before,
-.episode-overlay::after {
-    content: none !important;
-    display: none !important;
 }
 
 .episode-overlay .play-circle,
