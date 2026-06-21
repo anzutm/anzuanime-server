@@ -113,7 +113,7 @@
                     <img src="{{ item.image_url }}" alt="{{ item.display_name }}">
                     <div class="continue-badge">Resume</div>
                     <div class="progress-bar-container">
-                        <div class="progress-fill" style="width: {{ item.progress_percent }}%;"></div>
+                        <div class="progress-fill" style="width: 0%;" data-progress="{{ item.progress_percent }}"></div>
                     </div>
                     <div class="continue-overlay">
                         <button class="play-mini-btn">&#9654;</button>
@@ -451,6 +451,12 @@
         const continueGrid = document.getElementById('continueGrid');
         const resumePrev = document.querySelector('.resume-prev');
         const resumeNext = document.querySelector('.resume-next');
+
+        document.querySelectorAll('.continue-card .progress-fill[data-progress]').forEach(fill => {
+            const value = Number(fill.dataset.progress);
+            const progress = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+            fill.style.width = `${progress}%`;
+        });
 
         if (continueGrid && resumePrev && resumeNext) {
             const scrollResume = (direction) => {
