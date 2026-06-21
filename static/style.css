@@ -3341,6 +3341,67 @@ body{
 
 .studio-page {
     width: min(1760px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 24px 0 56px;
+}
+
+.studio-header-wrap {
+    margin-bottom: 36px;
+    position: relative;
+    z-index: 5;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: rgba(4, 7, 16, 0.35);
+    box-shadow: 
+        0 24px 64px rgba(0, 0, 0, 0.4),
+        var(--glass-highlight);
+}
+
+.studio-header-content {
+    position: relative;
+    z-index: 2;
+    padding: 28px 28px 30px;
+}
+
+.studio-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.studio-backdrop-montage {
+    display: flex;
+    gap: 12px;
+    width: 105%;
+    height: 105%;
+    position: absolute;
+    top: -2.5%;
+    left: -2.5%;
+    opacity: 0.14;
+    filter: blur(14px);
+    transform: scale(1.05);
+}
+
+.studio-backdrop-montage img {
+    flex: 1 1 0;
+    width: 0;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.studio-backdrop-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(5, 7, 17, 0.05) 0%,
+        rgba(5, 7, 17, 0.3) 45%,
+        var(--bg2) 100%
+    );
 }
 
 .studio-back-link {
@@ -3348,8 +3409,8 @@ body{
     display: inline-flex;
     align-items: center;
     width: fit-content;
-    margin: 0 0 18px;
-    padding: 0 14px;
+    margin: 0 0 16px;
+    padding: 0 16px;
     border: 1px solid var(--border);
     border-radius: 999px;
     color: var(--text);
@@ -3374,39 +3435,171 @@ body{
     width: 100%;
 }
 
-.studio-heading-main {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    justify-content: space-between;
+.studio-page .studio-heading-panel {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    box-sizing: border-box;
 }
 
-.studio-heading-main > div:first-child {
+.studio-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.studio-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.studio-meta-item .meta-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.studio-meta-item .meta-value {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.studio-anilist-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(61, 180, 242, 0.15);
+    border: 1px solid rgba(61, 180, 242, 0.3);
+    border-radius: 12px;
+    color: #3db4f2;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    transition: var(--transition);
+}
+
+.studio-anilist-link:hover {
+    background: rgba(61, 180, 242, 0.25);
+    border-color: #3db4f2;
+    box-shadow: 0 0 16px rgba(61, 180, 242, 0.35);
+    transform: translateY(-1.5px);
+}
+
+.anilist-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.studio-heading-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    width: 100%;
+}
+
+.studio-heading-left {
+    flex: 1;
     min-width: 0;
 }
 
-.studio-heading-main .section-heading {
-    overflow-wrap: anywhere;
+.studio-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 6px 0 10px;
 }
 
-.studio-count-badge {
-    flex: 0 0 auto;
-    min-height: 36px;
+.studio-title-row h2 {
+    margin: 0;
+    font-size: clamp(24px, 3.5vw, 42px);
+    line-height: 1.15;
+    font-weight: 900;
+}
+
+.studio-badge {
     display: inline-flex;
     align-items: center;
-    padding: 7px 12px;
-    border: 1px solid rgba(255,255,255,.13);
+    padding: 5px 12px;
     border-radius: 999px;
-    color: var(--text);
-    background:
-        linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, transparent), rgba(255,255,255,.035)),
-        var(--card);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.12),
-        0 0 20px var(--card-glow);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 900;
-    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.animation-studio-badge {
+    background: color-mix(in srgb, var(--primary) 15%, transparent);
+    color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--primary) 32%, transparent);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.studio-heading-right {
+    flex-shrink: 0;
+}
+
+.studio-stats {
+    display: flex;
+    gap: 16px;
+}
+
+.studio-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.018)),
+        rgba(4, 7, 16, 0.24);
+    min-width: 110px;
+    text-align: center;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.studio-stat-card .stat-value {
+    font-size: 26px;
+    font-weight: 950;
+    color: var(--text);
+    line-height: 1.1;
+}
+
+.studio-stat-card .stat-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 5px;
+}
+
+.studio-section-title {
+    margin: 48px 0 24px;
+}
+
+.studio-section-title .section-title {
+    margin-bottom: 8px;
+}
+
+.studio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
 }
 
 .studio-grid:has(.card:only-child) {
@@ -3414,22 +3607,126 @@ body{
     justify-content: start;
 }
 
+.studio-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+}
+
+.studio-year-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.studio-year-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.studio-year-header h4 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.studio-year-header h4 span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.studio-year-header::before {
+    content: "";
+    width: 4px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--primary-gradient);
+    box-shadow: 0 0 14px var(--card-glow);
+}
+
+/* In Library Indicator Badge & Glow Styles */
+.card.in-library-card,
+.card.project-card.in-library {
+    border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.card.in-library-card:hover,
+.card.project-card.in-library:hover {
+    border-color: var(--primary);
+    box-shadow:
+        0 28px 72px rgba(0,0,0,.56),
+        0 0 32px color-mix(in srgb, var(--primary) 28%, transparent),
+        var(--glass-highlight);
+}
+
+.card-top-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 5;
+    padding: 5px 9px;
+    background: var(--primary-gradient);
+    color: #FFF;
+    font-size: 9px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.library-badge-indicator {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 5;
+    background: var(--primary-gradient);
+    color: #FFF;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.library-badge-indicator svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Static Non-clickable card overrides */
 .studio-card-static {
     position: relative;
     display: block;
     width: 100%;
     height: 100%;
     color: inherit;
+    cursor: default;
 }
 
 .studio-card-static .play-hover-btn:disabled {
     cursor: default;
-    opacity: .78;
+    opacity: 0.65;
+    border-color: rgba(255,255,255,.08);
+    background: rgba(255,255,255,.03);
 }
 
-.studio-notice {
-    margin: 0 0 18px;
-    padding: 12px 14px;
+/* Fallback Notice & Empty States */
+.studio-fallback-notice {
+    margin: 18px 0;
+    padding: 14px 18px;
     border: 1px solid color-mix(in srgb, var(--primary) 26%, transparent);
     border-radius: 12px;
     color: var(--text-secondary);
@@ -3438,21 +3735,34 @@ body{
         var(--card);
     font-size: 13px;
     font-weight: 750;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.studio-fallback-notice .notice-icon {
+    font-size: 18px;
+    color: var(--primary);
+}
+
+.studio-fallback-notice p {
+    margin: 0;
+    line-height: 1.4;
 }
 
 .studio-empty-state {
     display: grid;
     justify-items: center;
-    gap: 12px;
-    width: min(760px, 100%);
-    margin: 0 auto 56px;
-    padding: 56px 24px;
+    gap: 14px;
+    width: min(680px, 100%);
+    margin: 40px auto 56px;
+    padding: 48px 24px;
     border: 1px solid var(--border);
-    border-radius: 18px;
+    border-radius: 20px;
     color: var(--text-secondary);
     text-align: center;
     background:
-        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 38%),
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 42%),
         linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
         var(--card);
     box-shadow:
@@ -3460,45 +3770,85 @@ body{
         0 20px 60px rgba(0,0,0,.28);
 }
 
-.studio-empty-state span {
-    min-height: 26px;
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-    border-radius: 999px;
-    color: var(--primary-hover);
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: .10em;
-    text-transform: uppercase;
+.studio-empty-state .empty-icon {
+    font-size: 32px;
+    color: var(--primary);
+    margin-bottom: 4px;
 }
 
 .studio-empty-state h3 {
     margin: 0;
     color: var(--text);
-    font-size: clamp(22px, 2.2vw, 32px);
+    font-size: clamp(20px, 2.2vw, 28px);
+    font-weight: 900;
 }
 
 .studio-empty-state p {
-    max-width: 520px;
+    max-width: 480px;
     margin: 0;
     line-height: 1.6;
+    font-size: 14px;
 }
 
-.studio-empty-state a {
+.studio-empty-state .empty-btn {
     min-height: 40px;
     display: inline-flex;
     align-items: center;
-    margin-top: 4px;
-    padding: 0 14px;
+    margin-top: 12px;
+    padding: 0 20px;
     border: 1px solid color-mix(in srgb, var(--primary) 34%, transparent);
     border-radius: 999px;
     color: var(--text);
     background: color-mix(in srgb, var(--primary) 12%, transparent);
     text-decoration: none;
     font-weight: 900;
+    font-size: 13px;
+    transition: var(--transition);
+}
+
+.studio-empty-state .empty-btn:hover {
+    border-color: var(--primary);
+    background: var(--primary-gradient);
+    box-shadow: 0 0 14px var(--card-glow);
+}
+
+/* Client-side Toolbar Styles */
+.studio-toolbar {
+    margin-bottom: 28px;
+}
+
+.studio-filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    z-index: 5;
+    position: relative;
+}
+
+.studio-filter-group .filter-btn {
+    min-height: 38px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.studio-filter-group .filter-btn:hover {
+    border-color: var(--primary);
+    color: var(--text);
+    background: var(--card-hover);
+}
+
+.studio-filter-group .filter-btn.active {
+    border-color: var(--primary);
+    color: #FFF;
+    background: var(--primary-gradient);
+    box-shadow: 0 0 14px var(--card-glow);
 }
 
 @media(max-width: 900px) {
@@ -9012,7 +9362,7 @@ body:has(.hero-foreground) .character-section {
 }
 
 /* Homepage Anime Collection card hover polish */
-.collection-section > .grid .card {
+.collection-section .grid .card {
     overflow: hidden;
     transform: translateY(0) scale(1);
     transition:
@@ -9022,7 +9372,7 @@ body:has(.hero-foreground) .character-section {
         background .38s cubic-bezier(0.16,1,0.3,1);
 }
 
-.collection-section > .grid .card::after {
+.collection-section .grid .card::after {
     content: "";
     position: absolute;
     inset: 1px;
@@ -9038,8 +9388,8 @@ body:has(.hero-foreground) .character-section {
         transform .62s cubic-bezier(0.16,1,0.3,1);
 }
 
-.collection-section > .grid .card:hover,
-.collection-section > .grid .card:focus-within {
+.collection-section .grid .card:hover,
+.collection-section .grid .card:focus-within {
     transform: translateY(-7px) scale(1.018);
     border-color: rgba(0,216,255,.30);
     background:
@@ -9052,13 +9402,13 @@ body:has(.hero-foreground) .character-section {
         var(--glass-highlight);
 }
 
-.collection-section > .grid .card:hover::after,
-.collection-section > .grid .card:focus-within::after {
+.collection-section .grid .card:hover::after,
+.collection-section .grid .card:focus-within::after {
     opacity: 82;
     transform: translateX(0%);
 }
 
-.collection-section > .grid .poster {
+.collection-section .grid .poster {
     display: block;
     transform: scale(1);
     filter: saturate(1.02) contrast(1.02);
@@ -9068,13 +9418,13 @@ body:has(.hero-foreground) .character-section {
         filter .55s cubic-bezier(0.16,1,0.3,1);
 }
 
-.collection-section > .grid .card:hover .poster,
-.collection-section > .grid .card:focus-within .poster {
+.collection-section .grid .card:hover .poster,
+.collection-section .grid .card:focus-within .poster {
     transform: scale(1.035);
     filter: saturate(1.09) contrast(1.04) brightness(1.03);
 }
 
-.collection-section > .grid .poster-overlay {
+.collection-section .grid .poster-overlay {
     z-index: 4;
     opacity: 0;
     background:
@@ -9090,8 +9440,8 @@ body:has(.hero-foreground) .character-section {
         background .38s cubic-bezier(0.16,1,0.3,1);
 }
 
-.collection-section > .grid .card:hover .poster-overlay,
-.collection-section > .grid .card:focus-within .poster-overlay {
+.collection-section .grid .card:hover .poster-overlay,
+.collection-section .grid .card:focus-within .poster-overlay {
     opacity: 1;
     background:
         linear-gradient(
@@ -9106,9 +9456,9 @@ body:has(.hero-foreground) .character-section {
         radial-gradient(ellipse at 84% 92%, rgba(255,190,96,.10), transparent 38%);
 }
 
-.collection-section > .grid .poster-overlay h3,
-.collection-section > .grid .poster-card-meta,
-.collection-section > .grid .play-hover-btn {
+.collection-section .grid .poster-overlay h3,
+.collection-section .grid .poster-card-meta,
+.collection-section .grid .play-hover-btn {
     transform: translateY(14px);
     opacity: 0;
     transition:
@@ -9117,32 +9467,32 @@ body:has(.hero-foreground) .character-section {
         filter .36s cubic-bezier(0.16,1,0.3,1);
 }
 
-.collection-section > .grid .poster-card-meta {
+.collection-section .grid .poster-card-meta {
     transition-delay: .035s;
 }
 
-.collection-section > .grid .play-hover-btn {
+.collection-section .grid .play-hover-btn {
     transition-delay: .07s;
 }
 
-.collection-section > .grid .card:hover .poster-overlay h3,
-.collection-section > .grid .card:hover .poster-card-meta,
-.collection-section > .grid .card:hover .play-hover-btn,
-.collection-section > .grid .card:focus-within .poster-overlay h3,
-.collection-section > .grid .card:focus-within .poster-card-meta,
-.collection-section > .grid .card:focus-within .play-hover-btn {
+.collection-section .grid .card:hover .poster-overlay h3,
+.collection-section .grid .card:hover .poster-card-meta,
+.collection-section .grid .card:hover .play-hover-btn,
+.collection-section .grid .card:focus-within .poster-overlay h3,
+.collection-section .grid .card:focus-within .poster-card-meta,
+.collection-section .grid .card:focus-within .play-hover-btn {
     transform: translateY(0);
     opacity: 1;
 }
 
-.collection-section > .grid .poster-card-meta span {
+.collection-section .grid .poster-card-meta span {
     background:
         linear-gradient(135deg, rgba(255,255,255,.11), rgba(255,255,255,.050)),
         rgba(0,0,0,.26);
     border-color: rgba(255,255,255,.16);
 }
 
-.collection-section > .grid .play-hover-btn {
+.collection-section .grid .play-hover-btn {
     border-color: rgba(0,216,255,.34);
     background:
         linear-gradient(135deg, rgba(0,216,255,.82), rgba(51,51,255,.66), rgba(255,190,96,.40));

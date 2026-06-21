@@ -2328,18 +2328,53 @@ def studio_page(studio_name):
         if project.get("in_library")
     ]
 
+    # Compute additional profile statistics
+    from collections import Counter
+    years = [p.get("year") for p in studio_projects if p.get("year") and p.get("year") != 0]
+    earliest_year = min(years) if years else None
+    newest_year = max(years) if years else None
+
+    formats = [p.get("format") for p in studio_projects if p.get("format")]
+    format_counts = Counter(formats)
+    clean_doms = []
+    for fmt, count in format_counts.most_common(2):
+        fmt_upper = fmt.upper()
+        if fmt_upper in ("TV", "OVA", "ONA"):
+            clean_doms.append(fmt_upper)
+        else:
+            clean_doms.append(fmt_upper.title())
+    dominant_formats_str = ", ".join(clean_doms) if clean_doms else "N/A"
+
+    # Group projects by year
+    by_year = {}
+    for p in studio_projects:
+        year = p.get("year")
+        y_key = year if (year and year != 0) else 0
+        by_year.setdefault(y_key, []).append(p)
+
+    # Sort years descending, keeping TBA (0) at the end
+    sorted_years = sorted([yk for yk in by_year.keys() if yk > 0], reverse=True)
+    if 0 in by_year:
+        sorted_years.append(0)
+
+    projects_by_year = [(yk, by_year[yk]) for yk in sorted_years]
+
     return render_template(
         "studio.html",
         studio_name=studio_name,
         studio_info=studio_info,
         studio_projects=studio_projects,
+        projects_by_year=projects_by_year,
         library_projects=library_projects,
         total_projects=len(studio_projects),
         total_in_library=len(library_projects),
         studio_error=studio_error,
         fallback_used=fallback_used,
         studio_anime=library_projects,
-        total_anime=len(library_projects)
+        total_anime=len(library_projects),
+        earliest_year=earliest_year,
+        newest_year=newest_year,
+        dominant_formats=dominant_formats_str
     )
 
 @app.route("/movies")

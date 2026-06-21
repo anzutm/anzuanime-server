@@ -6,63 +6,112 @@
 <section class="collection-section studio-page">
     <div class="collection-glow"></div>
 
-    <a href="{{ url_for('index') }}" class="studio-back-link">&larr; Back</a>
+    <!-- Header / Hero section -->
+    <div class="studio-header-wrap">
+        <!-- Visual backdrop made from project posters -->
+        <div class="studio-backdrop">
+            <div class="studio-backdrop-montage">
+                {% for project in studio_projects[:8] if project.poster %}
+                <img src="{{ project.poster }}" alt="" onerror="this.style.display='none';">
+                {% endfor %}
+            </div>
+            <div class="studio-backdrop-overlay"></div>
+        </div>
 
-    <div class="collection-top page-heading-top studio-heading-top">
-        <div class="collection-heading page-heading-panel">
-            <div class="studio-heading-main">
-                <div>
-                    <span class="page-heading-eyebrow">Local Studio Library</span>
-                    <div class="section-title">
-                        <div class="section-line"></div>
-                        <h2 class="section-heading">{{ studio_name }}</h2>
+        <div class="studio-header-content">
+            <a href="{{ url_for('index') }}" class="studio-back-link">&larr; Back to Library</a>
+
+            <div class="collection-top page-heading-top studio-heading-top">
+                <div class="collection-heading page-heading-panel studio-heading-panel">
+                    <div class="studio-heading-main">
+                        <div class="studio-heading-left">
+                            <span class="page-heading-eyebrow">Studio Profile</span>
+                            <div class="studio-title-row">
+                                <h2 class="section-heading">{{ studio_name }}</h2>
+                                {% if studio_info and studio_info.isAnimationStudio %}
+                                <span class="studio-badge animation-studio-badge">Animation Studio</span>
+                                {% endif %}
+                            </div>
+                            <p class="section-subtitle page-heading-copy">
+                                Browse anime projects credited to this studio. Titles in your local collection are marked below.
+                            </p>
+                            
+                            <!-- Premium stats and metadata row -->
+                            <div class="studio-meta-row">
+                                <div class="studio-meta-item">
+                                    <span class="meta-label">Active Years:</span>
+                                    <span class="meta-value">{{ earliest_year or '?' }} - {{ newest_year or '?' }}</span>
+                                </div>
+                                <div class="studio-meta-item">
+                                    <span class="meta-label">Dominant Formats:</span>
+                                    <span class="meta-value">{{ dominant_formats }}</span>
+                                </div>
+                                {% if studio_info and studio_info.id %}
+                                <a href="https://anilist.co/studio/{{ studio_info.id }}" target="_blank" rel="noopener noreferrer" class="studio-anilist-link">
+                                    <svg class="anilist-icon" viewBox="0 0 24 24"><path d="M24 10.975h-7.859L24 18.835v4.996h-7.073L9.07 15.972l-7.857 7.859H0v-4.996l7.142-7.859H0v-4.997h7.859L0 3.125V0h7.072l7.858 7.859 7.859-7.859H24v3.125l-7.141 7.85z" fill="currentColor"/></svg>
+                                    AniList Profile
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="studio-heading-right">
+                            <div class="studio-stats">
+                                <div class="studio-stat-card">
+                                    <span class="stat-value">{{ total_in_library }}</span>
+                                    <span class="stat-label">In Library</span>
+                                </div>
+                                <div class="studio-stat-card">
+                                    <span class="stat-value">{{ total_projects }}</span>
+                                    <span class="stat-label">Total Projects</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <p class="section-subtitle page-heading-copy">
-                        Anime from your local library whose AniList Main Studio metadata matches this studio.
-                    </p>
-                </div>
-
-                <div class="studio-count-badge">
-                    {{ total_in_library }} in Your Library / {{ total_projects }} Projects
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="collection-toolbar">
-        <div class="toolbar-line"></div>
-    </div>
-
-    {% if studio_error %}
-    <div class="studio-notice">
-        {{ studio_error }}{% if fallback_used %} Showing local library matches instead.{% endif %}
+    <!-- Fallback / Error Notices -->
+    {% if fallback_used %}
+    <div class="studio-fallback-notice">
+        <span class="notice-icon">&#9888;</span>
+        <p>Showing available local studio matches because the AniList studio catalog is temporarily unavailable.</p>
     </div>
     {% endif %}
 
-    {% if studio_projects %}
-    <div class="grid studio-grid">
-        {% for anime in studio_projects %}
-        <div class="card">
-            {% if anime.local_detail_url %}
+    <!-- In Your Library Section -->
+    {% if library_projects %}
+    <div class="studio-section-title">
+        <div class="section-title">
+            <div class="section-line"></div>
+            <h3 class="section-heading">In Your Library</h3>
+        </div>
+    </div>
+    <div class="grid studio-grid library-grid">
+        {% for anime in library_projects %}
+        <div class="card in-library-card">
             <a href="{{ anime.local_detail_url }}">
-            {% else %}
-            <div class="studio-card-static">
-            {% endif %}
                 <img
                     class="poster"
                     src="{{ anime.poster }}"
                     alt="{{ anime.name }}"
                     loading="lazy"
+                    onerror="this.src='/static/arcana.jpg'; this.onerror=null;"
                 >
 
+                <div class="library-badge-indicator" title="In Your Library">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"></path>
+                    </svg>
+                </div>
+
                 <div class="poster-overlay">
+                    <div class="card-top-badge">In Your Library</div>
                     <h3>{{ anime.name }}</h3>
 
                     <div class="poster-card-meta">
-                        {% if anime.in_library %}
-                        <span>In Your Library</span>
-                        {% endif %}
-
                         {% if anime.score %}
                         <span>&starf; {{ "%.1f"|format((anime.score or 0) / 10) }}</span>
                         {% endif %}
@@ -76,38 +125,393 @@
                         </span>
                         {% endif %}
 
-                        {% if anime.episodes %}
-                        <span>{{ anime.episodes }} Episodes</span>
+                        {% if anime.format %}
+                        <span class="meta-format">{{ anime.format }}</span>
                         {% endif %}
 
-                        {% if anime.status %}
-                        <span>{{ anime.status.replace('_', ' ').title() }}</span>
+                        {% if anime.episodes %}
+                        <span>{{ anime.episodes }} Ep</span>
                         {% endif %}
                     </div>
 
-                    {% if anime.local_detail_url %}
-                    <button class="play-hover-btn">&#9654; View</button>
-                    {% else %}
-                    <button class="play-hover-btn" disabled>Not in Library</button>
-                    {% endif %}
+                    <button class="play-hover-btn">&#9654; Watch</button>
                 </div>
-            {% if anime.local_detail_url %}
             </a>
-            {% else %}
-            </div>
-            {% endif %}
         </div>
         {% endfor %}
     </div>
-    {% else %}
+    {% endif %}
+
+    <!-- All Studio Projects Section Title -->
+    {% if studio_projects %}
+    <div class="studio-section-title">
+        <div class="section-title">
+            <div class="section-line"></div>
+            <h3 class="section-heading">All Studio Projects</h3>
+        </div>
+    </div>
+
+    <!-- Client-side Toolbar -->
+    <div class="collection-toolbar studio-toolbar">
+        <div class="toolbar-line"></div>
+
+        <div class="status-filter studio-filter-group">
+            <button type="button" data-filter="all" class="filter-btn active">All Projects</button>
+            <button type="button" data-filter="library" class="filter-btn">In Your Library</button>
+            <button type="button" data-filter="TV" class="filter-btn">TV</button>
+            <button type="button" data-filter="MOVIE" class="filter-btn">Movie</button>
+            <button type="button" data-filter="OVA" class="filter-btn">OVA</button>
+            <button type="button" data-filter="ONA" class="filter-btn">ONA</button>
+        </div>
+
+        <div class="sort-control" id="studioSortControl">
+            <span class="sort-label">
+                <span class="sort-icon" aria-hidden="true">&#8645;</span>
+                Sort
+            </span>
+            <button
+                type="button"
+                class="sort-trigger"
+                id="studioSortTrigger"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+            >
+                <span id="studioSortLabel">Popularity</span>
+                <span class="sort-chevron">⌄</span>
+            </button>
+
+            <div class="sort-menu" id="studioSortMenu" role="listbox">
+                <button type="button" class="sort-option active" data-sort="popularity" role="option" aria-selected="true">Popularity</button>
+                <button type="button" class="sort-option" data-sort="score-desc" role="option">Highest Score</button>
+                <button type="button" class="sort-option" data-sort="newest" role="option">Newest</button>
+                <button type="button" class="sort-option" data-sort="oldest" role="option">Oldest</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline of All Projects grouped by year -->
+    <div class="studio-timeline" id="studioTimeline">
+        {% for year, year_projects in projects_by_year %}
+        <div class="studio-year-section" data-year="{{ year }}">
+            <div class="studio-year-header">
+                <h4>{{ year if year else 'TBA' }} <span class="project-count-badge">· {{ year_projects|length }} Projects</span></h4>
+            </div>
+            
+            <div class="grid studio-grid">
+                {% for anime in year_projects %}
+                    {% if anime.in_library %}
+                    <!-- Card for anime IN LIBRARY -->
+                    <div class="card project-card in-library" 
+                         data-in-library="true"
+                         data-format="{{ anime.format or '' }}"
+                         data-status="{{ anime.status or '' }}"
+                         data-popularity="{{ anime.popularity or 0 }}"
+                         data-score="{{ anime.score or 0 }}"
+                         data-year="{{ anime.year or 0 }}"
+                         data-title="{{ anime.name | lower }}">
+                        <a href="{{ anime.local_detail_url }}">
+                            <img
+                                class="poster"
+                                src="{{ anime.poster }}"
+                                alt="{{ anime.name }}"
+                                loading="lazy"
+                                onerror="this.src='/static/arcana.jpg'; this.onerror=null;"
+                            >
+                            <div class="library-badge-indicator" title="In Your Library">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                            <div class="poster-overlay">
+                                <div class="card-top-badge">In Your Library</div>
+                                <h3>{{ anime.name }}</h3>
+                                <div class="poster-card-meta">
+                                    {% if anime.score %}
+                                    <span>&starf; {{ "%.1f"|format((anime.score or 0) / 10) }}</span>
+                                    {% endif %}
+                                    {% if anime.year %}
+                                    <span>
+                                        {% if anime.season %}
+                                            {{ anime.season }}
+                                        {% endif %}
+                                        {{ anime.year }}
+                                    </span>
+                                    {% endif %}
+                                    {% if anime.format %}
+                                    <span class="meta-format">{{ anime.format }}</span>
+                                    {% endif %}
+                                    {% if anime.episodes %}
+                                    <span>{{ anime.episodes }} Ep</span>
+                                    {% endif %}
+                                    {% if anime.status %}
+                                    <span class="meta-status">{{ anime.status.replace('_', ' ').title() }}</span>
+                                    {% endif %}
+                                </div>
+                                <button class="play-hover-btn">&#9654; Watch</button>
+                            </div>
+                        </a>
+                    </div>
+                    {% else %}
+                    <!-- Card for anime NOT IN LIBRARY -->
+                    <div class="card project-card not-in-library" 
+                         data-in-library="false"
+                         data-format="{{ anime.format or '' }}"
+                         data-status="{{ anime.status or '' }}"
+                         data-popularity="{{ anime.popularity or 0 }}"
+                         data-score="{{ anime.score or 0 }}"
+                         data-year="{{ anime.year or 0 }}"
+                         data-title="{{ anime.name | lower }}">
+                        <div class="studio-card-static">
+                            <img
+                                class="poster"
+                                src="{{ anime.poster }}"
+                                alt="{{ anime.name }}"
+                                loading="lazy"
+                                onerror="this.src='/static/arcana.jpg'; this.onerror=null;"
+                            >
+                            <div class="poster-overlay">
+                                <h3>{{ anime.name }}</h3>
+                                <div class="poster-card-meta">
+                                    {% if anime.score %}
+                                    <span>&starf; {{ "%.1f"|format((anime.score or 0) / 10) }}</span>
+                                    {% endif %}
+                                    {% if anime.year %}
+                                    <span>
+                                        {% if anime.season %}
+                                            {{ anime.season }}
+                                        {% endif %}
+                                        {{ anime.year }}
+                                    </span>
+                                    {% endif %}
+                                    {% if anime.format %}
+                                    <span class="meta-format">{{ anime.format }}</span>
+                                    {% endif %}
+                                    {% if anime.episodes %}
+                                    <span>{{ anime.episodes }} Ep</span>
+                                    {% endif %}
+                                    {% if anime.status %}
+                                    <span class="meta-status">{{ anime.status.replace('_', ' ').title() }}</span>
+                                    {% endif %}
+                                </div>
+                                <button class="play-hover-btn" disabled>Not in Library</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Styled No Results State -->
+    <div class="studio-empty-state" id="studioNoResults" style="display: none;">
+        <span class="empty-icon">&#128269;</span>
+        <h3>No matching projects found</h3>
+        <p>Try adjusting your filter settings to see more titles.</p>
+    </div>
+    {% endif %}
+
+    <!-- Empty State for Studio Error/No Projects -->
+    {% if not studio_projects %}
     <div class="studio-empty-state">
-        <span>No Matches</span>
-        <h3>No local anime found for this studio.</h3>
+        <span class="empty-icon">&#128065;</span>
+        <h3>No projects found</h3>
         <p>
-            This page only includes titles that exist in your local library and have matching AniList Main Studio metadata.
+            We couldn't retrieve any projects for this studio right now.
         </p>
-        <a href="{{ url_for('index') }}">Return to Library</a>
+        <a href="{{ url_for('index') }}" class="empty-btn">Return to Library</a>
     </div>
     {% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.studio-filter-group .filter-btn');
+    const sortOptions = document.querySelectorAll('#studioSortMenu .sort-option');
+    const sortControl = document.getElementById('studioSortControl');
+    const sortTrigger = document.getElementById('studioSortTrigger');
+    const sortLabel = document.getElementById('studioSortLabel');
+    const sortMenu = document.getElementById('studioSortMenu');
+    const timeline = document.getElementById('studioTimeline');
+    if (!timeline) return;
+
+    const sections = Array.from(timeline.querySelectorAll('.studio-year-section'));
+    const emptyState = document.getElementById('studioNoResults');
+
+    let currentFilter = 'all';
+    let currentSort = 'popularity';
+
+    // Dropdown toggle
+    if (sortTrigger && sortControl) {
+        sortTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isOpen = sortControl.classList.toggle('open');
+            sortTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!sortControl.contains(e.target)) {
+                sortControl.classList.remove('open');
+                sortTrigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    function getNumber(val) {
+        const num = Number(val);
+        return Number.isFinite(num) ? num : 0;
+    }
+
+    function sortCardsInGrids() {
+        // 1. Sort the projects inside each year section
+        sections.forEach(section => {
+            const grid = section.querySelector('.studio-grid');
+            if (!grid) return;
+            const cards = Array.from(grid.querySelectorAll('.project-card'));
+            
+            const sorted = [...cards].sort((a, b) => {
+                const titleA = a.dataset.title || '';
+                const titleB = b.dataset.title || '';
+
+                if (currentSort === 'popularity') {
+                    const popA = getNumber(a.dataset.popularity);
+                    const popB = getNumber(b.dataset.popularity);
+                    if (popA !== popB) {
+                        return popB - popA; // Higher popularity first
+                    }
+                    return titleA.localeCompare(titleB);
+                } else if (currentSort === 'score-desc') {
+                    const scoreA = getNumber(a.dataset.score);
+                    const scoreB = getNumber(b.dataset.score);
+                    if (scoreA !== scoreB) {
+                        return scoreB - scoreA; // Higher score first
+                    }
+                    return titleA.localeCompare(titleB);
+                } else {
+                    // For newest/oldest, inner sort defaults to popularity
+                    const popA = getNumber(a.dataset.popularity);
+                    const popB = getNumber(b.dataset.popularity);
+                    if (popA !== popB) {
+                        return popB - popA;
+                    }
+                    return titleA.localeCompare(titleB);
+                }
+            });
+
+            sorted.forEach(card => grid.appendChild(card));
+        });
+
+        // 2. Sort the year sections themselves within the timeline container
+        const sortedSections = [...sections].sort((a, b) => {
+            const yearA = getNumber(a.dataset.year);
+            const yearB = getNumber(b.dataset.year);
+
+            // Put TBA (year = 0) at the end of the timeline regardless of sort
+            if (yearA === 0 && yearB !== 0) return 1;
+            if (yearB === 0 && yearA !== 0) return -1;
+            if (yearA === 0 && yearB === 0) return 0;
+
+            if (currentSort === 'oldest') {
+                return yearA - yearB; // Ascending (oldest first)
+            } else {
+                // For popularity, highest score, and newest, sort newest first (descending)
+                return yearB - yearA; 
+            }
+        });
+
+        sortedSections.forEach(section => timeline.appendChild(section));
+    }
+
+    function applyFilterAndSort() {
+        let totalVisibleCount = 0;
+
+        sections.forEach(section => {
+            const grid = section.querySelector('.studio-grid');
+            if (!grid) return;
+            const cards = Array.from(grid.querySelectorAll('.project-card'));
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const inLibrary = card.dataset.inLibrary === 'true';
+                const format = card.dataset.format || ''; 
+                
+                let matches = false;
+                if (currentFilter === 'all') {
+                    matches = true;
+                } else if (currentFilter === 'library') {
+                    matches = inLibrary;
+                } else {
+                    matches = format.toUpperCase() === currentFilter.toUpperCase();
+                }
+
+                if (matches) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                    totalVisibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Update badge text dynamically
+            const badge = section.querySelector('.project-count-badge');
+            if (badge) {
+                badge.textContent = `· ${visibleCount} Project${visibleCount !== 1 ? 's' : ''}`;
+            }
+
+            // Hide section if empty
+            if (visibleCount === 0) {
+                section.style.display = 'none';
+            } else {
+                section.style.display = 'flex';
+            }
+        });
+
+        if (totalVisibleCount === 0) {
+            if (emptyState) emptyState.style.display = 'grid';
+        } else {
+            if (emptyState) emptyState.style.display = 'none';
+        }
+
+        sortCardsInGrids();
+    }
+
+    // Filter clicks
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.dataset.filter;
+            applyFilterAndSort();
+        });
+    });
+
+    // Sort clicks
+    sortOptions.forEach(opt => {
+        opt.addEventListener('click', function(e) {
+            e.stopPropagation();
+            sortOptions.forEach(o => {
+                o.classList.remove('active');
+                o.removeAttribute('aria-selected');
+            });
+            this.classList.add('active');
+            this.setAttribute('aria-selected', 'true');
+            currentSort = this.dataset.sort;
+            if (sortLabel) sortLabel.textContent = this.textContent.trim();
+            if (sortControl && sortTrigger) {
+                sortControl.classList.remove('open');
+                sortTrigger.setAttribute('aria-expanded', 'false');
+            }
+            applyFilterAndSort();
+        });
+    });
+
+    // Run initial filter/sort
+    applyFilterAndSort();
+});
+</script>
 {% endblock %}
