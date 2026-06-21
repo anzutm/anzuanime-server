@@ -14,7 +14,7 @@ import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
  
 try:
     from pypresence import Presence
@@ -54,6 +54,13 @@ WATCH_HISTORY_FILE = os.path.join(BASE_DIR, "cache", "watch_history.json")
 WATCH_STATUS_FILE = os.path.join(BASE_DIR, "cache", "watch_status.json")
 SETTINGS_FILE = os.path.join(BASE_DIR, "cache", "settings.json")
 WATCH_DATA_LOCK = threading.RLock()
+SCHEDULE_CACHE_LOCK = threading.RLock()
+SCHEDULE_CACHE = {
+    "expires_at": 0,
+    "airing_list": [],
+    "error": None
+}
+SCHEDULE_CACHE_TTL_SECONDS = 300
 
 PROTECTED_CACHE_FILES = {
     os.path.abspath(DB_PATH),
@@ -1010,14 +1017,24 @@ def get_season_anilist_info(anime_name, season_name):
     )
 
 def get_airing_schedule():
-    now = datetime.now()
-    start_of_day = int(datetime(now.year, now.month, now.day).timestamp())
-    end_of_day = start_of_day + 86400
+    local_tz = datetime.now().astimezone().tzinfo
+    now = datetime.now(local_tz)
+    start_dt = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_dt = start_dt + timedelta(days=1)
+    start_of_day = int(start_dt.timestamp())
+    end_of_day = int(end_dt.timestamp())
 
     query = """
-    query ($start: Int, $end: Int) {
-      Page(perPage: 50) {
-        airingSchedules(airingAt_greater: $start, airingAt_less: $end, sort: TIME) {
+    query ($start: Int, $end: Int, $page: Int) {
+      Page(page: $page, perPage: 50) {
+        pageInfo {
+          total
+          currentPage
+          lastPage
+          hasNextPage
+          perPage
+        }
+        airingSchedules(airingAt_greater: $start, airingAt_lesser: $end, sort: TIME) {
           airingAt
           episode
           media {
@@ -1034,19 +1051,191 @@ def get_airing_schedule():
       }
     }
     """
+
+    schedules = []
+    page = 1
+
     try:
-        response = requests.post(
-            "https://graphql.anilist.co",
-            json={
-                "query": query,
-                "variables": {"start": start_of_day, "end": end_of_day}
-            },
-            timeout=10
-        )
-        return response.json().get("data", {}).get("Page", {}).get("airingSchedules", [])
-    except Exception as e:
-        print(f"Schedule API Error: {e}")
-        return []
+        while True:
+            response = requests.post(
+                "https://graphql.anilist.co",
+                json={
+                    "query": query,
+                    "variables": {
+                        "start": start_of_day,
+                        "end": end_of_day,
+                        "page": page
+                    }
+                },
+                timeout=10
+            )
+
+            print(
+                "Schedule API status:",
+                response.status_code,
+                "page:",
+                page,
+                "window:",
+                start_dt.isoformat(),
+                "to",
+                end_dt.isoformat(),
+                "rate_remaining:",
+                response.headers.get("X-RateLimit-Remaining")
+            )
+
+            try:
+                data = response.json()
+            except ValueError as e:
+                print("Schedule API JSON Error:", e)
+                return [], "AniList returned an invalid JSON response."
+
+            if response.status_code >= 400:
+                print("Schedule API HTTP Error JSON:", data)
+                return [], f"AniList schedule request failed with HTTP {response.status_code}."
+
+            errors = data.get("errors")
+            if errors:
+                print("Schedule API GraphQL Errors:", errors)
+                return [], "AniList returned GraphQL errors for the schedule request."
+
+            page_data = data.get("data", {}).get("Page")
+            if not page_data:
+                print("Schedule API Missing Page Data:", data)
+                return [], "AniList schedule response did not include page data."
+
+            page_info = page_data.get("pageInfo") or {}
+            page_schedules = page_data.get("airingSchedules") or []
+            schedules.extend(page_schedules)
+
+            print(
+                "Schedule API page summary:",
+                page_info,
+                "items:",
+                len(page_schedules)
+            )
+
+            if not page_info.get("hasNextPage"):
+                break
+
+            page += 1
+
+        return schedules, None
+
+    except requests.RequestException as e:
+        print(f"Schedule API Request Error: {e}")
+        return [], "Unable to reach AniList schedule API."
+
+def get_cached_airing_schedule():
+    now_monotonic = time.time()
+
+    with SCHEDULE_CACHE_LOCK:
+        if SCHEDULE_CACHE["expires_at"] > now_monotonic:
+            return list(SCHEDULE_CACHE["airing_list"]), SCHEDULE_CACHE["error"]
+
+    airing_list, schedule_error = get_airing_schedule()
+
+    with SCHEDULE_CACHE_LOCK:
+        SCHEDULE_CACHE["airing_list"] = airing_list
+        SCHEDULE_CACHE["error"] = schedule_error
+        SCHEDULE_CACHE["expires_at"] = time.time() + SCHEDULE_CACHE_TTL_SECONDS
+
+    return list(airing_list), schedule_error
+
+def build_schedule_items(airing_list, local_tz, now_ts):
+    existing_anime_names = get_existing_anime_names()
+    processed = []
+
+    for item in airing_list:
+        media = item.get("media") or {}
+        title_data = media.get("title") or {}
+        title = title_data.get("english") or title_data.get("romaji")
+
+        if not title or not item.get("airingAt"):
+            continue
+
+        airing_dt = datetime.fromtimestamp(item["airingAt"], local_tz)
+        airing_time = airing_dt.strftime("%H:%M")
+
+        if item["airingAt"] <= now_ts < item["airingAt"] + 1800:
+            airing_status = "Airing now"
+        elif item["airingAt"] > now_ts:
+            airing_status = "Upcoming"
+        else:
+            airing_status = "Aired"
+
+        cover_image = media.get("coverImage") or {}
+
+        processed.append({
+            "title": title,
+            "poster": cover_image.get("extraLarge") or url_for("static", filename="arcana.jpg"),
+            "episode": item.get("episode"),
+            "time": airing_time,
+            "airing_at": item["airingAt"],
+            "airing_iso": airing_dt.isoformat(),
+            "format": media.get("format"),
+            "status": airing_status,
+            "detail_url": url_for("anime_detail", anime_name=title) if title in existing_anime_names else None
+        })
+
+    return processed
+
+def format_schedule_alert_countdown(seconds):
+    total_minutes = max(0, int((seconds + 59) // 60))
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+
+    if hours and minutes:
+        return f"Starts in {hours}h {minutes}m"
+
+    if hours:
+        return f"Starts in {hours}h"
+
+    return f"Starts in {minutes}m"
+
+def get_schedule_alert_payload(processed, now_ts, now_iso, timezone_offset_minutes):
+    current_items = [
+        item for item in processed
+        if item["airing_at"] <= now_ts < item["airing_at"] + 1800
+    ]
+    upcoming_items = [
+        item for item in processed
+        if item["airing_at"] > now_ts
+    ]
+    alert_items = current_items + upcoming_items
+    badge_count = len(current_items) + len([
+        item for item in upcoming_items
+        if item["airing_at"] <= now_ts + 7200
+    ])
+
+    payload_items = []
+    for item in alert_items:
+        if item in current_items:
+            status_mode = "live"
+            status_label = "LIVE NOW"
+        else:
+            status_mode = "upcoming"
+            status_label = format_schedule_alert_countdown(item["airing_at"] - now_ts)
+
+        payload_items.append({
+            "title": item["title"],
+            "poster": item["poster"],
+            "episode": item["episode"],
+            "time": item["time"],
+            "airing_at": item["airing_at"],
+            "airing_iso": item["airing_iso"],
+            "format": item["format"],
+            "detail_url": item["detail_url"],
+            "status_mode": status_mode,
+            "status_label": status_label
+        })
+
+    return {
+        "items": payload_items,
+        "badge_count": badge_count,
+        "summary": f"{len(current_items)} airing now · {len(upcoming_items)} upcoming",
+        "now_iso": now_iso,
+        "timezone_offset_minutes": timezone_offset_minutes
+    }
 
 def update_discord_rpc(anime_name, episode_num, time_str=None):
     global rpc_connected, RPC_START_TIME, CURRENT_RPC_ANIME
@@ -1712,24 +1901,75 @@ def about():
 
 @app.route("/schedule")
 def schedule():
-    airing_list = get_airing_schedule()
-    processed = []
-    for item in airing_list:
-        # Konversi timestamp ke waktu lokal HH:MM
-        airing_time = datetime.fromtimestamp(item['airingAt']).strftime('%H:%M')
-        processed.append({
-            'title': item['media']['title']['english'] or item['media']['title']['romaji'],
-            'poster': item['media']['coverImage']['extraLarge'],
-            'episode': item['episode'],
-            'time': airing_time,
-            'format': item['media']['format']
-        })
+    local_tz = datetime.now().astimezone().tzinfo
+    now_dt = datetime.now(local_tz)
+    now_ts = int(now_dt.timestamp())
+    timezone_offset_minutes = int(now_dt.utcoffset().total_seconds() // 60)
+    airing_list, schedule_error = get_cached_airing_schedule()
+    processed = build_schedule_items(airing_list, local_tz, now_ts)
+
+    current_items = [
+        item for item in processed
+        if item["airing_at"] <= now_ts < item["airing_at"] + 1800
+    ]
+    upcoming_items = [
+        item for item in processed
+        if item["airing_at"] > now_ts
+    ]
+    schedule_focus = None
+
+    if current_items:
+        schedule_focus = dict(current_items[0])
+        schedule_focus["focus_mode"] = "live"
+        schedule_focus["focus_badge"] = "LIVE NOW"
+        schedule_focus["focus_status"] = "Airing now"
+        schedule_focus["more_count"] = max(0, len(current_items) - 1)
+    elif upcoming_items:
+        schedule_focus = dict(upcoming_items[0])
+        schedule_focus["focus_mode"] = "next"
+        schedule_focus["focus_badge"] = "NEXT UP"
+        schedule_focus["focus_status"] = "Upcoming"
+        schedule_focus["more_count"] = 0
     
     return render_template(
         "schedule.html",
         schedule=processed,
-        today=datetime.now().strftime("%A, %d %B %Y")
+        schedule_focus=schedule_focus,
+        schedule_error=schedule_error,
+        now_ts=now_ts,
+        now_iso=now_dt.isoformat(),
+        timezone_offset_minutes=timezone_offset_minutes,
+        today=now_dt.strftime("%A, %d %B %Y")
     )
+
+@app.route("/api/schedule-alerts")
+def schedule_alerts():
+    local_tz = datetime.now().astimezone().tzinfo
+    now_dt = datetime.now(local_tz)
+    now_ts = int(now_dt.timestamp())
+    timezone_offset_minutes = int(now_dt.utcoffset().total_seconds() // 60)
+    airing_list, schedule_error = get_cached_airing_schedule()
+
+    if schedule_error:
+        return jsonify({
+            "ok": False,
+            "error": schedule_error,
+            "items": [],
+            "badge_count": 0,
+            "summary": "Schedule unavailable",
+            "now_iso": now_dt.isoformat(),
+            "timezone_offset_minutes": timezone_offset_minutes
+        }), 502
+
+    processed = build_schedule_items(airing_list, local_tz, now_ts)
+    payload = get_schedule_alert_payload(
+        processed,
+        now_ts,
+        now_dt.isoformat(),
+        timezone_offset_minutes
+    )
+    payload["ok"] = True
+    return jsonify(payload)
 
 @app.route("/movies")
 def movies():

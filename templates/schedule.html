@@ -3,41 +3,145 @@
 {% block title %}Airing Schedule - Anzu Anime{% endblock %}
 
 {% block content %}
-<section class="collection-section">
+<section class="collection-section schedule-page">
     <div class="collection-glow"></div>
 
     <div class="collection-top page-heading-top">
         <div class="collection-heading page-heading-panel">
-            <span class="page-heading-eyebrow">Airing Schedule</span>
-            <div class="section-title">
-                <div class="section-line"></div>
-                <h2 class="section-heading">Airing Schedule - Today</h2>
-            </div>
-            <p class="section-subtitle page-heading-copy">{{ today }} (Local Time)</p>
-        </div>
-    </div>
+            <div class="schedule-heading-main">
+                <div class="schedule-heading-copy">
+                    <span class="page-heading-eyebrow">Airing Schedule</span>
+                    <div class="section-title">
+                        <div class="section-line"></div>
+                        <h2 class="section-heading"><span>Today</span>'s Airing</h2>
+                    </div>
+                    <p class="section-subtitle page-heading-copy">{{ today }} (Local Time)</p>
+                    <p class="schedule-heading-support">Track what aired, what is live, and what comes next.</p>
+                </div>
 
-    <div class="collection-toolbar">
-        <div class="toolbar-line"></div>
-    </div>
-
-    <div class="grid">
-        {% for item in schedule %}
-        <div class="card">
-            <img class="poster" src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy">
-            <div class="poster-overlay" style="opacity: 1; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);">
-                <h3>{{ item.title }}</h3>
-                <div class="poster-card-meta">
-                    <span style="color: var(--primary);">Ep {{ item.episode }}</span>
-                    <span>&#128338; {{ item.time }}</span>
-                    <span>{{ item.format }}</span>
+                <div class="schedule-summary">
+                    <span>{{ schedule|length }} Title{% if schedule|length != 1 %}s{% endif %}</span>
+                    <span>Local Time</span>
+                    <span
+                        class="schedule-now-clock"
+                        id="scheduleNowClock"
+                        data-now-ts="{{ now_ts }}"
+                        data-now-iso="{{ now_iso }}"
+                        data-tz-offset="{{ timezone_offset_minutes }}"
+                    >Now &bull; --:--</span>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="collection-toolbar schedule-toolbar">
+        <div class="toolbar-line"></div>
+    </div>
+
+    {% if schedule_focus %}
+    <section
+        class="schedule-now-hero is-{{ schedule_focus.focus_mode }}"
+        data-focus-airing-at="{{ schedule_focus.airing_at }}"
+        data-focus-airing-iso="{{ schedule_focus.airing_iso }}"
+        style="--schedule-focus-poster: url('{{ schedule_focus.poster }}');"
+    >
+        <div class="schedule-now-hero-bg" aria-hidden="true"></div>
+        <img class="schedule-now-hero-poster" src="{{ schedule_focus.poster }}" alt="{{ schedule_focus.title }}" loading="lazy">
+
+        <div class="schedule-now-hero-content">
+            <div class="schedule-now-hero-topline">
+                <span class="schedule-now-hero-badge" data-focus-badge>{{ schedule_focus.focus_badge }}</span>
+                {% if schedule_focus.more_count %}
+                <span class="schedule-now-hero-more">+{{ schedule_focus.more_count }} more airing</span>
+                {% endif %}
+            </div>
+
+            <h3>{{ schedule_focus.title }}</h3>
+
+            <div class="schedule-now-hero-meta">
+                <span>Ep {{ schedule_focus.episode }}</span>
+                <span>{{ schedule_focus.time }}</span>
+                {% if schedule_focus.format %}
+                <span>{{ schedule_focus.format }}</span>
+                {% endif %}
+            </div>
+
+            <p class="schedule-now-hero-status" data-focus-status>{{ schedule_focus.focus_status }}</p>
+
+            {% if schedule_focus.detail_url %}
+            <a class="schedule-now-hero-action" href="{{ schedule_focus.detail_url }}">View Details</a>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="schedule-timeline" id="scheduleTimeline">
+        <div class="schedule-now-marker" id="scheduleNowMarker" hidden>
+            <span>Now</span>
+        </div>
+
+        {% for time, entries in schedule|groupby("time") %}
+        <section
+            class="schedule-slot"
+            data-slot-time="{{ time }}"
+            data-slot-ts="{{ entries[0].airing_at }}"
+            data-slot-iso="{{ entries[0].airing_iso }}"
+        >
+            <div class="schedule-time-rail">
+                <span class="schedule-time">{{ time }}</span>
+                <span class="schedule-slot-now-label">Now</span>
+            </div>
+
+            <div class="schedule-slot-list">
+                {% for item in entries %}
+                {% if item.detail_url %}
+                <a
+                    class="schedule-entry-card"
+                    href="{{ item.detail_url }}"
+                    data-airing-at="{{ item.airing_at }}"
+                    data-airing-iso="{{ item.airing_iso }}"
+                >
+                {% else %}
+                <article
+                    class="schedule-entry-card"
+                    data-airing-at="{{ item.airing_at }}"
+                    data-airing-iso="{{ item.airing_iso }}"
+                >
+                {% endif %}
+                    <img class="schedule-thumb" src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy">
+
+                    <div class="schedule-entry-main">
+                        <div class="schedule-entry-top">
+                            <h3>{{ item.title }}</h3>
+                            <span class="schedule-status schedule-status-{{ item.status|lower|replace(' ', '-') }}" data-status-label>
+                                {{ item.status }}
+                            </span>
+                        </div>
+
+                        <div class="schedule-entry-meta">
+                            <span>Ep {{ item.episode }}</span>
+                            <span>{{ item.time }}</span>
+                            {% if item.format %}
+                            <span>{{ item.format }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% if item.detail_url %}
+                </a>
+                {% else %}
+                </article>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
         {% endfor %}
 
-        {% if not schedule %}
-        <div style="grid-column: 1/-1; text-align: center; padding: 100px; color: var(--text-secondary);">
+        {% if schedule_error %}
+        <div class="schedule-state">
+            <p>{{ schedule_error }}</p>
+        </div>
+        {% elif not schedule %}
+        <div class="schedule-state">
             <p>No airing schedule found for today.</p>
         </div>
         {% endif %}
@@ -48,20 +152,215 @@
 {% block scripts %}
 <script>
     const scheduleSearchInput = document.getElementById('animeSearch');
+    const scheduleTimeline = document.getElementById('scheduleTimeline');
+    const scheduleNowClock = document.getElementById('scheduleNowClock');
+    const scheduleNowMarker = document.getElementById('scheduleNowMarker');
+    const scheduleFocusHero = document.querySelector('.schedule-now-hero[data-focus-airing-at]');
+    const scheduleSlots = Array.from(document.querySelectorAll('.schedule-slot[data-slot-ts]'));
+    const scheduleCards = Array.from(document.querySelectorAll('.schedule-entry-card[data-airing-at]'));
+
+    const scheduleServerNowMs = scheduleNowClock && scheduleNowClock.dataset.nowIso
+        ? Date.parse(scheduleNowClock.dataset.nowIso)
+        : Date.now();
+    const schedulePageLoadedMs = Date.now();
+    const scheduleTimezoneOffsetMinutes = scheduleNowClock
+        ? Number(scheduleNowClock.dataset.tzOffset || 0)
+        : 0;
+
+    function getScheduleNowMs() {
+        return scheduleServerNowMs + (Date.now() - schedulePageLoadedMs);
+    }
+
+    function getTimestampMs(element, isoKey, fallbackKey) {
+        const isoValue = element.dataset[isoKey];
+        const parsedIso = isoValue ? Date.parse(isoValue) : NaN;
+        if (Number.isFinite(parsedIso)) {
+            return parsedIso;
+        }
+
+        const fallbackSeconds = Number(element.dataset[fallbackKey]);
+        return Number.isFinite(fallbackSeconds) ? fallbackSeconds * 1000 : NaN;
+    }
+
+    function formatScheduleClock(epochMs) {
+        const shifted = new Date(epochMs + scheduleTimezoneOffsetMinutes * 60000);
+        const hours = String(shifted.getUTCHours()).padStart(2, '0');
+        const minutes = String(shifted.getUTCMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+    function formatScheduleCountdown(seconds) {
+        const totalMinutes = Math.max(0, Math.ceil(seconds / 60));
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (hours > 0 && minutes > 0) {
+            return `In ${hours}h ${minutes}m`;
+        }
+
+        if (hours > 0) {
+            return `In ${hours}h`;
+        }
+
+        return `In ${minutes}m`;
+    }
+
+    function setScheduleStatus(card, status, label) {
+        const badge = card.querySelector('[data-status-label]');
+        if (!badge) return;
+
+        badge.textContent = label;
+        badge.classList.remove(
+            'schedule-status-aired',
+            'schedule-status-airing-now',
+            'schedule-status-upcoming'
+        );
+        badge.classList.add(`schedule-status-${status}`);
+    }
+
+    function updateScheduleLiveState() {
+        const nowMs = getScheduleNowMs();
+
+        if (scheduleNowClock) {
+            scheduleNowClock.textContent = `Now \u2022 ${formatScheduleClock(nowMs)}`;
+        }
+
+        let activeSlot = null;
+
+        scheduleCards.forEach(card => {
+            const airingAtMs = getTimestampMs(card, 'airingIso', 'airingAt');
+            if (!Number.isFinite(airingAtMs)) return;
+
+            card.classList.remove('is-past', 'is-current', 'is-upcoming');
+
+            if (airingAtMs <= nowMs && nowMs < airingAtMs + 1800000) {
+                card.classList.add('is-current');
+                setScheduleStatus(card, 'airing-now', 'Airing now');
+            } else if (airingAtMs > nowMs) {
+                card.classList.add('is-upcoming');
+                setScheduleStatus(card, 'upcoming', formatScheduleCountdown((airingAtMs - nowMs) / 1000));
+            } else {
+                card.classList.add('is-past');
+                setScheduleStatus(card, 'aired', 'Aired');
+            }
+        });
+
+        scheduleSlots.forEach(slot => {
+            const slotTsMs = getTimestampMs(slot, 'slotIso', 'slotTs');
+            if (!Number.isFinite(slotTsMs)) return;
+
+            slot.classList.remove('is-past', 'is-current', 'is-upcoming', 'is-current-nearest');
+
+            if (slotTsMs <= nowMs && nowMs < slotTsMs + 1800000) {
+                slot.classList.add('is-current');
+                activeSlot = slot;
+            } else if (slotTsMs > nowMs) {
+                slot.classList.add('is-upcoming');
+            } else {
+                slot.classList.add('is-past');
+            }
+        });
+
+        if (scheduleFocusHero) {
+            const focusAtMs = getTimestampMs(scheduleFocusHero, 'focusAiringIso', 'focusAiringAt');
+            const focusBadge = scheduleFocusHero.querySelector('[data-focus-badge]');
+            const focusStatus = scheduleFocusHero.querySelector('[data-focus-status]');
+
+            if (Number.isFinite(focusAtMs)) {
+                scheduleFocusHero.classList.remove('is-live', 'is-next', 'is-past');
+
+                if (focusAtMs <= nowMs && nowMs < focusAtMs + 1800000) {
+                    scheduleFocusHero.classList.add('is-live');
+                    if (focusBadge) focusBadge.textContent = 'LIVE NOW';
+                    if (focusStatus) focusStatus.textContent = 'Airing now';
+                } else if (focusAtMs > nowMs) {
+                    scheduleFocusHero.classList.add('is-next');
+                    if (focusBadge) focusBadge.textContent = 'NEXT UP';
+                    if (focusStatus) focusStatus.textContent = `Starts ${formatScheduleCountdown((focusAtMs - nowMs) / 1000).toLowerCase()}`;
+                } else {
+                    scheduleFocusHero.classList.add('is-past');
+                    if (focusBadge) focusBadge.textContent = 'AIRED';
+                    if (focusStatus) focusStatus.textContent = 'Aired';
+                }
+            }
+        }
+
+        if (!scheduleTimeline || !scheduleNowMarker || scheduleSlots.length === 0) {
+            return;
+        }
+
+        const firstSlot = scheduleSlots[0];
+        const lastSlot = scheduleSlots[scheduleSlots.length - 1];
+        const firstTsMs = getTimestampMs(firstSlot, 'slotIso', 'slotTs');
+        const lastTsMs = getTimestampMs(lastSlot, 'slotIso', 'slotTs');
+
+        if (!Number.isFinite(firstTsMs) || !Number.isFinite(lastTsMs) || nowMs < firstTsMs || nowMs > lastTsMs + 1800000) {
+            scheduleNowMarker.hidden = true;
+            return;
+        }
+
+        let previousSlot = firstSlot;
+        let nextSlot = null;
+
+        for (const slot of scheduleSlots) {
+            const slotMs = getTimestampMs(slot, 'slotIso', 'slotTs');
+            if (!Number.isFinite(slotMs)) continue;
+
+            if (slotMs <= nowMs) {
+                previousSlot = slot;
+            }
+
+            if (slotMs > nowMs) {
+                nextSlot = slot;
+                break;
+            }
+        }
+
+        const timelineRect = scheduleTimeline.getBoundingClientRect();
+        const previousRect = previousSlot.getBoundingClientRect();
+        const previousTop = previousRect.top - timelineRect.top + Math.min(44, previousRect.height / 2);
+        let markerTop = previousTop;
+
+        if (nextSlot) {
+            const previousMs = getTimestampMs(previousSlot, 'slotIso', 'slotTs');
+            const nextMs = getTimestampMs(nextSlot, 'slotIso', 'slotTs');
+            const nextRect = nextSlot.getBoundingClientRect();
+            const nextTop = nextRect.top - timelineRect.top + Math.min(44, nextRect.height / 2);
+            const ratio = Math.max(0, Math.min(1, (nowMs - previousMs) / (nextMs - previousMs)));
+            markerTop = previousTop + (nextTop - previousTop) * ratio;
+        } else {
+            const lastRatio = Math.max(0, Math.min(1, (nowMs - lastTsMs) / 1800000));
+            markerTop = previousTop + Math.min(previousRect.height, 88) * lastRatio;
+        }
+
+        scheduleNowMarker.style.top = `${Math.max(0, markerTop)}px`;
+        scheduleNowMarker.hidden = false;
+    }
+
     if (scheduleSearchInput) {
         scheduleSearchInput.addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.grid .card');
 
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                if (title.includes(term)) {
-                    card.style.display = "flex";
-                } else {
-                    card.style.display = "none";
-                }
+            scheduleSlots.forEach(slot => {
+                let visibleCount = 0;
+                const cards = slot.querySelectorAll('.schedule-entry-card');
+
+                cards.forEach(card => {
+                    const title = card.querySelector('h3').textContent.toLowerCase();
+                    if (title.includes(term)) {
+                        card.style.display = "grid";
+                        visibleCount++;
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+
+                slot.style.display = visibleCount > 0 ? "grid" : "none";
             });
         });
     }
+
+    updateScheduleLiveState();
+    window.setInterval(updateScheduleLiveState, 60000);
 </script>
 {% endblock %}
