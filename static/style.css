@@ -2127,9 +2127,6 @@ body{
     letter-spacing: 0;
 }
 
-.video-player-container {
-    /* overflow: hidden; */ /* Dihapus agar fungsi fullscreen Plyr dapat bekerja */
-}
 
 .video-player {
     position: relative;
