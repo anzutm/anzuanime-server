@@ -137,7 +137,15 @@
                     </div>
 
                     <div class="info-card">
-                        <h3>{{ anime_info.studio }}</h3>
+                        <h3>
+                            {% if anime_info.studio %}
+                            <a href="{{ url_for('studio_page', studio_name=anime_info.studio) }}">
+                                {{ anime_info.studio }}
+                            </a>
+                            {% else %}
+                            {{ anime_info.studio }}
+                            {% endif %}
+                        </h3>
                         <p>Studio</p>
                     </div>
 

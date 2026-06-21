@@ -1917,8 +1917,28 @@ def get_anime():
                     "status": item["status"]
                 })
     except Exception as e:
-        print(f"Database Query Error: {e}")
+            print(f"Database Query Error: {e}")
     return anime_list
+
+def normalize_studio_name(studio_name):
+    return " ".join((studio_name or "").casefold().split())
+
+def get_cached_metadata_only(anime_name):
+    cache_file = os.path.join(
+        METADATA_CACHE,
+        f"{anime_name}.json"
+    )
+
+    if not os.path.exists(cache_file):
+        return None
+
+    try:
+        with open(cache_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+    return data if isinstance(data, dict) else None
 
 @app.route("/about")
 def about():
@@ -1995,6 +2015,41 @@ def schedule_alerts():
     )
     payload["ok"] = True
     return jsonify(payload)
+
+@app.route("/studio/<path:studio_name>")
+def studio_page(studio_name):
+    requested_studio = normalize_studio_name(studio_name)
+    studio_anime = []
+
+    for anime in get_anime():
+        anime_name = anime.get("name")
+        if not anime_name:
+            continue
+
+        info = get_cached_metadata_only(anime_name)
+        if info is None:
+            info = get_cached_anilist_info(anime_name)
+
+        anime_studio = (info or {}).get("studio")
+        if normalize_studio_name(anime_studio) != requested_studio:
+            continue
+
+        studio_anime.append({
+            "name": anime_name,
+            "poster": url_for("poster", anime_name=anime_name),
+            "score": anime.get("score"),
+            "year": anime.get("year"),
+            "season": anime.get("season"),
+            "episodes": anime.get("episodes"),
+            "status": anime.get("status")
+        })
+
+    return render_template(
+        "studio.html",
+        studio_name=studio_name,
+        studio_anime=studio_anime,
+        total_anime=len(studio_anime)
+    )
 
 @app.route("/movies")
 def movies():

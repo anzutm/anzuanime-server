@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ studio_name }} - Studio{% endblock %}
+
+{% block content %}
+<section class="collection-section studio-page">
+    <div class="collection-glow"></div>
+
+    <a href="{{ url_for('index') }}" class="studio-back-link">&larr; Back</a>
+
+    <div class="collection-top page-heading-top studio-heading-top">
+        <div class="collection-heading page-heading-panel">
+            <div class="studio-heading-main">
+                <div>
+                    <span class="page-heading-eyebrow">Local Studio Library</span>
+                    <div class="section-title">
+                        <div class="section-line"></div>
+                        <h2 class="section-heading">{{ studio_name }}</h2>
+                    </div>
+                    <p class="section-subtitle page-heading-copy">
+                        Anime from your local library whose AniList Main Studio metadata matches this studio.
+                    </p>
+                </div>
+
+                <div class="studio-count-badge">
+                    {{ total_anime }} Anime in Your Library
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="collection-toolbar">
+        <div class="toolbar-line"></div>
+    </div>
+
+    {% if studio_anime %}
+    <div class="grid studio-grid">
+        {% for anime in studio_anime %}
+        <div class="card">
+            <a href="{{ url_for('anime_detail', anime_name=anime.name) }}">
+                <img
+                    class="poster"
+                    src="{{ anime.poster }}"
+                    alt="{{ anime.name }}"
+                    loading="lazy"
+                >
+
+                <div class="poster-overlay">
+                    <h3>{{ anime.name }}</h3>
+
+                    <div class="poster-card-meta">
+                        {% if anime.score %}
+                        <span>&starf; {{ "%.1f"|format((anime.score or 0) / 10) }}</span>
+                        {% endif %}
+
+                        {% if anime.year %}
+                        <span>
+                            {% if anime.season %}
+                                {{ anime.season }}
+                            {% endif %}
+                            {{ anime.year }}
+                        </span>
+                        {% endif %}
+
+                        {% if anime.episodes %}
+                        <span>{{ anime.episodes }} Episodes</span>
+                        {% endif %}
+
+                        {% if anime.status %}
+                        <span>{{ anime.status.replace('_', ' ').title() }}</span>
+                        {% endif %}
+                    </div>
+
+                    <button class="play-hover-btn">&#9654; View</button>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="studio-empty-state">
+        <span>No Matches</span>
+        <h3>No local anime found for this studio.</h3>
+        <p>
+            This page only includes titles that exist in your local library and have matching AniList Main Studio metadata.
+        </p>
+        <a href="{{ url_for('index') }}">Return to Library</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
