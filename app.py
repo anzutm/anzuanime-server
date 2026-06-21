@@ -61,6 +61,8 @@ SCHEDULE_CACHE = {
     "error": None
 }
 SCHEDULE_CACHE_TTL_SECONDS = 300
+STUDIO_PROJECT_CACHE_TTL_SECONDS = 86400
+STUDIO_PROJECT_LIMIT = 80
 THEME_PRESETS = {
     "dark-blue",
     "midnight-violet",
@@ -1923,6 +1925,11 @@ def get_anime():
 def normalize_studio_name(studio_name):
     return " ".join((studio_name or "").casefold().split())
 
+def normalize_anime_match_name(value):
+    normalized = (value or "").casefold()
+    normalized = re.sub(r"[\s:;,_'\"`´‘’“”()\[\]{}.!?\\/|+-]+", " ", normalized)
+    return " ".join(normalized.split())
+
 def get_cached_metadata_only(anime_name):
     cache_file = os.path.join(
         METADATA_CACHE,
@@ -1939,6 +1946,270 @@ def get_cached_metadata_only(anime_name):
         return None
 
     return data if isinstance(data, dict) else None
+
+def get_studio_project_cache_file(studio_name):
+    return os.path.join(
+        METADATA_CACHE,
+        f"studio_projects_{safe_cache_name(studio_name)}.json"
+    )
+
+def read_studio_project_cache(studio_name, allow_stale=False):
+    cache_file = get_studio_project_cache_file(studio_name)
+
+    if not os.path.exists(cache_file):
+        return None
+
+    try:
+        with open(cache_file, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+    if not isinstance(payload, dict):
+        return None
+
+    fetched_at = payload.get("fetched_at", 0)
+    is_fresh = (time.time() - fetched_at) < STUDIO_PROJECT_CACHE_TTL_SECONDS
+
+    if allow_stale or is_fresh:
+        return payload.get("data")
+
+    return None
+
+def write_studio_project_cache(studio_name, data):
+    os.makedirs(METADATA_CACHE, exist_ok=True)
+    cache_file = get_studio_project_cache_file(studio_name)
+
+    try:
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "fetched_at": time.time(),
+                    "data": data
+                },
+                f,
+                ensure_ascii=False,
+                indent=4
+            )
+    except OSError as e:
+        print(f"Studio project cache write failed for {studio_name}: {e}")
+
+def fetch_anilist_studio_projects(studio_name, max_projects=STUDIO_PROJECT_LIMIT):
+    cached = read_studio_project_cache(studio_name)
+    if cached:
+        return cached, None
+
+    query = """
+    query ($search: String, $page: Int, $perPage: Int) {
+      Studio(search: $search) {
+        id
+        name
+        isAnimationStudio
+        media(isMain: true, sort: POPULARITY_DESC, page: $page, perPage: $perPage) {
+          pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+          }
+          nodes {
+            id
+            title {
+              romaji
+              english
+              native
+            }
+            coverImage {
+              extraLarge
+            }
+            format
+            status
+            season
+            seasonYear
+            episodes
+            averageScore
+            popularity
+            description
+          }
+        }
+      }
+    }
+    """
+
+    projects = []
+    studio_info = None
+    page = 1
+    per_page = min(50, max_projects)
+
+    try:
+        while len(projects) < max_projects:
+            response = requests.post(
+                "https://graphql.anilist.co",
+                json={
+                    "query": query,
+                    "variables": {
+                        "search": studio_name,
+                        "page": page,
+                        "perPage": min(per_page, max_projects - len(projects))
+                    }
+                },
+                timeout=15
+            )
+
+            try:
+                data = response.json()
+            except ValueError:
+                stale = read_studio_project_cache(studio_name, allow_stale=True)
+                return stale, "AniList returned an invalid studio response."
+
+            if response.status_code >= 400:
+                print("Studio AniList HTTP Error:", response.status_code, data)
+                stale = read_studio_project_cache(studio_name, allow_stale=True)
+                return stale, f"AniList studio request failed with HTTP {response.status_code}."
+
+            errors = data.get("errors")
+            if errors:
+                print("Studio AniList GraphQL Errors:", errors)
+                stale = read_studio_project_cache(studio_name, allow_stale=True)
+                return stale, "AniList returned GraphQL errors for the studio request."
+
+            studio_data = data.get("data", {}).get("Studio")
+            if not studio_data:
+                stale = read_studio_project_cache(studio_name, allow_stale=True)
+                return stale, "Studio was not found on AniList."
+
+            if studio_info is None:
+                studio_info = {
+                    "id": studio_data.get("id"),
+                    "name": studio_data.get("name"),
+                    "isAnimationStudio": studio_data.get("isAnimationStudio")
+                }
+
+            media_data = studio_data.get("media") or {}
+            page_info = media_data.get("pageInfo") or {}
+            projects.extend(media_data.get("nodes") or [])
+
+            if not page_info.get("hasNextPage") or page >= page_info.get("lastPage", page):
+                break
+
+            page += 1
+
+        payload = {
+            "studio_info": studio_info,
+            "projects": projects[:max_projects]
+        }
+        write_studio_project_cache(studio_name, payload)
+        return payload, None
+
+    except requests.RequestException as e:
+        print(f"Studio AniList Request Error: {e}")
+        stale = read_studio_project_cache(studio_name, allow_stale=True)
+        return stale, "Unable to reach AniList studio API."
+
+def build_local_anime_match_index(local_anime):
+    match_index = {}
+
+    for anime in local_anime:
+        anime_name = anime.get("name")
+        if not anime_name:
+            continue
+
+        names = {anime_name}
+        info = get_cached_metadata_only(anime_name) or {}
+        cached_title = info.get("title")
+        if cached_title:
+            names.add(cached_title)
+
+        for name in names:
+            normalized = normalize_anime_match_name(name)
+            if normalized:
+                match_index.setdefault(normalized, anime)
+
+    return match_index
+
+def get_project_title_options(project):
+    title = project.get("title") or {}
+    return [
+        title.get("english"),
+        title.get("romaji"),
+        title.get("native")
+    ]
+
+def build_studio_project_item(project, local_match=None):
+    title_options = get_project_title_options(project)
+    display_title = next((title for title in title_options if title), "Untitled")
+    title = project.get("title") or {}
+
+    item = {
+        "id": project.get("id"),
+        "name": display_title,
+        "title_romaji": title.get("romaji"),
+        "title_english": title.get("english"),
+        "title_native": title.get("native"),
+        "poster": (project.get("coverImage") or {}).get("extraLarge") or url_for("static", filename="arcana.jpg"),
+        "format": project.get("format"),
+        "status": project.get("status"),
+        "season": project.get("season"),
+        "year": project.get("seasonYear"),
+        "episodes": project.get("episodes"),
+        "score": project.get("averageScore"),
+        "popularity": project.get("popularity"),
+        "description": project.get("description"),
+        "in_library": local_match is not None,
+        "local_anime_name": local_match.get("name") if local_match else None,
+        "local_detail_url": url_for("anime_detail", anime_name=local_match.get("name")) if local_match else None
+    }
+
+    if item["in_library"]:
+        item["name"] = item["local_anime_name"]
+        item["poster"] = url_for("poster", anime_name=item["local_anime_name"])
+        item["score"] = local_match.get("score") or item["score"]
+        item["year"] = local_match.get("year") or item["year"]
+        item["season"] = local_match.get("season") or item["season"]
+        item["episodes"] = local_match.get("episodes") or item["episodes"]
+        item["status"] = local_match.get("status") or item["status"]
+
+    return item
+
+def build_local_studio_fallback_projects(studio_name, local_anime, allow_fetch_missing=True):
+    requested_studio = normalize_studio_name(studio_name)
+    library_projects = []
+
+    for anime in local_anime:
+        anime_name = anime.get("name")
+        if not anime_name:
+            continue
+
+        info = get_cached_metadata_only(anime_name)
+        if info is None and allow_fetch_missing:
+            info = get_cached_anilist_info(anime_name)
+
+        anime_studio = (info or {}).get("studio")
+        if normalize_studio_name(anime_studio) != requested_studio:
+            continue
+
+        library_projects.append({
+            "id": None,
+            "name": anime_name,
+            "title_romaji": None,
+            "title_english": anime_name,
+            "title_native": None,
+            "poster": url_for("poster", anime_name=anime_name),
+            "format": (info or {}).get("format"),
+            "status": anime.get("status"),
+            "season": anime.get("season"),
+            "year": anime.get("year"),
+            "episodes": anime.get("episodes"),
+            "score": anime.get("score"),
+            "popularity": None,
+            "description": (info or {}).get("description"),
+            "in_library": True,
+            "local_anime_name": anime_name,
+            "local_detail_url": url_for("anime_detail", anime_name=anime_name)
+        })
+
+    return library_projects
 
 @app.route("/about")
 def about():
@@ -2018,37 +2289,57 @@ def schedule_alerts():
 
 @app.route("/studio/<path:studio_name>")
 def studio_page(studio_name):
-    requested_studio = normalize_studio_name(studio_name)
-    studio_anime = []
+    local_anime = get_anime()
+    local_match_index = build_local_anime_match_index(local_anime)
+    studio_payload, studio_error = fetch_anilist_studio_projects(studio_name)
+    studio_info = None
+    studio_projects = []
+    fallback_used = False
 
-    for anime in get_anime():
-        anime_name = anime.get("name")
-        if not anime_name:
-            continue
+    if studio_payload:
+        studio_info = studio_payload.get("studio_info")
 
-        info = get_cached_metadata_only(anime_name)
-        if info is None:
-            info = get_cached_anilist_info(anime_name)
+        for project in studio_payload.get("projects", []):
+            local_match = None
 
-        anime_studio = (info or {}).get("studio")
-        if normalize_studio_name(anime_studio) != requested_studio:
-            continue
+            for title in get_project_title_options(project):
+                normalized_title = normalize_anime_match_name(title)
+                if normalized_title and normalized_title in local_match_index:
+                    local_match = local_match_index[normalized_title]
+                    break
 
-        studio_anime.append({
-            "name": anime_name,
-            "poster": url_for("poster", anime_name=anime_name),
-            "score": anime.get("score"),
-            "year": anime.get("year"),
-            "season": anime.get("season"),
-            "episodes": anime.get("episodes"),
-            "status": anime.get("status")
-        })
+            studio_projects.append(
+                build_studio_project_item(
+                    project,
+                    local_match
+                )
+            )
+
+    if not studio_payload:
+        fallback_used = True
+        studio_projects = build_local_studio_fallback_projects(
+            studio_name,
+            local_anime,
+            allow_fetch_missing=True
+        )
+
+    library_projects = [
+        project for project in studio_projects
+        if project.get("in_library")
+    ]
 
     return render_template(
         "studio.html",
         studio_name=studio_name,
-        studio_anime=studio_anime,
-        total_anime=len(studio_anime)
+        studio_info=studio_info,
+        studio_projects=studio_projects,
+        library_projects=library_projects,
+        total_projects=len(studio_projects),
+        total_in_library=len(library_projects),
+        studio_error=studio_error,
+        fallback_used=fallback_used,
+        studio_anime=library_projects,
+        total_anime=len(library_projects)
     )
 
 @app.route("/movies")

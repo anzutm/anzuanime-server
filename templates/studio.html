@@ -23,7 +23,7 @@
                 </div>
 
                 <div class="studio-count-badge">
-                    {{ total_anime }} Anime in Your Library
+                    {{ total_in_library }} in Your Library / {{ total_projects }} Projects
                 </div>
             </div>
         </div>
@@ -33,11 +33,21 @@
         <div class="toolbar-line"></div>
     </div>
 
-    {% if studio_anime %}
+    {% if studio_error %}
+    <div class="studio-notice">
+        {{ studio_error }}{% if fallback_used %} Showing local library matches instead.{% endif %}
+    </div>
+    {% endif %}
+
+    {% if studio_projects %}
     <div class="grid studio-grid">
-        {% for anime in studio_anime %}
+        {% for anime in studio_projects %}
         <div class="card">
-            <a href="{{ url_for('anime_detail', anime_name=anime.name) }}">
+            {% if anime.local_detail_url %}
+            <a href="{{ anime.local_detail_url }}">
+            {% else %}
+            <div class="studio-card-static">
+            {% endif %}
                 <img
                     class="poster"
                     src="{{ anime.poster }}"
@@ -49,6 +59,10 @@
                     <h3>{{ anime.name }}</h3>
 
                     <div class="poster-card-meta">
+                        {% if anime.in_library %}
+                        <span>In Your Library</span>
+                        {% endif %}
+
                         {% if anime.score %}
                         <span>&starf; {{ "%.1f"|format((anime.score or 0) / 10) }}</span>
                         {% endif %}
@@ -71,9 +85,17 @@
                         {% endif %}
                     </div>
 
+                    {% if anime.local_detail_url %}
                     <button class="play-hover-btn">&#9654; View</button>
+                    {% else %}
+                    <button class="play-hover-btn" disabled>Not in Library</button>
+                    {% endif %}
                 </div>
+            {% if anime.local_detail_url %}
             </a>
+            {% else %}
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
