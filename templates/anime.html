@@ -369,7 +369,7 @@
         </div>
 </footer>
 
-<script>
+<script data-player-anime-name="{{ (folder_name or anime_name) | e }}">
 
 function encodeEpisodePath(path){
     return path
@@ -378,7 +378,7 @@ function encodeEpisodePath(path){
         .join("/");
 }
 
-const playerAnimeName = {{ (folder_name or anime_name) | tojson }};
+const playerAnimeName = document.currentScript.dataset.playerAnimeName;
 
 function playEpisode(ep){
     window.location.href =
