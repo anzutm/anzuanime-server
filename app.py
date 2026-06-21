@@ -105,6 +105,22 @@ def save_settings(settings):
             indent=4
         )
 
+def normalize_bool_setting(value, default=False):
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off", ""}:
+            return False
+
+    if value is None:
+        return default
+
+    return default
+
 def apply_settings(settings):
     global ANIME_PATHS, MOVIE_PATH, VLC_PATH, DISCORD_RPC_ENABLED
 
@@ -118,7 +134,10 @@ def apply_settings(settings):
     ]
     MOVIE_PATH = merged["movie_path"]
     VLC_PATH = merged["vlc_path"]
-    DISCORD_RPC_ENABLED = merged["discord_rpc_enabled"]
+    DISCORD_RPC_ENABLED = normalize_bool_setting(
+        merged.get("discord_rpc_enabled"),
+        defaults["discord_rpc_enabled"]
+    )
 
 def get_existing_anime_names():
     existing_names = set()
@@ -1031,6 +1050,9 @@ def get_airing_schedule():
 
 def update_discord_rpc(anime_name, episode_num, time_str=None):
     global rpc_connected, RPC_START_TIME, CURRENT_RPC_ANIME
+    if not DISCORD_RPC_ENABLED:
+        return
+
     if rpc is None:
         return
     
@@ -1061,6 +1083,9 @@ def update_discord_rpc(anime_name, episode_num, time_str=None):
 def clear_discord_rpc():
     """Menghapus status Discord Rich Presence."""
     global rpc_connected, RPC_START_TIME, CURRENT_RPC_ANIME
+    if not DISCORD_RPC_ENABLED:
+        return
+
     if rpc is not None and rpc_connected:
         try:
             rpc.clear()
@@ -1378,16 +1403,55 @@ def save_watch_json_file(path, data, label):
 def save_watch_history(history):
     save_watch_json_file(WATCH_HISTORY_FILE, history, "Watch history")
 
-def update_watch_history(anime_name, episode, episode_num, time_str=None, last_seconds=0):
+MOVIE_HISTORY_PREFIX = "movie::"
+
+def get_watch_history_key(anime_name, episode):
+    if anime_name == "Movies":
+        return f"{MOVIE_HISTORY_PREFIX}{episode}"
+
+    return anime_name
+
+def get_watch_history_display_name(anime_name, episode):
+    if anime_name == "Movies":
+        return clean_movie_title(episode)
+
+    return anime_name
+
+def get_continue_progress_percent(data):
+    try:
+        current_seconds = float(data.get("last_seconds", 0) or 0)
+        duration = float(data.get("duration", 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+    if duration <= 0 or duration != duration or current_seconds != current_seconds:
+        return 0
+
+    progress = (current_seconds / duration) * 100
+    return max(0, min(100, round(progress)))
+
+def update_watch_history(
+    history_key,
+    episode,
+    episode_num,
+    time_str=None,
+    last_seconds=0,
+    duration=0,
+    media_name=None,
+    display_name=None
+):
     with WATCH_DATA_LOCK:
         history = load_history_data()
 
-        history[anime_name] = {
+        history[history_key] = {
             "episode": episode,
             "episode_num": episode_num,
             "updated_at": datetime.now().isoformat(),
             "time_str": time_str,
-            "last_seconds": last_seconds
+            "last_seconds": last_seconds,
+            "duration": duration,
+            "media_name": media_name or history_key,
+            "display_name": display_name or history_key
         }
 
         save_watch_history(history)
@@ -1807,13 +1871,43 @@ def index():
     history = load_history_data()
     
     continue_watching = []
-    for name, data in history.items():
+    for history_key, data in history.items():
+        if not isinstance(data, dict):
+            continue
+
+        episode = data.get("episode")
+        if not episode:
+            continue
+
+        is_movie = (
+            history_key.startswith(MOVIE_HISTORY_PREFIX)
+            or history_key == "Movies"
+            or data.get("media_name") == "Movies"
+        )
+
+        media_name = "Movies" if is_movie else data.get("media_name", history_key)
+        display_name = (
+            data.get("display_name")
+            or get_watch_history_display_name(media_name, episode)
+        )
+
         continue_watching.append({
-            "name": name,
-            "episode": data["episode"],
+            "name": media_name,
+            "display_name": display_name,
+            "is_movie": is_movie,
+            "episode": episode,
             "episode_num": data.get("episode_num"),
             "time_str": data.get("time_str"), # Ambil time_str dari history
-            "updated_at": data["updated_at"]
+            "updated_at": data.get("updated_at", ""),
+            "image_url": url_for(
+                "thumbnail",
+                anime_name="Movies",
+                episode=episode
+            ) if is_movie else url_for(
+                "banner",
+                anime_name=media_name
+            ),
+            "progress_percent": get_continue_progress_percent(data)
         })
     
     continue_watching.sort(key=lambda x: x["updated_at"], reverse=True)
@@ -1832,7 +1926,7 @@ def index():
     )
 
 
-@app.route("/poster/<anime_name>")
+@app.route("/poster/<path:anime_name>")
 def poster(anime_name):
 
     safe_name = re.sub(r'[<>:"/\\|?*]', '_', anime_name)
@@ -2253,12 +2347,18 @@ def player(
                 "/"
             )
 
-    back_url = url_for(
-        "anime_detail",
-        anime_name=anime_name
-    )
+    if anime_name == "Movies":
+        back_url = url_for(
+            "movie_detail_page",
+            filename=episode
+        )
+    else:
+        back_url = url_for(
+            "anime_detail",
+            anime_name=anime_name
+        )
 
-    if season_name:
+    if season_name and anime_name != "Movies":
 
         season_url = season_name.replace(
             os.sep,
@@ -2271,11 +2371,25 @@ def player(
             season_name=season_url
         )
 
+    watch_history_key = get_watch_history_key(
+        anime_name,
+        episode
+    )
+    watch_display_name = get_watch_history_display_name(
+        anime_name,
+        episode
+    )
+
     # Ambil waktu tonton terakhir untuk fitur resume
     history = load_history_data()
     resume_time = 0
-    if anime_name in history:
-        h_data = history[anime_name]
+    h_data = history.get(watch_history_key)
+    if not h_data and anime_name == "Movies":
+        legacy_data = history.get("Movies")
+        if legacy_data and legacy_data.get("episode") == episode:
+            h_data = legacy_data
+
+    if h_data:
         # Hanya resume jika episode yang dibuka sama dengan yang terakhir ditonton
         if h_data.get("episode") == episode:
             resume_time = h_data.get("last_seconds", 0)
@@ -2305,6 +2419,10 @@ def player(
             next_episode,
             
         resume_time=resume_time,
+
+        watch_history_key=watch_history_key,
+
+        watch_display_name=watch_display_name,
         
         episodes=episodes
 
@@ -2619,7 +2737,13 @@ def play_episode(anime_name, episode):
 
         # Update history for VLC
         episode_num = get_episode_number(os.path.basename(episode))
-        update_watch_history(anime_name, episode, episode_num)
+        update_watch_history(
+            get_watch_history_key(anime_name, episode),
+            episode,
+            episode_num,
+            media_name=anime_name,
+            display_name=get_watch_history_display_name(anime_name, episode)
+        )
         update_discord_rpc(anime_name, episode_num)
 
         return jsonify({
@@ -2671,9 +2795,19 @@ def update_progress():
     episode_num = int(data.get("episode_num", 0))
     time_str = data.get("time_str")
     last_seconds = data.get("last_seconds", 0)
+    duration = data.get("duration", 0)
     
     if anime_name and episode:
-        update_watch_history(anime_name, episode, episode_num, time_str, last_seconds)
+        update_watch_history(
+            get_watch_history_key(anime_name, episode),
+            episode,
+            episode_num,
+            time_str,
+            last_seconds,
+            duration,
+            media_name=anime_name,
+            display_name=get_watch_history_display_name(anime_name, episode)
+        )
         update_discord_rpc(anime_name, episode_num, time_str)
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400

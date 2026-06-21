@@ -110,10 +110,10 @@
             {% for item in continue_watching %}
             <a href="{{ url_for('player', anime_name=item.name, episode=item.episode) }}" class="continue-card">
                 <div class="continue-thumb">
-                    <img src="{{ url_for('banner', anime_name=item.name) }}" alt="{{ item.name }}">
+                    <img src="{{ item.image_url }}" alt="{{ item.display_name }}">
                     <div class="continue-badge">Resume</div>
                     <div class="progress-bar-container">
-                        <div class="progress-fill" style="width: 100%;"></div>
+                        <div class="progress-fill" style="width: {{ item.progress_percent }}%;"></div>
                     </div>
                     <div class="continue-overlay">
                         <button class="play-mini-btn">&#9654;</button>
@@ -122,8 +122,8 @@
                 </div>
                 <div class="continue-info">
                     <div class="continue-title-row">
-                        <h3>{{ item.name }}</h3>
-                        <span>EP {{ item.episode_num }}</span>
+                        <h3>{{ item.display_name }}</h3>
+                        <span>{% if item.is_movie %}Movie{% else %}EP {{ item.episode_num }}{% endif %}</span>
                     </div>
                     <p>
                         {% if item.time_str %}

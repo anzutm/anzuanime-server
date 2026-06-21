@@ -73,7 +73,8 @@ function updateStatus() {
             episode: window.EPISODE_PATH,
             episode_num: window.CURRENT_EP_NUM,
             time_str: timeStr,
-            last_seconds: currentTime
+            last_seconds: currentTime,
+            duration: duration
         })
     });
 }

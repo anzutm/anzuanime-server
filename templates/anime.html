@@ -299,7 +299,7 @@
         {% for rec in anime_info.recommendations %}
         <div class="related-card">
             <div class="rel-poster-wrapper">
-                <img src="/poster/{{ rec.title }}" alt="{{ rec.title }}" loading="lazy">
+                <img src="{{ url_for('poster', anime_name=rec.title) }}" alt="{{ rec.title }}" loading="lazy">
                 <div class="rel-type-badge">Recommended</div>
             </div>
             <div class="rel-info">
@@ -327,7 +327,7 @@
         {% for rel in anime_info.relations %}
         <div class="related-card">
             <div class="rel-poster-wrapper">
-                <img src="/poster/{{ rel.title }}" alt="{{ rel.title }}" loading="lazy">
+                <img src="{{ url_for('poster', anime_name=rel.title) }}" alt="{{ rel.title }}" loading="lazy">
                 <div class="rel-type-badge">{{ rel.type }}</div>
             </div>
             <div class="rel-info">
