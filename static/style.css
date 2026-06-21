@@ -405,9 +405,7 @@ body{
 .hero{
     position:relative;
     width:calc(100% + 70px);
-    height: 85vh;
     margin:-35px -35px 40px -35px;
-    margin-bottom:5px;
     border-radius:0;
     overflow:hidden;
     animation: heroReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -432,21 +430,12 @@ body{
     gap:30px;
 
     width:100%;
-
-    padding-top:100px;
     animation: contentFadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
 }
 
 .hero-poster{
 
-    width:320px;
-
-    height:460px;
-
     object-fit:cover;
-
-    border-radius:24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
 
     /* Nama transisi yang sama dengan di index.html agar terjadi efek morphing */
     view-transition-name: anime-poster;
@@ -466,8 +455,6 @@ body{
 .hero-details{
 
     flex:1;
-
-    max-width:none;
 }
 
 .hero-banner{
@@ -494,8 +481,6 @@ body{
     flex-direction:column;
 
     justify-content:flex-end;
-
-    padding:40px;
     
     background:
         linear-gradient(
@@ -515,16 +500,9 @@ body{
 }
 
 .title-row h1 {
-    font-size: 64px;
     font-weight: 800;
     margin: 0;
-    line-height: 1.1;
     letter-spacing: 0;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    background: linear-gradient(90deg, #FFFFFF 45%, var(--primary) 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .status-badge {
@@ -686,7 +664,6 @@ body{
 .featured-anime{
     position:relative;
     width:calc(100% + 70px);
-    height: 85vh;
     margin:-35px -35px 0 -35px;
     border-radius:0;
     overflow:hidden;
@@ -747,14 +724,6 @@ body{
     z-index:1;
 
     pointer-events:none;
-
-    background:
-        linear-gradient(
-            to bottom,
-            rgba(11,9,7,0),
-            rgba(11,9,7,.82) 58%,
-            #0b0907 100%
-        );
 }
 
 .featured-banner{
@@ -781,22 +750,7 @@ body{
     display:flex;
     align-items: center;
     justify-content: space-between;
-    padding: 110px 72px;
     z-index: 5;
-    background:
-        linear-gradient(
-            to right,
-            var(--bg) 0%,
-            rgba(11, 9, 7, 0.8) 25%,
-            rgba(11, 9, 7, 0.4) 50%,
-            transparent 100%
-        ),
-        linear-gradient(
-            to bottom,
-            transparent 0%,
-            rgba(11, 9, 7, 0.2) 50%,
-            var(--bg) 100%
-        );
 }
 
 /* Visual Poster di Kanan */
@@ -820,9 +774,6 @@ body{
     box-shadow: 
         0 30px 80px rgba(0,0,0,0.7),
         0 0 0 1px rgba(255,255,255,0.1);
-    opacity: 0;
-    transform: translateX(100px) scale(0.9);
-    transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .featured-slide.active .featured-poster-floating {
@@ -1182,8 +1133,6 @@ body{
 
         width:calc(100% + 40px);
 
-        min-height:760px;
-
         margin-left:-20px;
     }
 
@@ -1192,19 +1141,6 @@ body{
         align-items:flex-start;
 
         justify-content:flex-end;
-
-        padding:
-            110px
-            20px
-            34px;
-
-        background:
-            linear-gradient(
-                to bottom,
-                rgba(11,9,7,.24),
-                rgba(11,9,7,.72) 48%,
-                rgba(11,9,7,.98)
-            );
     }
 
     .featured-content{
@@ -3560,8 +3496,6 @@ body {
     }
 
     .main-footer {
-        margin-left: 0;
-        margin-right: 0;
         padding: 44px 24px 30px;
     }
 }
@@ -3718,11 +3652,7 @@ body {
     inset: -44px -54px;
     border-radius: 46px;
     pointer-events: none;
-    background:
-        radial-gradient(circle at 50% 40%, rgba(0,0,255,.34), transparent 58%),
-        radial-gradient(circle at 74% 30%, rgba(0,216,255,.18), transparent 48%);
     filter: blur(18px);
-    opacity: .8;
 }
 
 .featured-poster-floating {
@@ -4144,15 +4074,6 @@ body {
         max-width: 900px;
     }
 
-    .hero-content {
-        align-items: center;
-    }
-
-    .hero-poster {
-        width: 240px;
-        min-width: 220px;
-    }
-
     .info-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
@@ -4163,8 +4084,7 @@ body {
 }
 
 @media(max-width: 900px) {
-    .featured-anime,
-    .hero {
+    .featured-anime {
         min-height: 720px;
     }
 
@@ -4189,17 +4109,8 @@ body {
         height: 330px;
     }
 
-    .hero-content {
-        display: block;
-        padding-top: 0;
-    }
-
     .hero-poster {
         display: none;
-    }
-
-    .hero-details {
-        padding: 22px;
     }
 
     .title-row h1 {
@@ -4757,17 +4668,9 @@ body:has(.featured-anime) {
         padding: 13px;
     }
 
-    .featured-overlay {
-        padding-top: 148px;
-    }
-
     .featured-description,
     .anime-description {
         padding: 13px 14px;
-    }
-
-    .hero {
-        min-height: 700px;
     }
 
     .episode-overlay {
@@ -4865,10 +4768,6 @@ body:has(.featured-anime) {
 
 .featured-poster-wrapper {
     transform-origin: center center;
-    transform: rotateY(-9deg) rotateX(1.5deg) translateZ(0);
-    transition:
-        transform .55s cubic-bezier(0.16,1,0.3,1),
-        filter .55s cubic-bezier(0.16,1,0.3,1);
     will-change: transform;
 }
 
@@ -5294,10 +5193,6 @@ body:has(.featured-anime) {
         right: 8px;
     }
 
-    .detail-hero-content {
-        grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
-    }
-
     .detail-meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -5316,14 +5211,6 @@ body:has(.featured-anime) {
     .resume-section-head {
         align-items: flex-start;
         flex-direction: column;
-    }
-
-    .detail-hero-content {
-        display: block;
-    }
-
-    .hero-poster-shell {
-        display: none;
     }
 
     .player-header-meta {
@@ -5499,6 +5386,13 @@ body:has(.featured-anime) {
     padding-left: 26px;
 }
 
+.va-side.character-profile .va-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+}
+
 .character-image-wrap {
     z-index: 2;
 }
@@ -5658,18 +5552,15 @@ body:has(.featured-anime) {
 
     .char-side.character-profile {
         border-bottom: 1px solid rgba(255,255,255,.08);
-        padding-right: 12px;
+        padding: 12px;
     }
 
     .va-side.character-profile {
         flex-direction: row;
         text-align: left;
-        padding-left: 12px;
+        padding: 12px;
     }
 
-    .player-header {
-        max-width: 100%;
-    }
 }
 
 @media(max-width: 640px) {
@@ -5745,23 +5636,6 @@ body:has(.featured-anime) {
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-@media(max-width: 1180px) {
-    .anime-meta.detail-meta {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media(max-width: 640px) {
-    .anime-meta.detail-meta {
-        grid-template-columns: 1fr;
-    }
-
-    .anime-meta.detail-meta span {
-        min-height: 64px;
-        padding: 12px 14px;
-    }
 }
 
 /* Targeted metadata/player header layout fixes */
@@ -6138,18 +6012,6 @@ body:has(.featured-anime) {
     letter-spacing: 0;
     text-shadow: 0 1px 8px rgba(0,0,0,.42);
     white-space: nowrap;
-}
-
-@media(max-width: 900px) {
-    .character-card {
-        height: auto;
-        min-height: 0;
-    }
-
-    .char-side.character-profile,
-    .va-side.character-profile {
-        padding: 12px;
-    }
 }
 
 /* Episode card hover/alignment consolidation */
@@ -6623,10 +6485,6 @@ body:has(.hero-foreground) .character-section {
         padding-inline: 2px;
     }
 
-    .player-episode-card {
-        flex-basis: min(82vw, 340px);
-    }
-
     .episode-card-footer,
     .player-card-info {
         padding: 12px 13px 14px;
@@ -6760,12 +6618,6 @@ body:has(.hero-foreground) .character-section {
 
 .player-page > .player-header .player-header-meta {
     margin-left: auto;
-}
-
-@media(max-width: 760px) {
-    .player-page > .player-header {
-        max-width: none;
-    }
 }
 
 /* Player status LOCAL STREAM badge refinement */
@@ -8742,6 +8594,11 @@ body:has(.hero-foreground) .relation-section .related-grid:has(.related-card:onl
         padding-left: 18px;
     }
 
+    body:has(.hero-foreground) .va-side.character-profile .va-info {
+        align-items: flex-start;
+        text-align: left;
+    }
+
     body:has(.hero-foreground) .episode-grid {
         grid-template-columns: 1fr;
     }
@@ -9383,7 +9240,6 @@ body:has(.seasons-hero) {
 
 @media(max-width: 768px) {
     .main-footer {
-        width: 100%;
         margin-bottom: -20px;
     }
 }

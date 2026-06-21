@@ -455,7 +455,7 @@
         if (continueGrid && resumePrev && resumeNext) {
             const scrollResume = (direction) => {
                 const card = continueGrid.querySelector('.continue-card');
-                const distance = card ? card.getBoundingClientRect().width + 24 : 380;
+                const distance = card ? card.getBoundingClientRect().width + 420 : 800;
                 continueGrid.scrollBy({
                     left: direction * distance,
                     behavior: 'smooth'
