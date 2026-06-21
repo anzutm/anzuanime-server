@@ -58,6 +58,68 @@
     --glass: blur(24px) saturate(180%);
 }
 
+:root[data-theme="midnight-violet"] {
+    --card-glow: rgba(139, 92, 246, 0.34);
+    --text-secondary: #b8aed8;
+    --primary: #7c3aed;
+    --primary-hover: #a78bfa;
+    --primary-gradient: linear-gradient(
+        135deg,
+        #c084fc 0%,
+        #a78bfa 38%,
+        #7c3aed 68%,
+        #4c1d95 100%
+    );
+    --cyan: #c084fc;
+    --purple: #a78bfa;
+    --glow-cyan: rgba(192, 132, 252, 0.26);
+    --glow-purple: rgba(167, 139, 250, 0.28);
+}
+
+:root[data-theme="dark-orange"] {
+    --card-glow: rgba(217, 119, 6, 0.30);
+    --text-secondary: #d2b99b;
+    --primary: #d97706;
+    --primary-hover: #f59e0b;
+    --primary-gradient: linear-gradient(
+        135deg,
+        #fbbf24 0%,
+        #f59e0b 38%,
+        #d97706 68%,
+        #92400e 100%
+    );
+    --cyan: #fbbf24;
+    --purple: #b45309;
+    --glow-cyan: rgba(251, 191, 36, 0.26);
+    --glow-purple: rgba(180, 83, 9, 0.24);
+}
+
+:root[data-theme="amoled-black"] {
+    color-scheme: dark;
+    --bg: #000000;
+    --bg2: #000000;
+    --card: rgba(255, 255, 255, 0.045);
+    --card-hover: rgba(255, 255, 255, 0.070);
+    --card-glow: rgba(125, 211, 252, 0.18);
+    --border: rgba(226, 232, 240, 0.105);
+    --border-bright: rgba(226, 232, 240, 0.19);
+    --text: #f8fafc;
+    --text-secondary: #9aa8b8;
+    --primary: #38bdf8;
+    --primary-hover: #7dd3fc;
+    --primary-gradient: linear-gradient(
+        135deg,
+        #bae6fd 0%,
+        #7dd3fc 36%,
+        #38bdf8 68%,
+        #0f749d 100%
+    );
+    --cyan: #7dd3fc;
+    --purple: #64748b;
+    --glow-cyan: rgba(125, 211, 252, 0.22);
+    --glow-purple: rgba(100, 116, 139, 0.18);
+}
+
 body{
     font-family: 'Inter', sans-serif;
     color: var(--text);
@@ -1597,6 +1659,97 @@ body{
     text-align: center;
     font-size: 13px;
     line-height: 1.45;
+}
+
+:root[data-theme="midnight-violet"] .notification-dot {
+    background: #c084fc;
+    box-shadow: 0 0 10px rgba(192,132,252,.45);
+}
+
+:root[data-theme="midnight-violet"] .notification-panel {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(192,132,252,.14), transparent 34%),
+        linear-gradient(135deg, rgba(255,255,255,.082), rgba(255,255,255,.030)),
+        rgba(3,6,18,.94);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.13),
+        0 24px 70px rgba(0,0,0,.54),
+        0 0 34px rgba(192,132,252,.12);
+}
+
+:root[data-theme="midnight-violet"] .notification-panel-head a,
+:root[data-theme="midnight-violet"] .notification-item[href]:hover,
+:root[data-theme="midnight-violet"] .notification-item[href]:focus-visible,
+:root[data-theme="midnight-violet"] .notification-item.is-live,
+:root[data-theme="midnight-violet"] .notification-item.is-live em {
+    border-color: rgba(192,132,252,.42);
+}
+
+:root[data-theme="midnight-violet"] .notification-panel-head a,
+:root[data-theme="midnight-violet"] .notification-item.is-live,
+:root[data-theme="midnight-violet"] .notification-item.is-live em {
+    background: rgba(192,132,252,.13);
+}
+
+:root[data-theme="dark-orange"] .notification-dot {
+    background: #f59e0b;
+    box-shadow: 0 0 10px rgba(245,158,11,.45);
+}
+
+:root[data-theme="dark-orange"] .notification-panel {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(245,158,11,.14), transparent 34%),
+        linear-gradient(135deg, rgba(255,255,255,.082), rgba(255,255,255,.030)),
+        rgba(3,6,18,.94);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.13),
+        0 24px 70px rgba(0,0,0,.54),
+        0 0 34px rgba(245,158,11,.12);
+}
+
+:root[data-theme="dark-orange"] .notification-panel-head a,
+:root[data-theme="dark-orange"] .notification-item[href]:hover,
+:root[data-theme="dark-orange"] .notification-item[href]:focus-visible,
+:root[data-theme="dark-orange"] .notification-item.is-live,
+:root[data-theme="dark-orange"] .notification-item.is-live em {
+    border-color: rgba(245,158,11,.46);
+}
+
+:root[data-theme="dark-orange"] .notification-panel-head a,
+:root[data-theme="dark-orange"] .notification-item.is-live,
+:root[data-theme="dark-orange"] .notification-item.is-live em {
+    background: rgba(245,158,11,.14);
+}
+
+:root[data-theme="amoled-black"] .notification-dot {
+    background: #7dd3fc;
+    box-shadow: 0 0 10px rgba(125,211,252,.38);
+}
+
+:root[data-theme="amoled-black"] .notification-panel {
+    border-color: rgba(148,163,184,.18);
+    background:
+        radial-gradient(circle at 8% 0%, rgba(125,211,252,.085), transparent 34%),
+        linear-gradient(135deg, rgba(255,255,255,.060), rgba(255,255,255,.020)),
+        rgba(0,0,0,.96);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 24px 70px rgba(0,0,0,.68),
+        0 0 28px rgba(125,211,252,.08);
+}
+
+:root[data-theme="amoled-black"] .notification-panel-head a,
+:root[data-theme="amoled-black"] .notification-item[href]:hover,
+:root[data-theme="amoled-black"] .notification-item[href]:focus-visible,
+:root[data-theme="amoled-black"] .notification-item.is-live,
+:root[data-theme="amoled-black"] .notification-item.is-live em {
+    border-color: rgba(125,211,252,.36);
+}
+
+:root[data-theme="amoled-black"] .notification-panel-head a,
+:root[data-theme="amoled-black"] .notification-item.is-live,
+:root[data-theme="amoled-black"] .notification-item.is-live em {
+    background: rgba(125,211,252,.10);
 }
 
 /* --- Section Lanjutkan Menonton --- */
@@ -7962,6 +8115,154 @@ body:has(.hero-foreground) .character-section {
     line-height: 1.45;
 }
 
+.theme-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+}
+
+.theme-settings-card {
+    width: 100%;
+}
+
+.theme-preset-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 16px;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.020)),
+        rgba(0,0,0,.16);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-preset-card:hover,
+.theme-preset-card:has(input:checked) {
+    border-color: rgba(0,216,255,.36);
+    background:
+        linear-gradient(135deg, rgba(0,216,255,.10), rgba(255,255,255,.026)),
+        rgba(0,0,0,.18);
+}
+
+.theme-preset-card:has(input:checked)::after {
+    content: "Active";
+    position: absolute;
+    top: 9px;
+    right: 10px;
+    color: rgba(214,247,255,.96);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.theme-preset-card input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-preview {
+    height: 42px;
+    display: flex;
+    align-items: end;
+    gap: 5px;
+    padding: 7px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 13px;
+    background: rgba(3,6,18,.74);
+}
+
+.theme-preview i {
+    display: block;
+    flex: 1;
+    border-radius: 999px;
+}
+
+.theme-preview i:nth-child(1) {
+    height: 18px;
+}
+
+.theme-preview i:nth-child(2) {
+    height: 28px;
+}
+
+.theme-preview i:nth-child(3) {
+    height: 22px;
+}
+
+.theme-preview-blue i:nth-child(1) {
+    background: #00d8ff;
+}
+
+.theme-preview-blue i:nth-child(2) {
+    background: #3333ff;
+}
+
+.theme-preview-blue i:nth-child(3) {
+    background: #0000ff;
+}
+
+.theme-preview-violet i:nth-child(1) {
+    background: #c084fc;
+}
+
+.theme-preview-violet i:nth-child(2) {
+    background: #a78bfa;
+}
+
+.theme-preview-violet i:nth-child(3) {
+    background: #7c3aed;
+}
+
+.theme-preview-orange i:nth-child(1) {
+    background: #fbbf24;
+}
+
+.theme-preview-orange i:nth-child(2) {
+    background: #f59e0b;
+}
+
+.theme-preview-orange i:nth-child(3) {
+    background: #d97706;
+}
+
+.theme-preview-amoled {
+    background: #000;
+}
+
+.theme-preview-amoled i:nth-child(1) {
+    background: #111827;
+}
+
+.theme-preview-amoled i:nth-child(2) {
+    background: #7dd3fc;
+}
+
+.theme-preview-amoled i:nth-child(3) {
+    background: #334155;
+}
+
+.theme-preset-card strong {
+    display: block;
+    padding-right: 52px;
+    color: rgba(247,249,255,.96);
+    font-size: 13px;
+}
+
+.theme-preset-card small {
+    display: block;
+    margin-top: 3px;
+    color: rgba(219,224,225,.64);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
 .settings-actions {
     display: flex;
     align-items: center;
@@ -8048,6 +8349,10 @@ body:has(.hero-foreground) .character-section {
     .settings-grid {
         grid-template-columns: 1fr;
     }
+
+    .theme-preset-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media(max-width: 640px) {
@@ -8076,6 +8381,10 @@ body:has(.hero-foreground) .character-section {
 
     .settings-card {
         padding: 20px;
+    }
+
+    .theme-preset-grid {
+        grid-template-columns: 1fr;
     }
 
     .settings-input-row {
@@ -10396,6 +10705,504 @@ body:has(.seasons-hero) {
     color: rgba(178,235,255,.94);
     border-color: rgba(0,216,255,.30);
     background: rgba(0,216,255,.095);
+}
+
+/* Theme preset: Midnight Violet */
+:root[data-theme="midnight-violet"] .topbar {
+    box-shadow:
+        0 22px 72px rgba(0,0,0,.60),
+        0 0 34px rgba(124,58,237,.18),
+        0 0 36px rgba(192,132,252,.07),
+        var(--glass-highlight);
+}
+
+:root[data-theme="midnight-violet"] .brand h1,
+:root[data-theme="midnight-violet"] .featured-overlay h2,
+:root[data-theme="midnight-violet"] .player-title-stack h1,
+:root[data-theme="midnight-violet"] .settings-heading-panel .section-heading,
+:root[data-theme="midnight-violet"] .schedule-page .section-heading {
+    background: linear-gradient(90deg, #fff 12%, #eee7ff 48%, #c084fc 76%, #7c3aed 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="midnight-violet"] .nav-link.active {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.095), rgba(255,255,255,.040)),
+        rgba(124,58,237,.16);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 0 18px rgba(124,58,237,.24),
+        0 0 12px rgba(192,132,252,.12);
+}
+
+:root[data-theme="midnight-violet"] .nav-link::after,
+:root[data-theme="midnight-violet"] .section-line,
+:root[data-theme="midnight-violet"] .toolbar-line {
+    background: linear-gradient(90deg, rgba(192,132,252,0), rgba(192,132,252,.86), rgba(124,58,237,.70));
+    box-shadow: 0 0 14px rgba(192,132,252,.24);
+}
+
+:root[data-theme="midnight-violet"] .search-box input:focus,
+:root[data-theme="midnight-violet"] .notification-button:hover,
+:root[data-theme="midnight-violet"] .profile-circle:hover,
+:root[data-theme="midnight-violet"] .settings-input:focus,
+:root[data-theme="midnight-violet"] .theme-preset-card:hover,
+:root[data-theme="midnight-violet"] .theme-preset-card:has(input:checked) {
+    border-color: rgba(192,132,252,.50);
+    box-shadow:
+        0 0 0 4px rgba(124,58,237,.16),
+        0 0 28px rgba(192,132,252,.14),
+        inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+:root[data-theme="midnight-violet"] .settings-browse-btn,
+:root[data-theme="midnight-violet"] .settings-save-btn,
+:root[data-theme="midnight-violet"] .settings-cleanup-btn,
+:root[data-theme="midnight-violet"] .schedule-now-hero-action,
+:root[data-theme="midnight-violet"] .watch-btn,
+:root[data-theme="midnight-violet"] .play-hover-btn,
+:root[data-theme="midnight-violet"] .nav-btn {
+    border-color: rgba(192,132,252,.38);
+}
+
+:root[data-theme="midnight-violet"] .settings-save-btn,
+:root[data-theme="midnight-violet"] .watch-btn,
+:root[data-theme="midnight-violet"] .play-hover-btn {
+    background:
+        linear-gradient(135deg, rgba(192,132,252,.90), rgba(124,58,237,.70)),
+        var(--primary);
+}
+
+:root[data-theme="midnight-violet"] .schedule-page .schedule-slot.is-current .schedule-slot-list {
+    background:
+        radial-gradient(circle at 12% 42%, rgba(192,132,252,.20), transparent 34%),
+        linear-gradient(90deg, rgba(192,132,252,.18), rgba(124,58,237,.075) 48%, rgba(192,132,252,0) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(192,132,252,.32),
+        0 0 34px rgba(192,132,252,.14);
+}
+
+:root[data-theme="midnight-violet"] .schedule-page .schedule-slot.is-current::before {
+    background: rgba(192,132,252,.72);
+    box-shadow: 0 0 22px rgba(192,132,252,.30);
+}
+
+:root[data-theme="midnight-violet"] .schedule-page .schedule-slot.is-current .schedule-time,
+:root[data-theme="midnight-violet"] .schedule-page .schedule-slot.is-current .schedule-slot-now-label {
+    color: #f7f0ff;
+    border-color: #c084fc;
+    background: #3b1768;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        0 12px 34px rgba(0,0,0,.34),
+        0 0 30px rgba(192,132,252,.34);
+}
+
+:root[data-theme="midnight-violet"] .schedule-page .schedule-entry-card.is-current,
+:root[data-theme="midnight-violet"] .player-episode-card.active {
+    border-color: rgba(192,132,252,.52);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 16px 44px rgba(0,0,0,.30),
+        0 0 30px rgba(192,132,252,.16);
+}
+
+:root[data-theme="midnight-violet"] .schedule-page .schedule-entry-card.is-current .schedule-status-airing-now,
+:root[data-theme="midnight-violet"] .schedule-now-hero-badge {
+    color: #f7f0ff;
+    border-color: rgba(192,132,252,.52);
+    background: rgba(192,132,252,.16);
+    box-shadow: 0 0 18px rgba(192,132,252,.20);
+}
+
+/* Theme preset: Dark Orange */
+:root[data-theme="dark-orange"] .topbar {
+    box-shadow:
+        0 22px 72px rgba(0,0,0,.60),
+        0 0 34px rgba(217,119,6,.16),
+        0 0 36px rgba(251,191,36,.06),
+        var(--glass-highlight);
+}
+
+:root[data-theme="dark-orange"] .brand h1,
+:root[data-theme="dark-orange"] .featured-overlay h2,
+:root[data-theme="dark-orange"] .player-title-stack h1,
+:root[data-theme="dark-orange"] .settings-heading-panel .section-heading,
+:root[data-theme="dark-orange"] .schedule-page .section-heading {
+    background: linear-gradient(90deg, #fff 12%, #fff1d6 48%, #fbbf24 76%, #d97706 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="dark-orange"] .nav-link.active {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.095), rgba(255,255,255,.040)),
+        rgba(217,119,6,.16);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 0 18px rgba(217,119,6,.24),
+        0 0 12px rgba(251,191,36,.12);
+}
+
+:root[data-theme="dark-orange"] .nav-link::after,
+:root[data-theme="dark-orange"] .section-line,
+:root[data-theme="dark-orange"] .toolbar-line {
+    background: linear-gradient(90deg, rgba(251,191,36,0), rgba(251,191,36,.86), rgba(217,119,6,.72));
+    box-shadow: 0 0 14px rgba(245,158,11,.24);
+}
+
+:root[data-theme="dark-orange"] .search-box input:focus,
+:root[data-theme="dark-orange"] .notification-button:hover,
+:root[data-theme="dark-orange"] .profile-circle:hover,
+:root[data-theme="dark-orange"] .settings-input:focus,
+:root[data-theme="dark-orange"] .theme-preset-card:hover,
+:root[data-theme="dark-orange"] .theme-preset-card:has(input:checked) {
+    border-color: rgba(245,158,11,.50);
+    box-shadow:
+        0 0 0 4px rgba(217,119,6,.15),
+        0 0 28px rgba(251,191,36,.13),
+        inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+:root[data-theme="dark-orange"] .settings-browse-btn,
+:root[data-theme="dark-orange"] .settings-save-btn,
+:root[data-theme="dark-orange"] .settings-cleanup-btn,
+:root[data-theme="dark-orange"] .schedule-now-hero-action,
+:root[data-theme="dark-orange"] .watch-btn,
+:root[data-theme="dark-orange"] .play-hover-btn,
+:root[data-theme="dark-orange"] .nav-btn {
+    border-color: rgba(245,158,11,.40);
+}
+
+:root[data-theme="dark-orange"] .settings-save-btn,
+:root[data-theme="dark-orange"] .watch-btn,
+:root[data-theme="dark-orange"] .play-hover-btn {
+    background:
+        linear-gradient(135deg, rgba(251,191,36,.92), rgba(217,119,6,.74)),
+        var(--primary);
+    color: #1c1004;
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-past .schedule-slot-list {
+    background:
+        linear-gradient(90deg, rgba(146,64,14,.18), rgba(120,53,15,.060) 44%, rgba(146,64,14,0) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(180,83,9,.25),
+        0 0 28px rgba(120,53,15,.08);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-past::before {
+    background: rgba(180,83,9,.68);
+    box-shadow: 0 0 18px rgba(180,83,9,.22);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-past .schedule-time {
+    color: #ffe8c2;
+    border-color: #b45309;
+    background: #3b1f0a;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 12px 34px rgba(0,0,0,.30),
+        0 0 24px rgba(180,83,9,.24);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-entry-card.is-past {
+    border-color: rgba(180,83,9,.42);
+    background:
+        radial-gradient(circle at 0% 24%, rgba(180,83,9,.20), transparent 36%),
+        linear-gradient(145deg, rgba(255,255,255,.068), rgba(120,53,15,.070)),
+        rgba(5,7,18,.72);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-entry-card.is-past .schedule-status-aired {
+    color: #ffe8c2;
+    border-color: rgba(180,83,9,.62);
+    background:
+        linear-gradient(135deg, rgba(180,83,9,.30), rgba(120,53,15,.20)),
+        rgba(32,18,8,.86);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-current .schedule-slot-list {
+    background:
+        radial-gradient(circle at 12% 42%, rgba(251,191,36,.22), transparent 34%),
+        linear-gradient(90deg, rgba(251,191,36,.20), rgba(245,158,11,.090) 48%, rgba(251,191,36,0) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(251,191,36,.34),
+        0 0 34px rgba(251,191,36,.16);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-current::before {
+    background: rgba(251,191,36,.78);
+    box-shadow: 0 0 22px rgba(251,191,36,.32);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-current .schedule-time,
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-current .schedule-slot-now-label {
+    color: #fff7dc;
+    border-color: #fbbf24;
+    background: #5a3308;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        0 12px 34px rgba(0,0,0,.34),
+        0 0 30px rgba(251,191,36,.34);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-entry-card.is-current,
+:root[data-theme="dark-orange"] .player-episode-card.active {
+    border-color: rgba(251,191,36,.54);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 16px 44px rgba(0,0,0,.30),
+        0 0 30px rgba(251,191,36,.16);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-entry-card.is-current .schedule-status-airing-now,
+:root[data-theme="dark-orange"] .schedule-now-hero-badge {
+    color: #fff7dc;
+    border-color: rgba(251,191,36,.56);
+    background: rgba(251,191,36,.17);
+    box-shadow: 0 0 18px rgba(251,191,36,.22);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-upcoming .schedule-slot-list {
+    background:
+        linear-gradient(90deg, rgba(245,158,11,.14), rgba(217,119,6,.060) 46%, rgba(245,158,11,0) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(245,158,11,.22),
+        0 0 24px rgba(217,119,6,.07);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-upcoming::before {
+    background: rgba(245,158,11,.46);
+    box-shadow: 0 0 16px rgba(245,158,11,.16);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-slot.is-upcoming .schedule-time {
+    color: #fff0c4;
+    border-color: #f59e0b;
+    background: #452706;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.13),
+        0 12px 34px rgba(0,0,0,.30),
+        0 0 22px rgba(245,158,11,.22);
+}
+
+:root[data-theme="dark-orange"] .schedule-page .schedule-entry-card.is-upcoming .schedule-status-upcoming {
+    color: #fff0c4;
+    border-color: rgba(245,158,11,.36);
+    background: rgba(245,158,11,.12);
+}
+
+/* Theme preset: AMOLED Black */
+:root[data-theme="amoled-black"] body {
+    background: #000;
+}
+
+:root[data-theme="amoled-black"] .topbar,
+:root[data-theme="amoled-black"] .settings-card,
+:root[data-theme="amoled-black"] .page-heading-panel,
+:root[data-theme="amoled-black"] .schedule-now-hero,
+:root[data-theme="amoled-black"] .card,
+:root[data-theme="amoled-black"] .continue-card,
+:root[data-theme="amoled-black"] .episode-card,
+:root[data-theme="amoled-black"] .player-status-bar,
+:root[data-theme="amoled-black"] .player-episode-card,
+:root[data-theme="amoled-black"] .related-card,
+:root[data-theme="amoled-black"] .season-card,
+:root[data-theme="amoled-black"] .info-card {
+    border-color: rgba(148,163,184,.16);
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.050), rgba(255,255,255,.018)),
+        rgba(0,0,0,.88);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.085),
+        0 18px 58px rgba(0,0,0,.62),
+        0 0 24px rgba(125,211,252,.050);
+}
+
+:root[data-theme="amoled-black"] .topbar {
+    box-shadow:
+        0 22px 72px rgba(0,0,0,.76),
+        0 0 26px rgba(125,211,252,.08),
+        var(--glass-highlight);
+}
+
+:root[data-theme="amoled-black"] .brand h1,
+:root[data-theme="amoled-black"] .featured-overlay h2,
+:root[data-theme="amoled-black"] .player-title-stack h1,
+:root[data-theme="amoled-black"] .settings-heading-panel .section-heading,
+:root[data-theme="amoled-black"] .schedule-page .section-heading {
+    background: linear-gradient(90deg, #fff 12%, #e5f6ff 54%, #7dd3fc 82%, #38bdf8 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="amoled-black"] .nav-link.active {
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.080), rgba(255,255,255,.028)),
+        rgba(125,211,252,.10);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 0 14px rgba(125,211,252,.16);
+}
+
+:root[data-theme="amoled-black"] .nav-link::after,
+:root[data-theme="amoled-black"] .section-line,
+:root[data-theme="amoled-black"] .toolbar-line {
+    background: linear-gradient(90deg, rgba(125,211,252,0), rgba(125,211,252,.72), rgba(56,189,248,.45));
+    box-shadow: 0 0 12px rgba(125,211,252,.18);
+}
+
+:root[data-theme="amoled-black"] .search-box input,
+:root[data-theme="amoled-black"] .settings-input {
+    border-color: rgba(148,163,184,.16);
+    background:
+        linear-gradient(135deg, rgba(255,255,255,.050), rgba(255,255,255,.020)),
+        rgba(0,0,0,.70);
+}
+
+:root[data-theme="amoled-black"] .search-box input:focus,
+:root[data-theme="amoled-black"] .notification-button:hover,
+:root[data-theme="amoled-black"] .profile-circle:hover,
+:root[data-theme="amoled-black"] .settings-input:focus,
+:root[data-theme="amoled-black"] .theme-preset-card:hover,
+:root[data-theme="amoled-black"] .theme-preset-card:has(input:checked) {
+    border-color: rgba(125,211,252,.42);
+    box-shadow:
+        0 0 0 4px rgba(125,211,252,.10),
+        0 0 24px rgba(125,211,252,.10),
+        inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+:root[data-theme="amoled-black"] .settings-browse-btn,
+:root[data-theme="amoled-black"] .settings-save-btn,
+:root[data-theme="amoled-black"] .settings-cleanup-btn,
+:root[data-theme="amoled-black"] .schedule-now-hero-action,
+:root[data-theme="amoled-black"] .watch-btn,
+:root[data-theme="amoled-black"] .play-hover-btn,
+:root[data-theme="amoled-black"] .nav-btn {
+    border-color: rgba(125,211,252,.34);
+}
+
+:root[data-theme="amoled-black"] .settings-save-btn,
+:root[data-theme="amoled-black"] .watch-btn,
+:root[data-theme="amoled-black"] .play-hover-btn {
+    background:
+        linear-gradient(135deg, rgba(186,230,253,.78), rgba(56,189,248,.58)),
+        var(--primary);
+    color: #020617;
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-past .schedule-slot-list {
+    background:
+        linear-gradient(90deg, rgba(71,85,105,.15), rgba(30,41,59,.060) 44%, rgba(71,85,105,0) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(100,116,139,.24),
+        0 0 24px rgba(71,85,105,.075);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-past::before {
+    background: rgba(100,116,139,.62);
+    box-shadow: 0 0 16px rgba(100,116,139,.18);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-past .schedule-time {
+    color: #d8e0ea;
+    border-color: #64748b;
+    background: #0b0f16;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.11),
+        0 12px 34px rgba(0,0,0,.36),
+        0 0 20px rgba(100,116,139,.18);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-entry-card.is-past {
+    border-color: rgba(100,116,139,.36);
+    background:
+        radial-gradient(circle at 0% 24%, rgba(71,85,105,.16), transparent 36%),
+        linear-gradient(145deg, rgba(255,255,255,.048), rgba(30,41,59,.060)),
+        rgba(0,0,0,.86);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-entry-card.is-past .schedule-status-aired {
+    color: #d8e0ea;
+    border-color: rgba(100,116,139,.50);
+    background: rgba(71,85,105,.16);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-current .schedule-slot-list {
+    background:
+        radial-gradient(circle at 12% 42%, rgba(125,211,252,.18), transparent 34%),
+        linear-gradient(90deg, rgba(125,211,252,.14), rgba(56,189,248,.060) 48%, rgba(125,211,252,0) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(125,211,252,.28),
+        0 0 30px rgba(125,211,252,.13);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-current::before {
+    background: rgba(125,211,252,.72);
+    box-shadow: 0 0 20px rgba(125,211,252,.28);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-current .schedule-time,
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-current .schedule-slot-now-label {
+    color: #effaff;
+    border-color: #7dd3fc;
+    background: #062333;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 12px 34px rgba(0,0,0,.38),
+        0 0 26px rgba(125,211,252,.28);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-entry-card.is-current,
+:root[data-theme="amoled-black"] .player-episode-card.active {
+    border-color: rgba(125,211,252,.46);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 16px 44px rgba(0,0,0,.36),
+        0 0 26px rgba(125,211,252,.12);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-entry-card.is-current .schedule-status-airing-now,
+:root[data-theme="amoled-black"] .schedule-now-hero-badge {
+    color: #effaff;
+    border-color: rgba(125,211,252,.48);
+    background: rgba(125,211,252,.13);
+    box-shadow: 0 0 16px rgba(125,211,252,.18);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-upcoming .schedule-slot-list {
+    background:
+        linear-gradient(90deg, rgba(45,212,191,.10), rgba(56,189,248,.045) 46%, rgba(45,212,191,0) 100%);
+    box-shadow:
+        inset 0 0 0 1px rgba(45,212,191,.18),
+        0 0 22px rgba(56,189,248,.06);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-upcoming::before {
+    background: rgba(45,212,191,.40);
+    box-shadow: 0 0 14px rgba(45,212,191,.13);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-slot.is-upcoming .schedule-time {
+    color: #d8fbff;
+    border-color: #2dd4bf;
+    background: #062421;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.11),
+        0 12px 34px rgba(0,0,0,.34),
+        0 0 18px rgba(45,212,191,.16);
+}
+
+:root[data-theme="amoled-black"] .schedule-page .schedule-entry-card.is-upcoming .schedule-status-upcoming {
+    color: #d8fbff;
+    border-color: rgba(45,212,191,.30);
+    background: rgba(45,212,191,.085);
 }
 
 /* Full-bleed footer placement */

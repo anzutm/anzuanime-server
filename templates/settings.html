@@ -158,8 +158,83 @@
                             </span>
                         </label>
                     </section>
+
                 </div>
             </div>
+
+            <section class="settings-card theme-settings-card">
+                <div class="settings-card-head">
+                    <span class="settings-kicker">Appearance</span>
+                    <h3>Theme Preset</h3>
+                    <p>Choose the accent palette used across the interface.</p>
+                </div>
+
+                <div class="theme-preset-grid" role="radiogroup" aria-label="Theme Preset">
+                    <label class="theme-preset-card" data-theme-choice="dark-blue">
+                        <input
+                            type="radio"
+                            name="theme_preset"
+                            value="dark-blue"
+                            {% if settings.theme_preset == 'dark-blue' %}checked{% endif %}
+                        >
+                        <span class="theme-preview theme-preview-blue">
+                            <i></i><i></i><i></i>
+                        </span>
+                        <span>
+                            <strong>Dark Blue</strong>
+                            <small>Current Anzuanime blue accent.</small>
+                        </span>
+                    </label>
+
+                    <label class="theme-preset-card" data-theme-choice="midnight-violet">
+                        <input
+                            type="radio"
+                            name="theme_preset"
+                            value="midnight-violet"
+                            {% if settings.theme_preset == 'midnight-violet' %}checked{% endif %}
+                        >
+                        <span class="theme-preview theme-preview-violet">
+                            <i></i><i></i><i></i>
+                        </span>
+                        <span>
+                            <strong>Midnight Violet</strong>
+                            <small>Violet accent for the same dark glass UI.</small>
+                        </span>
+                    </label>
+
+                    <label class="theme-preset-card" data-theme-choice="dark-orange">
+                        <input
+                            type="radio"
+                            name="theme_preset"
+                            value="dark-orange"
+                            {% if settings.theme_preset == 'dark-orange' %}checked{% endif %}
+                        >
+                        <span class="theme-preview theme-preview-orange">
+                            <i></i><i></i><i></i>
+                        </span>
+                        <span>
+                            <strong>Dark Orange</strong>
+                            <small>Warm amber and bronze accent palette.</small>
+                        </span>
+                    </label>
+
+                    <label class="theme-preset-card" data-theme-choice="amoled-black">
+                        <input
+                            type="radio"
+                            name="theme_preset"
+                            value="amoled-black"
+                            {% if settings.theme_preset == 'amoled-black' %}checked{% endif %}
+                        >
+                        <span class="theme-preview theme-preview-amoled">
+                            <i></i><i></i><i></i>
+                        </span>
+                        <span>
+                            <strong>AMOLED Black</strong>
+                            <small>Pure black surfaces with controlled icy cyan accents.</small>
+                        </span>
+                    </label>
+                </div>
+            </section>
 
             <div class="settings-footer">
                 <p class="settings-note">
@@ -202,6 +277,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const message = document.getElementById('settingsPickerMessage');
     const buttons = document.querySelectorAll('.settings-browse-btn[data-picker][data-target]');
+    const themeInputs = document.querySelectorAll('input[name="theme_preset"]');
 
     function showPickerMessage(text, isError) {
         if (!message) {
@@ -243,6 +319,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 this.disabled = false;
                 this.textContent = originalText;
+            }
+        });
+    });
+
+    themeInputs.forEach((input) => {
+        input.addEventListener('change', function() {
+            if (this.checked) {
+                document.documentElement.dataset.theme = this.value || 'dark-blue';
             }
         });
     });

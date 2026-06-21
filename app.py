@@ -61,6 +61,12 @@ SCHEDULE_CACHE = {
     "error": None
 }
 SCHEDULE_CACHE_TTL_SECONDS = 300
+THEME_PRESETS = {
+    "dark-blue",
+    "midnight-violet",
+    "dark-orange",
+    "amoled-black"
+}
 
 PROTECTED_CACHE_FILES = {
     os.path.abspath(DB_PATH),
@@ -77,7 +83,8 @@ def get_default_settings():
         "ongoing_path": r"D:\Fajar\Anime\Onggoing",
         "movie_path": r"D:\Fajar\Anime\Watchlist\Movies",
         "vlc_path": r"C:\Program Files\VideoLAN\VLC\vlc.exe",
-        "discord_rpc_enabled": True
+        "discord_rpc_enabled": True,
+        "theme_preset": "dark-blue"
     }
 
 def load_settings():
@@ -97,6 +104,8 @@ def load_settings():
 
     merged = defaults.copy()
     merged.update(settings)
+    if merged.get("theme_preset") not in THEME_PRESETS:
+        merged["theme_preset"] = defaults["theme_preset"]
     return merged
 
 def save_settings(settings):
@@ -145,6 +154,18 @@ def apply_settings(settings):
         merged.get("discord_rpc_enabled"),
         defaults["discord_rpc_enabled"]
     )
+
+def get_current_theme():
+    theme = load_settings().get("theme_preset", "dark-blue")
+    if theme not in THEME_PRESETS:
+        return "dark-blue"
+    return theme
+
+@app.context_processor
+def inject_theme():
+    return {
+        "current_theme": get_current_theme()
+    }
 
 def get_existing_anime_names():
     existing_names = set()
@@ -1808,8 +1829,12 @@ def update_settings():
         "ongoing_path": request.form.get("ongoing_path", "").strip(),
         "movie_path": request.form.get("movie_path", "").strip(),
         "vlc_path": request.form.get("vlc_path", "").strip(),
-        "discord_rpc_enabled": "discord_rpc_enabled" in request.form
+        "discord_rpc_enabled": "discord_rpc_enabled" in request.form,
+        "theme_preset": request.form.get("theme_preset", "dark-blue").strip()
     }
+
+    if settings["theme_preset"] not in THEME_PRESETS:
+        settings["theme_preset"] = "dark-blue"
 
     save_settings(settings)
     apply_settings(settings)
