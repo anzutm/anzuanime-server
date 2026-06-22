@@ -1,0 +1,6 @@
+Flask>=3.0,<4.0
+requests>=2.31,<3.0
+watchdog>=4.0,<7.0
+pypresence>=4.3,<5.0
+pystray>=0.19,<1.0
+Pillow>=10.0,<12.0
