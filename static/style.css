@@ -3438,7 +3438,7 @@ body{
 .studio-page .studio-heading-panel {
     width: 100%;
     max-width: 100%;
-    padding: 0;
+    padding: 10px 0 0 32px;
     border: none;
     background: none;
     box-shadow: none;
@@ -5493,8 +5493,8 @@ body {
 .status-badge,
 .duration-badge,
 .rel-type-badge {
-    backdrop-filter: var(--glass);
-    -webkit-backdrop-filter: var(--glass);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 .play-hover-btn {
