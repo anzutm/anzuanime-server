@@ -28,18 +28,11 @@ except ImportError:
 RPC_START_TIME = None
 CURRENT_RPC_ANIME = None
 
-ANIME_PATHS = [
-    r"D:\Fajar\Anime\Watchlist",
-    r"D:\Fajar\Anime\Onggoing",
-]
-
 app = Flask(__name__)
 
 # Path Absolut agar aplikasi stabil saat dijalankan dari Tray/VBS
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-MOVIE_PATH = r"D:\Fajar\Anime\Watchlist\Movies"
-VLC_PATH = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
 DISCORD_RPC_ENABLED = True
 
 POSTER_CACHE = os.path.join(BASE_DIR, "cache", "posters")
