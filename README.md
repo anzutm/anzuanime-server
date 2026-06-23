@@ -2,6 +2,14 @@
 
 Local anime library and streaming server built with Flask.
 
+## Screenshots
+
+### Home
+![Home page](assets/screenshots/home.png)
+
+### Anime Detail
+![Anime detail page](assets/screenshots/anime-detail.png)
+
 ## Features
 
 * Local anime and movie library
