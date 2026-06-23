@@ -74,11 +74,11 @@ PROTECTED_CACHE_FILES = {
 
 def get_default_settings():
     return {
-        "watchlist_path": r"D:\Fajar\Anime\Watchlist",
-        "ongoing_path": r"D:\Fajar\Anime\Onggoing",
-        "movie_path": r"D:\Fajar\Anime\Watchlist\Movies",
-        "vlc_path": r"C:\Program Files\VideoLAN\VLC\vlc.exe",
-        "discord_rpc_enabled": True,
+        "watchlist_path": "",
+        "ongoing_path": "",
+        "movie_path": "",
+        "vlc_path": "",
+        "discord_rpc_enabled": False,
         "theme_preset": "dark-blue"
     }
 
