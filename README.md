@@ -59,6 +59,7 @@ Activate it on Windows PowerShell:
 
 ```powershell
 .venv\Scripts\Activate.ps1
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
 Install dependencies:
