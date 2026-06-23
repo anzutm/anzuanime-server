@@ -33,6 +33,7 @@ cache/watch_status.json.bak
 cache/watch_status.json.corrupt-*
 cache/.watch_status.json.tmp-*
 cache/settings.json
+cache/.watch_history.json.bak.tmp-*
 
 # Optional temporary cache files
 cache/*.tmp
