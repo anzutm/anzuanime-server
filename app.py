@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
  
 try:
     from pypresence import Presence
-    DISCORD_CLIENT_ID = "1512299340398329907" 
+    DISCORD_CLIENT_ID = "" 
     rpc = Presence(DISCORD_CLIENT_ID)
     rpc_connected = False
 except ImportError:
