@@ -345,7 +345,7 @@ window.addEventListener('keydown', (e) => {
         .then(res => res.json())
         .then(data => {
             if(data.status === 'success') {
-                showToast('Screenshot saved successfully!');
+                showToast('Screenshot saved');
                 console.log('Screenshot saved to:', data.path);
             } else {
                 showToast('Unable to save screenshot');

@@ -77,6 +77,7 @@ python app.py
 Open this address in your browser:
 
 ```text
+http://localhost:5000/ or 
 http://127.0.0.1:5000
 ```
 

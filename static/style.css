@@ -4371,7 +4371,7 @@ body{
 .toast {
     position: fixed;
     bottom: 40px;
-    left: 22%;
+    left: 7%;
     transform: translateX(-50%) translateY(100px);
     background: rgba(8, 11, 18, 0.82);
     backdrop-filter: var(--glass);
