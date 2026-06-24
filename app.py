@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
  
 try:
     from pypresence import Presence
-    DISCORD_CLIENT_ID = "" 
+    DISCORD_CLIENT_ID = "1512299340398329907" 
     rpc = Presence(DISCORD_CLIENT_ID)
     rpc_connected = False
 except ImportError:
@@ -989,13 +989,11 @@ def get_video_duration(video_path):
         return ""
 
 def find_anime_path(anime_name):
-
     for base_path in ANIME_PATHS:
+        if not base_path or not os.path.isdir(base_path):
+            continue
 
-        anime_path = os.path.join(
-            base_path,
-            anime_name
-        )
+        anime_path = os.path.join(base_path, anime_name)
 
         if os.path.isdir(anime_path):
             return anime_path
@@ -1753,7 +1751,7 @@ def sync_all_library():
     found_data = []
     found_names = []
     for base_path in ANIME_PATHS:
-        if not os.path.exists(base_path):
+        if not base_path or not os.path.isdir(base_path):
             continue
         for name in os.listdir(base_path):
             full_path = os.path.join(base_path, name)
