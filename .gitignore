@@ -85,3 +85,4 @@ desktop.ini
 build/
 dist/
 *.egg-info/
+*.zip
