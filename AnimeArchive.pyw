@@ -6,7 +6,7 @@ from pystray import Icon, Menu, MenuItem # type: ignore
 from PIL import Image
 from app import app, sync_all_library, start_scanner, periodic_sync_task
 
-APP_HOST = "127.0.0.1"
+APP_HOST = "0.0.0.0"
 APP_PORT = 5000
 APP_URL = f"http://animearchive.local:{APP_PORT}"
 

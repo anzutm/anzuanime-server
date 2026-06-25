@@ -4,6 +4,8 @@ let subtitleTrack = videoElement.querySelector('track');
 const episodeLine = document.getElementById('playerEpisodeLine');
 const prevEpisodeLink = document.getElementById('prevEpisodeLink');
 const nextEpisodeLink = document.getElementById('nextEpisodeLink');
+const openMxPlayerBtn = document.getElementById('openMxPlayerBtn');
+const MX_PLAYER_PACKAGE = 'com.mxtech.videoplayer.pro';
 let isSoftSwitching = false;
 
 // 1. Inisialisasi Plyr
@@ -106,6 +108,31 @@ function sendWatchProgress(useKeepalive = false) {
 
 function encodeEpisodePath(path) {
     return path.split('/').map(encodeURIComponent).join('/');
+}
+
+function isAndroidDevice() {
+    return /Android/i.test(navigator.userAgent || '');
+}
+
+function getActiveStreamUrl() {
+    const sourceUrl = sourceElement && sourceElement.getAttribute('src');
+    const streamUrl = sourceUrl || `/stream/${encodeURIComponent(window.ANIME_NAME)}/${encodeEpisodePath(window.EPISODE_PATH)}`;
+    return new URL(streamUrl, window.location.href).href;
+}
+
+function buildMxPlayerIntentUrl(streamUrl) {
+    const parsedUrl = new URL(streamUrl);
+    const scheme = parsedUrl.protocol.replace(':', '');
+    const intentPath = parsedUrl.href.replace(`${parsedUrl.protocol}//`, '');
+
+    return `intent://${intentPath}#Intent;scheme=${scheme};package=${MX_PLAYER_PACKAGE};action=android.intent.action.VIEW;type=video/*;S.browser_fallback_url=${encodeURIComponent(streamUrl)};end`;
+}
+
+function openInMxPlayer() {
+    const streamUrl = getActiveStreamUrl();
+    const intentUrl = buildMxPlayerIntentUrl(streamUrl);
+
+    window.location.href = intentUrl;
 }
 
 function getEpisodeCards() {
@@ -264,6 +291,11 @@ window.addEventListener('beforeunload', () => {
 });
 
 history.replaceState({ episodePath: window.EPISODE_PATH }, '', window.location.href);
+
+if (openMxPlayerBtn && isAndroidDevice()) {
+    openMxPlayerBtn.hidden = false;
+    openMxPlayerBtn.addEventListener('click', openInMxPlayer);
+}
 
 document.addEventListener('click', (event) => {
     const link = event.target.closest('[data-player-nav]');

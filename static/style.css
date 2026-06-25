@@ -2492,6 +2492,18 @@ body{
     color: white !important;
 }
 
+.mx-quick-btn {
+    border: 1px solid rgba(34, 197, 94, 0.28);
+    background: rgba(34, 197, 94, 0.12);
+    color: #86efac;
+    cursor: pointer;
+}
+
+.mx-quick-btn:hover {
+    background: rgba(34, 197, 94, 0.22);
+    color: #ffffff;
+}
+
 .nav-divider {
     width: 1px;
     height: 24px;
