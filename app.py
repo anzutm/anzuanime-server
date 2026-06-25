@@ -56,6 +56,8 @@ SCHEDULE_CACHE = {
 SCHEDULE_CACHE_TTL_SECONDS = 300
 STUDIO_PROJECT_CACHE_TTL_SECONDS = 86400
 STUDIO_PROJECT_LIMIT = 80
+LIBRARY_OBSERVER = None
+LIBRARY_OBSERVER_LOCK = threading.RLock()
 THEME_PRESETS = {
     "dark-blue",
     "midnight-violet",
@@ -132,6 +134,31 @@ def normalize_bool_setting(value, default=False):
 
     return default
 
+def normalize_library_path(path):
+    if not path:
+        return ""
+
+    path = str(path).strip()
+    if not path:
+        return ""
+
+    normalized = os.path.abspath(os.path.expanduser(path))
+
+    if normalized == BASE_DIR:
+        return ""
+
+    return normalized
+
+def get_valid_anime_paths():
+    valid_paths = []
+
+    for base_path in ANIME_PATHS:
+        normalized_path = normalize_library_path(base_path)
+        if normalized_path and os.path.isdir(normalized_path):
+            valid_paths.append(normalized_path)
+
+    return valid_paths
+
 def apply_settings(settings):
     global ANIME_PATHS, MOVIE_PATH, VLC_PATH, DISCORD_RPC_ENABLED
 
@@ -140,11 +167,11 @@ def apply_settings(settings):
     merged.update(settings or {})
 
     ANIME_PATHS = [
-        merged["watchlist_path"],
-        merged["ongoing_path"],
+        normalize_library_path(merged["watchlist_path"]),
+        normalize_library_path(merged["ongoing_path"]),
     ]
-    MOVIE_PATH = merged["movie_path"]
-    VLC_PATH = merged["vlc_path"]
+    MOVIE_PATH = normalize_library_path(merged["movie_path"])
+    VLC_PATH = normalize_library_path(merged["vlc_path"])
     DISCORD_RPC_ENABLED = normalize_bool_setting(
         merged.get("discord_rpc_enabled"),
         defaults["discord_rpc_enabled"]
@@ -165,10 +192,7 @@ def inject_theme():
 def get_existing_anime_names():
     existing_names = set()
 
-    for base_path in ANIME_PATHS:
-        if not base_path or not os.path.isdir(base_path):
-            continue
-
+    for base_path in get_valid_anime_paths():
         try:
             for name in os.listdir(base_path):
                 full_path = os.path.join(base_path, name)
@@ -227,8 +251,7 @@ def cleanup_orphan_cache():
     }
     available_base_paths = [
         path
-        for path in ANIME_PATHS
-        if path and os.path.isdir(path)
+        for path in get_valid_anime_paths()
     ]
 
     if not available_base_paths:
@@ -989,10 +1012,7 @@ def get_video_duration(video_path):
         return ""
 
 def find_anime_path(anime_name):
-    for base_path in ANIME_PATHS:
-        if not base_path or not os.path.isdir(base_path):
-            continue
-
+    for base_path in get_valid_anime_paths():
         anime_path = os.path.join(base_path, anime_name)
 
         if os.path.isdir(anime_path):
@@ -1750,9 +1770,20 @@ def sync_all_library():
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Syncing library...")
     found_data = []
     found_names = []
-    for base_path in ANIME_PATHS:
-        if not base_path or not os.path.isdir(base_path):
-            continue
+    configured_paths = []
+    for path in ANIME_PATHS:
+        normalized_path = normalize_library_path(path)
+        if normalized_path:
+            configured_paths.append(normalized_path)
+    valid_paths = get_valid_anime_paths()
+
+    if not valid_paths:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Sync skipped. No valid anime folders configured.")
+        return
+
+    can_delete_stale = len(valid_paths) == len(configured_paths)
+
+    for base_path in valid_paths:
         for name in os.listdir(base_path):
             full_path = os.path.join(base_path, name)
             if os.path.isdir(full_path):
@@ -1793,10 +1824,10 @@ def sync_all_library():
             """, found_data)
 
         # Hapus entri di DB jika foldernya sudah tidak ada di disk
-        if found_names:
+        if can_delete_stale and found_names:
             placeholders = ','.join(['?'] * len(found_names))
             conn.execute(f"DELETE FROM anime_library WHERE name NOT IN ({placeholders})", found_names)
-        else:
+        elif can_delete_stale:
             conn.execute("DELETE FROM anime_library")
             
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Sync complete. Detected {len(found_names)} anime.")
@@ -1831,6 +1862,8 @@ def update_settings():
 
     save_settings(settings)
     apply_settings(settings)
+    reconfigure_library_observer()
+    threading.Thread(target=sync_all_library, daemon=True).start()
 
     return redirect("/settings?saved=1")
 
@@ -2375,9 +2408,7 @@ def movies():
 
     movies = []
 
-    if not os.path.isdir(
-        movie_path
-    ):
+    if not movie_path or not os.path.isdir(movie_path):
 
         return render_template(
             "movies.html",
@@ -3558,17 +3589,21 @@ def load_history_data():
 
 class LibraryHandler(FileSystemEventHandler):
     def process_event(self, event_path):
-        for base in ANIME_PATHS:
-            if event_path.startswith(base):
-                try:
-                    relative = os.path.relpath(event_path, base)
-                    parts = relative.split(os.sep)
-                    if parts and parts[0] != "." and parts[0] != "":
-                        print(f"[{datetime.now().strftime('%H:%M:%S')}] Watchdog event for anime: {parts[0]}. Triggering sync_anime_to_db.")
-                        sync_anime_to_db(parts[0])
-                        return # Found the anime, no need to check other base paths
-                except ValueError: # path is not in base
+        event_path = os.path.abspath(event_path)
+
+        for base in get_valid_anime_paths():
+            try:
+                if os.path.commonpath([base, event_path]) != base:
                     continue
+
+                relative = os.path.relpath(event_path, base)
+                parts = relative.split(os.sep)
+                if parts and parts[0] != "." and parts[0] != "":
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Watchdog event for anime: {parts[0]}. Triggering sync_anime_to_db.")
+                    sync_anime_to_db(parts[0])
+                    return # Found the anime, no need to check other base paths
+            except ValueError: # path is not in base
+                continue
         # If no specific anime was found, or if it was a top-level directory change/deletion
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Watchdog event for {event_path} did not resolve to a specific anime. Triggering full sync.")
         sync_all_library()
@@ -3591,21 +3626,46 @@ def start_scanner():
     sync_all_library() # Initial full sync
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Initial full library sync complete.")
 
-    observer = Observer()
-    handler = LibraryHandler()
-    for path in ANIME_PATHS:
-        if os.path.exists(path):
-            observer.schedule(handler, path, recursive=True)
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Monitoring folder: {path}")
-        else:
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] Warning: Configured ANIME_PATH does not exist: {path}")
-    observer.start()
+    reconfigure_library_observer()
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+        stop_library_observer()
+
+def stop_library_observer():
+    global LIBRARY_OBSERVER
+
+    with LIBRARY_OBSERVER_LOCK:
+        if LIBRARY_OBSERVER is None:
+            return
+
+        LIBRARY_OBSERVER.stop()
+        LIBRARY_OBSERVER.join()
+        LIBRARY_OBSERVER = None
+
+def reconfigure_library_observer():
+    global LIBRARY_OBSERVER
+
+    with LIBRARY_OBSERVER_LOCK:
+        if LIBRARY_OBSERVER is not None:
+            LIBRARY_OBSERVER.stop()
+            LIBRARY_OBSERVER.join()
+            LIBRARY_OBSERVER = None
+
+        valid_paths = get_valid_anime_paths()
+        if not valid_paths:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Watchdog inactive. No valid anime folders configured.")
+            return
+
+        observer = Observer()
+        handler = LibraryHandler()
+        for path in valid_paths:
+            observer.schedule(handler, path, recursive=True)
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Monitoring folder: {path}")
+
+        observer.start()
+        LIBRARY_OBSERVER = observer
 
 def periodic_sync_task(interval_seconds=900): # Sync every 15 minutes
     """Melakukan sinkronisasi penuh secara berkala sebagai pengaman."""
