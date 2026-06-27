@@ -18,12 +18,12 @@ from datetime import datetime, timedelta
  
 try:
     from pypresence import Presence
-    DISCORD_CLIENT_ID = "1512299340398329907" 
-    rpc = Presence(DISCORD_CLIENT_ID)
-    rpc_connected = False
 except ImportError:
-    rpc = None
-    rpc_connected = False
+    Presence = None
+
+DISCORD_CLIENT_ID = ""
+rpc = None
+rpc_connected = False
 
 RPC_START_TIME = None
 CURRENT_RPC_ANIME = None
@@ -54,6 +54,7 @@ SCHEDULE_CACHE = {
     "error": None
 }
 SCHEDULE_CACHE_TTL_SECONDS = 300
+SCHEDULE_LOOKAHEAD_DAYS = 3
 STUDIO_PROJECT_CACHE_TTL_SECONDS = 86400
 STUDIO_PROJECT_LIMIT = 80
 LIBRARY_OBSERVER = None
@@ -81,6 +82,7 @@ def get_default_settings():
         "movie_path": "",
         "vlc_path": "",
         "discord_rpc_enabled": False,
+        "discord_client_id": "1512299340398329907",
         "theme_preset": "dark-blue"
     }
 
@@ -159,8 +161,35 @@ def get_valid_anime_paths():
 
     return valid_paths
 
+def reset_discord_rpc():
+    global rpc, rpc_connected, RPC_START_TIME, CURRENT_RPC_ANIME
+
+    if rpc is not None:
+        try:
+            if rpc_connected:
+                rpc.clear()
+            rpc.close()
+        except Exception:
+            pass
+
+    rpc = None
+    rpc_connected = False
+    RPC_START_TIME = None
+    CURRENT_RPC_ANIME = None
+
+def get_discord_rpc_client():
+    global rpc
+
+    if Presence is None or not DISCORD_CLIENT_ID:
+        return None
+
+    if rpc is None:
+        rpc = Presence(DISCORD_CLIENT_ID)
+
+    return rpc
+
 def apply_settings(settings):
-    global ANIME_PATHS, MOVIE_PATH, VLC_PATH, DISCORD_RPC_ENABLED
+    global ANIME_PATHS, MOVIE_PATH, VLC_PATH, DISCORD_RPC_ENABLED, DISCORD_CLIENT_ID
 
     defaults = get_default_settings()
     merged = defaults.copy()
@@ -172,10 +201,17 @@ def apply_settings(settings):
     ]
     MOVIE_PATH = normalize_library_path(merged["movie_path"])
     VLC_PATH = normalize_library_path(merged["vlc_path"])
+    discord_client_id = str(merged.get("discord_client_id", "")).strip()
+    if discord_client_id != DISCORD_CLIENT_ID:
+        reset_discord_rpc()
+        DISCORD_CLIENT_ID = discord_client_id
+
     DISCORD_RPC_ENABLED = normalize_bool_setting(
         merged.get("discord_rpc_enabled"),
         defaults["discord_rpc_enabled"]
     )
+    if not DISCORD_RPC_ENABLED:
+        reset_discord_rpc()
 
 def get_current_theme():
     theme = load_settings().get("theme_preset", "dark-blue")
@@ -1054,7 +1090,7 @@ def get_airing_schedule():
     local_tz = datetime.now().astimezone().tzinfo
     now = datetime.now(local_tz)
     start_dt = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_dt = start_dt + timedelta(days=1)
+    end_dt = start_dt + timedelta(days=SCHEDULE_LOOKAHEAD_DAYS)
     start_of_day = int(start_dt.timestamp())
     end_of_day = int(end_dt.timestamp())
 
@@ -1177,6 +1213,7 @@ def get_cached_airing_schedule():
 
 def build_schedule_items(airing_list, local_tz, now_ts):
     existing_anime_names = get_existing_anime_names()
+    today_dt = datetime.fromtimestamp(now_ts, local_tz).date()
     processed = []
 
     for item in airing_list:
@@ -1189,6 +1226,17 @@ def build_schedule_items(airing_list, local_tz, now_ts):
 
         airing_dt = datetime.fromtimestamp(item["airingAt"], local_tz)
         airing_time = airing_dt.strftime("%H:%M")
+        airing_date = airing_dt.date()
+        day_delta = (airing_date - today_dt).days
+
+        if day_delta == 0:
+            date_label = "Today"
+        elif day_delta == 1:
+            date_label = "Tomorrow"
+        elif day_delta == 2:
+            date_label = "Day After Tomorrow"
+        else:
+            date_label = airing_dt.strftime("%A")
 
         if item["airingAt"] <= now_ts < item["airingAt"] + 1800:
             airing_status = "Airing now"
@@ -1204,6 +1252,9 @@ def build_schedule_items(airing_list, local_tz, now_ts):
             "poster": cover_image.get("extraLarge") or url_for("static", filename="arcana.jpg"),
             "episode": item.get("episode"),
             "time": airing_time,
+            "date_key": airing_dt.strftime("%Y-%m-%d"),
+            "date_label": date_label,
+            "date_display": airing_dt.strftime("%A, %d %B %Y"),
             "airing_at": item["airingAt"],
             "airing_iso": airing_dt.isoformat(),
             "format": media.get("format"),
@@ -1276,7 +1327,8 @@ def update_discord_rpc(anime_name, episode_num, time_str=None):
     if not DISCORD_RPC_ENABLED:
         return
 
-    if rpc is None:
+    rpc_client = get_discord_rpc_client()
+    if rpc_client is None:
         return
     
     try:
@@ -1286,14 +1338,14 @@ def update_discord_rpc(anime_name, episode_num, time_str=None):
             CURRENT_RPC_ANIME = anime_name
 
         if not rpc_connected:
-            rpc.connect()
+            rpc_client.connect()
             rpc_connected = True
 
         state_text = f"Episode {episode_num:02d}"
         if time_str:
             state_text += f" ({time_str})"
 
-        rpc.update(
+        rpc_client.update(
             details=anime_name,
             state=state_text,
             large_image="anzu_logo", # Dikembalikan agar status lebih stabil muncul di Discord
@@ -1854,6 +1906,7 @@ def update_settings():
         "movie_path": request.form.get("movie_path", "").strip(),
         "vlc_path": request.form.get("vlc_path", "").strip(),
         "discord_rpc_enabled": "discord_rpc_enabled" in request.form,
+        "discord_client_id": request.form.get("discord_client_id", "").strip(),
         "theme_preset": request.form.get("theme_preset", "dark-blue").strip()
     }
 
@@ -2271,6 +2324,9 @@ def schedule():
         schedule_focus["focus_status"] = "Upcoming"
         schedule_focus["more_count"] = 0
     
+    schedule_start = now_dt.strftime("%A, %d %B %Y")
+    schedule_end = (now_dt + timedelta(days=SCHEDULE_LOOKAHEAD_DAYS - 1)).strftime("%A, %d %B %Y")
+
     return render_template(
         "schedule.html",
         schedule=processed,
@@ -2279,7 +2335,9 @@ def schedule():
         now_ts=now_ts,
         now_iso=now_dt.isoformat(),
         timezone_offset_minutes=timezone_offset_minutes,
-        today=now_dt.strftime("%A, %d %B %Y")
+        today=schedule_start,
+        schedule_range=f"{schedule_start} - {schedule_end}",
+        schedule_lookahead_days=SCHEDULE_LOOKAHEAD_DAYS
     )
 
 @app.route("/api/schedule-alerts")
@@ -2301,7 +2359,11 @@ def schedule_alerts():
             "timezone_offset_minutes": timezone_offset_minutes
         }), 502
 
-    processed = build_schedule_items(airing_list, local_tz, now_ts)
+    today_key = now_dt.strftime("%Y-%m-%d")
+    processed = [
+        item for item in build_schedule_items(airing_list, local_tz, now_ts)
+        if item["date_key"] == today_key
+    ]
     payload = get_schedule_alert_payload(
         processed,
         now_ts,

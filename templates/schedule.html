@@ -13,14 +13,15 @@
                     <span class="page-heading-eyebrow">Airing Schedule</span>
                     <div class="section-title">
                         <div class="section-line"></div>
-                        <h2 class="section-heading"><span>Today</span>'s Airing</h2>
+                        <h2 class="section-heading"><span>Upcoming</span> Airing</h2>
                     </div>
-                    <p class="section-subtitle page-heading-copy">{{ today }} (Local Time)</p>
+                    <p class="section-subtitle page-heading-copy">{{ schedule_range }} (Local Time)</p>
                     <p class="schedule-heading-support">Track what aired, what is live, and what comes next.</p>
                 </div>
 
                 <div class="schedule-summary">
                     <span>{{ schedule|length }} Title{% if schedule|length != 1 %}s{% endif %}</span>
+                    <span>{{ schedule_lookahead_days }} Days</span>
                     <span>Local Time</span>
                     <span
                         class="schedule-now-clock"
@@ -80,57 +81,69 @@
             <span>Now</span>
         </div>
 
-        {% for time, entries in schedule|groupby("time") %}
-        <section
-            class="schedule-slot"
-            data-slot-time="{{ time }}"
-            data-slot-ts="{{ entries[0].airing_at }}"
-            data-slot-iso="{{ entries[0].airing_iso }}"
-        >
-            <div class="schedule-time-rail">
-                <span class="schedule-time">{{ time }}</span>
-                <span class="schedule-slot-now-label">Now</span>
+        {% for date_key, day_entries in schedule|groupby("date_key") %}
+        <section class="schedule-day" data-schedule-day="{{ date_key }}">
+            <div class="schedule-day-heading">
+                <span>{{ day_entries[0].date_label }}</span>
+                <strong>{{ day_entries[0].date_display }}</strong>
             </div>
 
-            <div class="schedule-slot-list">
-                {% for item in entries %}
-                {% if item.detail_url %}
-                <a
-                    class="schedule-entry-card"
-                    href="{{ item.detail_url }}"
-                    data-airing-at="{{ item.airing_at }}"
-                    data-airing-iso="{{ item.airing_iso }}"
+            <div class="schedule-day-slots">
+                {% for time, entries in day_entries|groupby("time") %}
+                <section
+                    class="schedule-slot"
+                    data-slot-time="{{ time }}"
+                    data-slot-date="{{ date_key }}"
+                    data-slot-ts="{{ entries[0].airing_at }}"
+                    data-slot-iso="{{ entries[0].airing_iso }}"
                 >
-                {% else %}
-                <article
-                    class="schedule-entry-card"
-                    data-airing-at="{{ item.airing_at }}"
-                    data-airing-iso="{{ item.airing_iso }}"
-                >
-                {% endif %}
-                    <img class="schedule-thumb" src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy">
-
-                    <div class="schedule-entry-main">
-                        <div class="schedule-entry-top">
-                            <h3>{{ item.title }}</h3>
-                            <span class="schedule-status schedule-status-{{ item.status|lower|replace(' ', '-') }}" data-status-label>
-                                {{ item.status }}
-                            </span>
-                        </div>
-
-                        <div class="schedule-entry-meta">
-                            <span>Ep {{ item.episode }}</span>
-                            <span>{{ item.time }}</span>
-                            {% if item.format %}
-                            <span>{{ item.format }}</span>
-                            {% endif %}
-                        </div>
+                    <div class="schedule-time-rail">
+                        <span class="schedule-time">{{ time }}</span>
+                        <span class="schedule-slot-now-label">Now</span>
                     </div>
-                {% if item.detail_url %}
-                </a>
-                {% else %}
-                </article>
-                {% endif %}
+
+                    <div class="schedule-slot-list">
+                        {% for item in entries %}
+                        {% if item.detail_url %}
+                        <a
+                            class="schedule-entry-card"
+                            href="{{ item.detail_url }}"
+                            data-airing-at="{{ item.airing_at }}"
+                            data-airing-iso="{{ item.airing_iso }}"
+                        >
+                        {% else %}
+                        <article
+                            class="schedule-entry-card"
+                            data-airing-at="{{ item.airing_at }}"
+                            data-airing-iso="{{ item.airing_iso }}"
+                        >
+                        {% endif %}
+                            <img class="schedule-thumb" src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy">
+
+                            <div class="schedule-entry-main">
+                                <div class="schedule-entry-top">
+                                    <h3>{{ item.title }}</h3>
+                                    <span class="schedule-status schedule-status-{{ item.status|lower|replace(' ', '-') }}" data-status-label>
+                                        {{ item.status }}
+                                    </span>
+                                </div>
+
+                                <div class="schedule-entry-meta">
+                                    <span>Ep {{ item.episode }}</span>
+                                    <span>{{ item.time }}</span>
+                                    {% if item.format %}
+                                    <span>{{ item.format }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% if item.detail_url %}
+                        </a>
+                        {% else %}
+                        </article>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
                 {% endfor %}
             </div>
         </section>
@@ -142,7 +155,7 @@
         </div>
         {% elif not schedule %}
         <div class="schedule-state">
-            <p>No airing schedule found for today.</p>
+            <p>No airing schedule found for the next {{ schedule_lookahead_days }} days.</p>
         </div>
         {% endif %}
     </div>
@@ -156,6 +169,7 @@
     const scheduleNowClock = document.getElementById('scheduleNowClock');
     const scheduleNowMarker = document.getElementById('scheduleNowMarker');
     const scheduleFocusHero = document.querySelector('.schedule-now-hero[data-focus-airing-at]');
+    const scheduleDays = Array.from(document.querySelectorAll('.schedule-day[data-schedule-day]'));
     const scheduleSlots = Array.from(document.querySelectorAll('.schedule-slot[data-slot-ts]'));
     const scheduleCards = Array.from(document.querySelectorAll('.schedule-entry-card[data-airing-at]'));
 
@@ -180,6 +194,14 @@
 
         const fallbackSeconds = Number(element.dataset[fallbackKey]);
         return Number.isFinite(fallbackSeconds) ? fallbackSeconds * 1000 : NaN;
+    }
+
+    function formatLocalDateKey(epochMs) {
+        const shifted = new Date(epochMs + scheduleTimezoneOffsetMinutes * 60000);
+        const year = shifted.getUTCFullYear();
+        const month = String(shifted.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(shifted.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     function formatScheduleClock(epochMs) {
@@ -220,12 +242,11 @@
 
     function updateScheduleLiveState() {
         const nowMs = getScheduleNowMs();
+        const todayKey = formatLocalDateKey(nowMs);
 
         if (scheduleNowClock) {
             scheduleNowClock.textContent = `Now \u2022 ${formatScheduleClock(nowMs)}`;
         }
-
-        let activeSlot = null;
 
         scheduleCards.forEach(card => {
             const airingAtMs = getTimestampMs(card, 'airingIso', 'airingAt');
@@ -253,7 +274,6 @@
 
             if (slotTsMs <= nowMs && nowMs < slotTsMs + 1800000) {
                 slot.classList.add('is-current');
-                activeSlot = slot;
             } else if (slotTsMs > nowMs) {
                 slot.classList.add('is-upcoming');
             } else {
@@ -289,8 +309,14 @@
             return;
         }
 
-        const firstSlot = scheduleSlots[0];
-        const lastSlot = scheduleSlots[scheduleSlots.length - 1];
+        const todaySlots = scheduleSlots.filter(slot => slot.dataset.slotDate === todayKey);
+        if (todaySlots.length === 0) {
+            scheduleNowMarker.hidden = true;
+            return;
+        }
+
+        const firstSlot = todaySlots[0];
+        const lastSlot = todaySlots[todaySlots.length - 1];
         const firstTsMs = getTimestampMs(firstSlot, 'slotIso', 'slotTs');
         const lastTsMs = getTimestampMs(lastSlot, 'slotIso', 'slotTs');
 
@@ -302,7 +328,7 @@
         let previousSlot = firstSlot;
         let nextSlot = null;
 
-        for (const slot of scheduleSlots) {
+        for (const slot of todaySlots) {
             const slotMs = getTimestampMs(slot, 'slotIso', 'slotTs');
             if (!Number.isFinite(slotMs)) continue;
 
@@ -356,6 +382,11 @@
                 });
 
                 slot.style.display = visibleCount > 0 ? "grid" : "none";
+            });
+
+            scheduleDays.forEach(day => {
+                const visibleSlots = day.querySelectorAll('.schedule-slot:not([style*="display: none"])');
+                day.style.display = visibleSlots.length > 0 ? "grid" : "none";
             });
         });
     }

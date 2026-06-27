@@ -8,10 +8,10 @@
     <meta name="theme-color" content="#050711">
 
     <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='arcana.jpg') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=(range(1, 9999) | list | random)) }}">
 </head>
 
-<body>
+<body class="anime-detail-body">
 <a
     href="{{ url_for('index') }}"
     class="back-btn anime-floating-back"
@@ -113,6 +113,22 @@
                     }}
 
                 </p>
+
+                {% if episodes %}
+                <div class="detail-actions">
+                    <button
+                        type="button"
+                        class="watch-btn detail-watch-btn"
+                        data-episode-path="{{ episodes[0].file }}"
+                        onclick="playEpisode(this.dataset.episodePath)"
+                    >
+                        <span>▶</span> Watch Episode {{ episodes[0].episode }}
+                    </button>
+                    <a href="#episodeGrid" class="detail-episode-link">
+                        Episodes
+                    </a>
+                </div>
+                {% endif %}
 
                 <div class="info-grid">
 

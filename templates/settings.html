@@ -157,6 +157,20 @@
                                 <small>Show current playback status on Discord.</small>
                             </span>
                         </label>
+
+                        <div class="settings-field">
+                            <label class="settings-label" for="discord_client_id">Discord Client ID</label>
+                            <input
+                                class="settings-input"
+                                type="text"
+                                id="discord_client_id"
+                                name="discord_client_id"
+                                value="{{ settings.discord_client_id }}"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="Discord application client ID"
+                            >
+                        </div>
                     </section>
 
                 </div>
