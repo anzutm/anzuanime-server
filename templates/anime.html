@@ -105,7 +105,7 @@
                     </div>
                 </div>
 
-                <p class="anime-description">
+                <p class="anime-description{% if anime_info.description|striptags|length > 320 %} is-collapsed{% endif %}">
 
                     {{ anime_info.description
                         | striptags
@@ -114,23 +114,19 @@
 
                 </p>
 
-                {% if episodes %}
-                <div class="detail-actions">
+                <div class="info-grid">
+
+                    {% if episodes %}
                     <button
                         type="button"
                         class="watch-btn detail-watch-btn"
                         data-episode-path="{{ episodes[0].file }}"
                         onclick="playEpisode(this.dataset.episodePath)"
                     >
-                        <span>▶</span> Watch Episode {{ episodes[0].episode }}
+                        <span aria-hidden="true">▶</span>
+                        <span>Watch Episode {{ episodes[0].episode }}</span>
                     </button>
-                    <a href="#episodeGrid" class="detail-episode-link">
-                        Episodes
-                    </a>
-                </div>
-                {% endif %}
-
-                <div class="info-grid">
+                    {% endif %}
 
                     <div class="info-card">
                         <h3>{{ anime_info.year }}</h3>
@@ -155,8 +151,12 @@
                     <div class="info-card">
                         <h3>
                             {% if anime_info.studio %}
-                            <a href="{{ url_for('studio_page', studio_name=anime_info.studio) }}">
-                                {{ anime_info.studio }}
+                            <a
+                                class="studio-card-link"
+                                href="{{ url_for('studio_page', studio_name=anime_info.studio) }}"
+                            >
+                                <span>{{ anime_info.studio }}</span>
+                                <span aria-hidden="true">→</span>
                             </a>
                             {% else %}
                             {{ anime_info.studio }}
