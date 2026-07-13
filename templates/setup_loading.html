@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Preparing Library - AniBase{% endblock %}
+{% block body_class %}setup-body setup-loading-body{% endblock %}
+{% block topbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<section class="setup-loading-page">
+    <div class="setup-loading-card">
+        <div class="setup-loader" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <span class="settings-kicker">Preparing Library</span>
+        <h1>Scanning your anime folders</h1>
+        <p id="setupLoadingText">Reading folders and building your local library. Anime info will continue loading in the background.</p>
+        <div class="setup-progress-row">
+            <strong id="setupProgressPercent">0%</strong>
+            <span id="setupProgressLabel">Starting scan</span>
+        </div>
+        <div class="setup-loading-bar" aria-hidden="true"><span id="setupProgressFill"></span></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const text = document.getElementById('setupLoadingText');
+    const percentText = document.getElementById('setupProgressPercent');
+    const progressLabel = document.getElementById('setupProgressLabel');
+    const progressFill = document.getElementById('setupProgressFill');
+    const startedAt = Date.now();
+
+    function setProgress(value, label) {
+        const progress = Math.max(0, Math.min(100, Math.round(value)));
+        if (percentText) percentText.textContent = `${progress}%`;
+        if (progressFill) progressFill.style.width = `${progress}%`;
+        if (label && progressLabel) progressLabel.textContent = label;
+    }
+
+    function renderProgress(data) {
+        const current = Number(data.current) || 0;
+        const total = Number(data.total) || 0;
+        const itemProgress = total > 0 ? Math.min(1, current / total) : 0;
+
+        if (data.stage === 'scan') {
+            setProgress(5 + itemProgress * 40, `Scanning anime folders — ${current} / ${total}`);
+            if (text) text.textContent = 'Reading folders and building your local library database.';
+        } else if (data.stage === 'metadata') {
+            setProgress(45 + itemProgress * 50, `Fetching anime database — ${current} / ${total}`);
+            if (text) text.textContent = 'Fetching titles, scores, genres, seasons, and airing status.';
+        } else if (data.stage === 'complete') {
+            setProgress(100, `Complete — ${data.anime_count} / ${data.anime_count}`);
+        }
+    }
+
+    const requestOptions = {
+        headers: {'X-AniBase-Action-Token': window.ANIBASE_ACTION_TOKEN || ''}
+    };
+
+    setProgress(2, 'Preparing scanner — 0 / 0');
+
+    async function finishAfterMinimumDelay() {
+        const elapsed = Date.now() - startedAt;
+        const wait = Math.max(0, 1800 - elapsed);
+        await new Promise(resolve => setTimeout(resolve, wait));
+        window.location.href = "{{ url_for('index') }}";
+    }
+
+    try {
+        const startResponse = await fetch("{{ url_for('setup_sync') }}", {
+            ...requestOptions,
+            method: 'POST'
+        });
+        if (!startResponse.ok) throw new Error('Unable to start setup sync.');
+
+        let data = await startResponse.json();
+        while (!data.done) {
+            renderProgress(data);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const statusResponse = await fetch("{{ url_for('setup_sync') }}", requestOptions);
+            data = await statusResponse.json();
+            if (!statusResponse.ok || !data.ok) {
+                throw new Error(data.error || 'Setup sync failed.');
+            }
+        }
+
+        if (!data.ok) throw new Error(data.error || 'Setup sync failed.');
+        renderProgress(data);
+        if (text) {
+            text.textContent = data.anime_count > 0
+                ? `Found ${data.anime_count} anime folder${data.anime_count === 1 ? '' : 's'}. Opening your library...`
+                : 'No anime folders found yet. Opening the library so you can adjust paths.';
+        }
+        await finishAfterMinimumDelay();
+    } catch (error) {
+        setProgress(100, 'Opening library');
+        if (text) {
+            text.textContent = 'Setup saved, but scanning needs another try. Opening the library...';
+        }
+        await finishAfterMinimumDelay();
+    }
+});
+</script>
+{% endblock %}

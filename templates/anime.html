@@ -1,0 +1,1038 @@
+﻿﻿<!DOCTYPE html>
+<html data-theme="{{ current_theme|default('dark-blue') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ anime_name }}</title>
+    <style>html,body{background-color:#050711;color:#F3F4F5;}</style>
+    <meta name="theme-color" content="#050711">
+
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='arcana.jpg') }}">
+    {% if is_movie %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='plyr.css') }}">
+    {% endif %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=(range(1, 9999) | list | random)) }}">
+</head>
+
+<body class="anime-detail-body{% if is_movie %} movie-detail-body{% endif %}">
+<a
+    href="{{ url_for('index') }}"
+    class="back-btn anime-floating-back"
+    aria-label="Back to home"
+>
+    &larr; Back
+</a>
+
+<div class="hero">
+
+    <img
+        class="hero-banner"
+        src="{{ anime_info.banner if selected_season and anime_info and anime_info.banner else url_for('banner', anime_name=anime_name) }}"
+        alt="{{ anime_name }}"
+    >
+
+    <div class="hero-overlay">
+
+        <div class="detail-page-container hero-foreground">
+
+        {% if anime_info %}
+
+        <div class="hero-content detail-hero-content">
+
+            <div class="hero-poster-shell">
+                <img
+                    class="hero-poster"
+                    src="{{ anime_info.poster if selected_season and anime_info.poster else url_for('poster', anime_name=anime_name) }}"
+                    alt="{{ anime_info.title or anime_name }}"
+                >
+                <div class="poster-status-chip">
+                    {{ anime_info.format or "Anime" }}
+                </div>
+            </div>
+
+            <div class="hero-details">
+
+                <div class="detail-kicker">
+                    {{ "Movie" if is_movie else "Now Viewing" }}
+                </div>
+
+                <div class="detail-panel-top">
+                    <div class="title-row">
+                        <h1>
+                            {{ anime_info.title }}
+                        </h1>
+                        {% if anime_info.status %}
+                        <span class="status-badge {{ anime_info.status.lower() }}">
+                            {{ anime_info.status }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="anime-meta detail-meta">
+
+                    <span>
+                        <small>Score</small>
+                        <strong>{{ "%.1f"|format((anime_info.score or 0) / 10) }}</strong>
+                    </span>
+
+                    <span>
+                        <small>{{ "Year" if is_movie else "Season" }}</small>
+                        <strong>{{ anime_info.year if is_movie else anime_info.season }}</strong>
+                    </span>
+
+                    <span>
+                        <small>Format</small>
+                        <strong>{{ anime_info.format }}</strong>
+                    </span>
+
+                    <span>
+                        <small>{{ "Runtime" if is_movie else "Episodes" }}</small>
+                        <strong>{{ anime_info.duration if is_movie else anime_info.episodes }}</strong>
+                    </span>
+
+                </div>
+
+                <div class="genre-panel">
+                    <div class="genre-panel-label">Genres</div>
+                    <div class="genre-list">
+
+                    {% for genre in anime_info.genres %}
+
+                        <span class="genre-tag">
+                            {{ genre }}
+                        </span>
+
+                    {% endfor %}
+
+                    </div>
+                </div>
+
+                <p class="anime-description{% if anime_info.description|striptags|length > 320 %} is-collapsed{% endif %}">
+
+                    {{ anime_info.description
+                        | striptags
+                        | truncate(400)
+                    }}
+
+                </p>
+
+                <div class="info-grid">
+
+                    {% if resume_episode and not is_movie %}
+                    <button
+                        type="button"
+                        class="watch-btn detail-watch-btn"
+                        data-episode-path="{{ resume_episode.file }}"
+                        onclick="playEpisode(this.dataset.episodePath)"
+                    >
+                        <span aria-hidden="true">▶</span>
+                        <span>{{ resume_label }} · Episode {{ resume_episode.episode_label or resume_episode.episode }}</span>
+                    </button>
+                    {% endif %}
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.year }}</h3>
+                        <p>Year</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.duration }}</h3>
+                        <p>Minutes</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>{{ anime_info.format }}</h3>
+                        <p>Format</p>
+                    </div>
+
+                    {% if not is_movie and anime_info.status == 'RELEASING' and anime_info.next_airing %}
+                    <div
+                        class="info-card detail-airing-card"
+                        data-airing-at="{{ anime_info.next_airing.airingAt }}"
+                    >
+                        <h3>Ep {{ anime_info.next_airing.episode }}: <span data-airing-countdown>soon</span></h3>
+                        <p>Airing</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="info-card">
+                        <h3>
+                            {% if anime_info.studio %}
+                            <a
+                                class="studio-card-link"
+                                href="{{ url_for('studio_page', studio_name=anime_info.studio) }}"
+                            >
+                                <span>{{ anime_info.studio }}</span>
+                                <span aria-hidden="true">→</span>
+                            </a>
+                            {% else %}
+                            {{ anime_info.studio }}
+                            {% endif %}
+                        </h3>
+                        <p>Studio</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <h1>
+            {{ anime_name }}
+        </h1>
+
+        {% endif %}
+
+        </div>
+
+    </div> <!-- End hero-overlay -->
+</div> <!-- End hero -->
+
+{% if is_movie and episodes %}
+<section class="movie-watch-section" id="movieWatch">
+    <div class="movie-watch-shell">
+        <div class="movie-screen">
+            <video
+                id="movieDetailPlayer"
+                class="movie-detail-video"
+                controls
+                playsinline
+                crossorigin
+                preload="metadata"
+                poster="{{ episodes[0].thumbnail }}"
+                data-anime-name="{{ folder_name or anime_name }}"
+                data-display-name="{{ anime_name }}"
+                data-episode-path="{{ episodes[0].file }}"
+                data-resume-time="{{ resume_time or 0 }}"
+                data-plyr-icon-url="{{ url_for('static', filename='plyr.svg') }}"
+                data-play-url-template="{{ url_for('play_episode', anime_name='__ANIME__', episode='__EPISODE__') }}"
+            >
+                <source
+                    src="{{ url_for('stream_video', anime_name=folder_name or anime_name, episode=episodes[0].file) }}"
+                    type="video/mp4"
+                >
+                <track
+                    kind="subtitles"
+                    src="{{ url_for('get_subtitle', anime_name=folder_name or anime_name, episode=episodes[0].file) }}"
+                    srclang="id"
+                    label="Indonesian"
+                    default
+                >
+            </video>
+        </div>
+
+        <div class="movie-watch-bar">
+            <div>
+                <span class="movie-watch-label">Local Movie</span>
+                <strong>{{ anime_name }}</strong>
+            </div>
+
+            <div class="movie-player-actions">
+                <button
+                    type="button"
+                    class="movie-action-btn movie-screenshot-btn"
+                    id="movieScreenshotBtn"
+                >
+                    <span aria-hidden="true">&#128247;</span>
+                    <span>Screenshot</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="movie-action-btn movie-vlc-btn"
+                    id="movieVlcBtn"
+                >
+                    <span aria-hidden="true">&#9654;</span>
+                    <span>Open in Media Player</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<div class="character-section">
+    <div class="section-title">
+        <div class="section-line"></div>
+        <div>
+            <h2>Characters & Voice Actors</h2>
+            <p class="section-subtitle">Cast highlights pulled into a cleaner streaming-style panel.</p>
+        </div>
+    </div>
+    
+    {% if anime_info and anime_info.characters %}
+    <div class="character-grid">
+        {% for char in anime_info.characters %}
+        <div class="character-card">
+            <div class="char-side character-profile character-main">
+                <div class="character-image-wrap">
+                    <img src="{{ url_for('character_img', anime_name=anime_info.character_cache_name or anime_name, filename=char.image_local) }}" alt="{{ char.name }}" loading="lazy">
+                </div>
+                <div class="char-info">
+                    <span class="char-name">{{ char.name }}</span>
+                    <span class="char-role">{{ char.role }}</span>
+                </div>
+            </div>
+            
+            {% if char.va_name %}
+            <div class="va-side character-profile voice-profile">
+                <div class="character-image-wrap voice-image-wrap">
+                    {% if char.va_staff_id %}
+                    <a href="{{ url_for('seiyuu_page', staff_id=char.va_staff_id, name=char.va_name) }}" class="va-image-link" aria-label="Open seiyuu profile for {{ char.va_name }}">
+                    <img src="{{ url_for('character_img', anime_name=anime_info.character_cache_name or anime_name, filename=char.va_image_local) }}" alt="{{ char.va_name }}" loading="lazy">
+                    </a>
+                    {% else %}
+                    <img src="{{ url_for('character_img', anime_name=anime_info.character_cache_name or anime_name, filename=char.va_image_local) }}" alt="{{ char.va_name }}" loading="lazy">
+                    {% endif %}
+                </div>
+                <div class="va-info">
+                    {% if char.va_staff_id %}
+                    <a href="{{ url_for('seiyuu_page', staff_id=char.va_staff_id, name=char.va_name) }}" class="va-name-link">
+                        <span class="va-name">{{ char.va_name }}</span>
+                    </a>
+                    {% else %}
+                    <span class="va-name">{{ char.va_name }}</span>
+                    {% endif %}
+                    <span class="va-role">Seiyuu</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="compact-empty-state">
+        <span aria-hidden="true">?</span>
+        <p>No characters available.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if not is_movie %}
+<div class="anime-header">
+
+    <div class="episode-header">
+
+        <div class="section-title">
+            <div class="section-line"></div>
+            <div>
+                <h2>Episode List</h2>
+                <p class="section-subtitle">Choose an episode and jump straight into playback.</p>
+            </div>
+        </div>
+
+        <div class="episode-list-controls" aria-label="Episode list controls">
+            {% if seasons %}
+            <nav class="season-switcher" aria-label="Choose season">
+                <span class="season-switcher-label">Season</span>
+                <div class="season-switcher-tabs">
+                    {% for season in seasons %}
+                    <a
+                        href="{{ url_for('anime_detail', anime_name=anime_name, season=season.name) }}"
+                        class="season-switcher-tab{% if season.name == selected_season %} active{% endif %}"
+                        {% if season.name == selected_season %}aria-current="page"{% endif %}
+                    >
+                        <span>{{ season.label }}</span>
+                        {% if season.name == selected_season %}<i aria-hidden="true">Now</i>{% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            </nav>
+            {% endif %}
+
+            <div class="episode-filter-tabs" role="group" aria-label="Episode filter">
+                <button type="button" class="episode-filter-btn active" data-episode-filter="all">All</button>
+                <button type="button" class="episode-filter-btn" data-episode-filter="unwatched">Unwatched</button>
+                <button type="button" class="episode-filter-btn" data-episode-filter="progress">In Progress</button>
+                <button type="button" class="episode-filter-btn" data-episode-filter="watched">Watched</button>
+            </div>
+
+            <div class="episode-sort-toggle" role="group" aria-label="Episode sort">
+                <button type="button" class="episode-sort-btn active" data-episode-sort="asc">Asc</button>
+                <button type="button" class="episode-sort-btn" data-episode-sort="desc">Desc</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+
+{% if not is_movie %}
+<div id="episodeListContent">
+{% if episodes %}
+<div
+    class="episode-grid"
+    id="episodeGrid"
+>
+
+{% for ep in episodes %}
+
+<div
+    class="episode-card"
+    data-episode-index="{{ ep.episode if ep.episode else ep.list_position }}"
+    data-watch-state="{% if ep.watched %}watched{% elif ep.progress and ep.progress > 0 %}progress{% else %}unwatched{% endif %}"
+>
+    <div class="episode-card-shell">
+
+    <div
+        class="thumbnail-wrapper"
+        data-file="{{ ep.file }}"
+        onclick="playEpisode(this.dataset.file)"
+    >
+
+        <img
+            class="episode-thumbnail"
+            src="{{ ep.thumbnail }}"
+            loading="lazy"
+        >
+
+        <div class="duration-badge">
+            {{ ep.duration }}
+        </div>
+
+        <div class="resolution-badge">
+            {{ ep.resolution }}
+        </div>
+
+        <div class="episode-overlay">
+
+            <div class="play-circle">
+                ▶
+            </div>
+
+            <div class="episode-meta">
+
+                <p>
+                    Watch now
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="episode-card-footer">
+        <div class="episode-footer-row">
+            <strong>Episode {{ ep.episode_label or ep.episode }}</strong>
+
+            {% if ep.watched %}
+            <span class="watch-status-badge">
+                Watched
+            </span>
+            {% elif ep.progress and ep.progress > 0 %}
+            <span class="watch-progress-badge">
+                Progress {{ ep.progress }}%
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<div class="episode-filter-empty" id="episodeFilterEmpty" hidden>
+    No episodes match this filter.
+    <button type="button" class="empty-inline-action" id="episodeResetFilter">Reset Filter</button>
+</div>
+{% else %}
+<div class="compact-empty-state episode-empty-state">
+    <span aria-hidden="true">!</span>
+    <p>No episodes found in this folder.</p>
+    <a href="{{ url_for('settings_page') }}" class="empty-inline-action">Go to Settings</a>
+</div>
+{% endif %}
+</div>
+{% endif %}
+
+<div class="related-section recommendation-section">
+    <div class="section-title">
+        <div class="section-line"></div>
+        <h2>Recommended Anime</h2>
+    </div>
+    
+    {% if anime_info and anime_info.recommendations %}
+    <div class="related-grid">
+        {% for rec in anime_info.recommendations %}
+        <div class="related-card">
+            <div class="rel-poster-wrapper">
+                <img src="{{ url_for('poster', anime_name=rec.title) }}" alt="{{ rec.title }}" loading="lazy">
+                <div class="rel-type-badge">Recommended</div>
+            </div>
+            <div class="rel-info">
+                <h3 class="rel-title">{{ rec.title }}</h3>
+                <div class="rel-meta">
+                    <span class="rel-status {{ rec.status.lower() if rec.status else '' }}">
+                        {{ rec.status.replace('_', ' ').title() if rec.status else 'Unknown' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="compact-empty-state">
+        <span aria-hidden="true">*</span>
+        <p>No recommendations found yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="related-section relation-section">
+    <div class="section-title">
+        <div class="section-line"></div>
+        <h2>Related Anime</h2>
+    </div>
+    
+    {% if anime_info and anime_info.relations %}
+    <div class="related-grid">
+        {% for rel in anime_info.relations %}
+        <div class="related-card">
+            <div class="rel-poster-wrapper">
+                <img src="{{ url_for('poster', anime_name=rel.title) }}" alt="{{ rel.title }}" loading="lazy">
+                <div class="rel-type-badge">{{ rel.type }}</div>
+            </div>
+            <div class="rel-info">
+                <h3 class="rel-title">{{ rel.title }}</h3>
+                <div class="rel-meta">
+                    <span class="rel-status {{ rel.status.lower() if rel.status else '' }}">
+                        {{ rel.status.replace('_', ' ').title() if rel.status else 'Unknown' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="compact-empty-state">
+        <span aria-hidden="true">&harr;</span>
+        <p>No related anime available.</p>
+    </div>
+    {% endif %}
+</div>
+
+<footer class="main-footer">
+        <div class="footer-surface-glow"></div>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h2>Animearchive</h2>
+                <p>Manage your local anime collection with real-time data integration.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Navigate</h3>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('movies') }}">Movies</a></li>
+                </ul>
+            </div>
+            <div class="footer-meta">
+                <h3>System</h3>
+                <p>Data Provider: AniList API</p>
+                <p>Media Engine: Media Player / HTML5</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 AniBase. Personal Collection.</p>
+        </div>
+</footer>
+
+{% if is_movie and episodes %}
+<div id="screenshotToast" class="toast movie-toast">
+    <span class="toast-icon">&#128247;</span>
+    <span id="toastMessage">Screenshot saved</span>
+</div>
+{% endif %}
+
+<script
+    data-player-anime-name="{{ (folder_name or anime_name) | e }}"
+    data-player-url-template="{{ url_for('player', anime_name='__ANIME__', episode='__EPISODE__') }}"
+>
+
+function encodeEpisodePath(path){
+    return path
+        .split("/")
+        .map(encodeURIComponent)
+        .join("/");
+}
+
+const playerAnimeName = document.currentScript.dataset.playerAnimeName;
+const playerUrlTemplate = document.currentScript.dataset.playerUrlTemplate;
+window.ANIBASE_ACTION_TOKEN = "{{ action_token }}";
+
+function playEpisode(ep){
+    window.location.href = playerUrlTemplate
+        .replace("__ANIME__", encodeURIComponent(playerAnimeName))
+        .replace("__EPISODE__", encodeEpisodePath(ep));
+}
+</script>
+
+<script>
+function initializeAnimeDetailContent() {
+    const airingCards = document.querySelectorAll('.detail-airing-card[data-airing-at]');
+
+    function formatAiringCountdown(seconds) {
+        if (!Number.isFinite(seconds) || seconds <= 0) {
+            return 'now';
+        }
+
+        const totalMinutes = Math.max(1, Math.ceil(seconds / 60));
+        const days = Math.floor(totalMinutes / 1440);
+        const hours = Math.floor((totalMinutes % 1440) / 60);
+        const minutes = totalMinutes % 60;
+        const parts = [];
+
+        if (days) parts.push(`${days}d`);
+        if (hours || days) parts.push(`${hours}h`);
+        parts.push(`${minutes}m`);
+        return parts.join(' ');
+    }
+
+    function updateDetailAiringCountdowns() {
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        airingCards.forEach(card => {
+            const airingAt = Number(card.dataset.airingAt || 0);
+            const output = card.querySelector('[data-airing-countdown]');
+            if (!airingAt || !output) return;
+            output.textContent = formatAiringCountdown(airingAt - nowSeconds);
+        });
+    }
+
+    if (airingCards.length) {
+        updateDetailAiringCountdowns();
+        setInterval(updateDetailAiringCountdowns, 60000);
+    }
+
+    const grid = document.getElementById('episodeGrid');
+    if (!grid) return;
+
+    const cards = Array.from(grid.querySelectorAll('.episode-card[data-episode-index]'));
+    const filterButtons = Array.from(document.querySelectorAll('.episode-filter-btn[data-episode-filter]'));
+    const sortButtons = Array.from(document.querySelectorAll('.episode-sort-btn[data-episode-sort]'));
+    const emptyState = document.getElementById('episodeFilterEmpty');
+    let currentFilter = 'all';
+    let currentSort = 'asc';
+
+    function applyEpisodeControls() {
+        const sortedCards = [...cards].sort((a, b) => {
+            const aIndex = Number(a.dataset.episodeIndex || 0);
+            const bIndex = Number(b.dataset.episodeIndex || 0);
+            return currentSort === 'desc' ? bIndex - aIndex : aIndex - bIndex;
+        });
+
+        let visibleCount = 0;
+
+        sortedCards.forEach((card) => {
+            const matchesFilter = currentFilter === 'all' || card.dataset.watchState === currentFilter;
+            card.hidden = !matchesFilter;
+            if (matchesFilter) {
+                visibleCount++;
+            }
+            grid.appendChild(card);
+        });
+
+        if (emptyState) {
+            emptyState.hidden = visibleCount > 0;
+        }
+    }
+
+    filterButtons.forEach((button) => {
+        button.addEventListener('click', function() {
+            currentFilter = this.dataset.episodeFilter || 'all';
+            filterButtons.forEach((item) => item.classList.toggle('active', item === this));
+            applyEpisodeControls();
+        });
+    });
+
+    sortButtons.forEach((button) => {
+        button.addEventListener('click', function() {
+            currentSort = this.dataset.episodeSort || 'asc';
+            sortButtons.forEach((item) => item.classList.toggle('active', item === this));
+            applyEpisodeControls();
+        });
+    });
+
+    const resetEpisodeFilter = document.getElementById('episodeResetFilter');
+    if (resetEpisodeFilter) {
+        resetEpisodeFilter.addEventListener('click', function() {
+            currentFilter = 'all';
+            filterButtons.forEach((item) => item.classList.toggle('active', item.dataset.episodeFilter === 'all'));
+            applyEpisodeControls();
+        });
+    }
+
+    applyEpisodeControls();
+}
+
+function animateAnimeEpisodeCards() {
+    document.querySelectorAll('.episode-card').forEach((card, i) => {
+        card.style.opacity = '0';
+        setTimeout(() => {
+            const delay = Math.min(i * 0.04, 1.2);
+            card.style.animation = `slideUpReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s forwards`;
+        }, 100);
+    });
+}
+
+let seasonRequestController = null;
+
+async function loadAnimeSeason(url, pushHistory = true) {
+    if (seasonRequestController) seasonRequestController.abort();
+    const requestController = new AbortController();
+    seasonRequestController = requestController;
+    document.body.classList.add('season-switching');
+
+    try {
+        const response = await fetch(url, {
+            headers: { 'Accept': 'text/html' },
+            signal: requestController.signal
+        });
+        if (!response.ok) throw new Error('Unable to load this season.');
+
+        const nextDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+        const selectors = [
+            '.hero',
+            '.character-section',
+            '.anime-header',
+            '#episodeListContent',
+            '.recommendation-section',
+            '.relation-section'
+        ];
+
+        selectors.forEach((selector) => {
+            const current = document.querySelector(selector);
+            const next = nextDocument.querySelector(selector);
+            if (current && next) current.replaceWith(next);
+        });
+
+        document.title = nextDocument.title;
+        if (pushHistory) history.pushState({ seasonUrl: url }, '', url);
+        initializeAnimeDetailContent();
+        animateAnimeEpisodeCards();
+    } catch (error) {
+        if (error.name !== 'AbortError') window.location.href = url;
+    } finally {
+        if (seasonRequestController === requestController) {
+            seasonRequestController = null;
+            document.body.classList.remove('season-switching');
+        }
+    }
+}
+
+document.addEventListener('click', function(event) {
+    const seasonLink = event.target.closest('.season-switcher-tab');
+    if (!seasonLink || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    loadAnimeSeason(seasonLink.href);
+});
+
+window.addEventListener('popstate', function() {
+    loadAnimeSeason(window.location.href, false);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAnimeDetailContent();
+    animateAnimeEpisodeCards();
+});
+
+// Animasi Masuk yang Lebih Reliabel
+window.addEventListener('pageshow', () => {
+    animateAnimeEpisodeCards();
+});
+</script>
+{% if is_movie and episodes %}
+<script src="{{ url_for('static', filename='plyr.js') }}"></script>
+<script>
+(function() {
+    const video = document.getElementById('movieDetailPlayer');
+    if (!video || typeof Plyr === 'undefined') return;
+
+    const config = video.dataset;
+    const screenshotBtn = document.getElementById('movieScreenshotBtn');
+    const vlcBtn = document.getElementById('movieVlcBtn');
+    const toast = document.getElementById('screenshotToast');
+    const player = new Plyr(video, {
+        title: config.displayName || config.animeName,
+        iconUrl: config.plyrIconUrl,
+        keyboard: { focused: true, global: false },
+        captions: { active: true, update: true, language: 'id' }
+    });
+
+    function actionHeaders(extra = {}) {
+        const headers = { ...extra };
+        if (window.ANIBASE_ACTION_TOKEN) {
+            headers['X-AniBase-Action-Token'] = window.ANIBASE_ACTION_TOKEN;
+        }
+        return headers;
+    }
+
+    function formatTime(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+        if (h > 0) {
+            return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function encodeMovieEpisodePath(path) {
+        return path.split('/').map(encodeURIComponent).join('/');
+    }
+
+    function showMovieToast(message, icon) {
+        const toast = document.getElementById('screenshotToast');
+        const msg = document.getElementById('toastMessage');
+        const toastIcon = toast ? toast.querySelector('.toast-icon') : null;
+        if (!toast || !msg) return;
+
+        msg.textContent = message;
+        if (toastIcon && icon) {
+            toastIcon.textContent = icon;
+        }
+        toast.classList.add('show');
+
+        window.clearTimeout(showMovieToast.timer);
+        showMovieToast.timer = window.setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    const playbackSpeedSteps = [1, 1.25, 1.5, 1.75, 2];
+
+    function changeMoviePlaybackSpeed(direction) {
+        const currentSpeed = Number(player.speed || video.playbackRate || 1);
+        const epsilon = 0.001;
+        let nextSpeed;
+
+        if (direction > 0) {
+            nextSpeed = playbackSpeedSteps.find(speed => speed > currentSpeed + epsilon);
+            nextSpeed = nextSpeed === undefined ? playbackSpeedSteps.at(-1) : nextSpeed;
+        } else {
+            nextSpeed = [...playbackSpeedSteps].reverse().find(speed => speed < currentSpeed - epsilon);
+            nextSpeed = nextSpeed === undefined ? playbackSpeedSteps[0] : nextSpeed;
+        }
+
+        player.speed = nextSpeed;
+        showMovieToast(`Playback speed: ${nextSpeed}x`, '⏩');
+    }
+
+    function sendProgress(useKeepalive) {
+        const duration = player.duration || 0;
+        const currentTime = player.currentTime || 0;
+        if (!config.animeName || !config.episodePath || !duration) return;
+
+        fetch('/update_progress', {
+            method: 'POST',
+            headers: actionHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({
+                anime_name: config.animeName,
+                episode: config.episodePath,
+                episode_num: 1,
+                time_str: `${formatTime(currentTime)} / ${formatTime(duration)}`,
+                last_seconds: currentTime,
+                duration: duration
+            }),
+            keepalive: Boolean(useKeepalive)
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error('Progress update failed');
+            }
+        }).catch(() => {});
+
+        fetch('/api/watch-status/progress', {
+            method: 'POST',
+            headers: actionHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({
+                anime_name: config.animeName,
+                episode: config.episodePath,
+                progress: Math.round((currentTime / duration) * 100),
+                duration: duration,
+                current_seconds: currentTime
+            }),
+            keepalive: Boolean(useKeepalive)
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error('Watch status update failed');
+            }
+        }).catch(() => {});
+    }
+
+    player.on('ready', () => {
+        const plyrContainer = document.querySelector('.movie-screen > .plyr');
+        if (plyrContainer && toast) {
+            plyrContainer.appendChild(toast);
+        }
+    });
+
+    function openMovieInVLC() {
+        const url = config.playUrlTemplate
+            .replace('__ANIME__', encodeURIComponent(config.animeName))
+            .replace('__EPISODE__', encodeMovieEpisodePath(config.episodePath));
+
+        fetch(url, {
+            method: 'POST',
+            headers: actionHeaders()
+        })
+            .then(async res => {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    throw data;
+                }
+                return data;
+            })
+            .then(data => {
+                if (data.status === 'playing') {
+                    showMovieToast('Opening video in Media Player...', '\u25b6');
+                } else if (data.message) {
+                    showMovieToast(data.message, '!');
+                } else {
+                    showMovieToast('Unable to open Media Player', '!');
+                }
+            })
+            .catch((error) => {
+                showMovieToast(error && error.message ? error.message : 'Unable to contact server', '!');
+            });
+    }
+
+    function saveMovieScreenshot() {
+        if (!video.videoWidth || !video.videoHeight) {
+            showMovieToast('Play the video before taking a screenshot', '!');
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        fetch('/screenshot', {
+            method: 'POST',
+            headers: actionHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ image: canvas.toDataURL('image/png') })
+        })
+            .then(async res => {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    throw data;
+                }
+                return data;
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showMovieToast('Screenshot saved', '\ud83d\udcf7');
+                } else {
+                    showMovieToast(data.message || 'Unable to save screenshot', '!');
+                }
+            })
+            .catch((error) => {
+                showMovieToast(error && error.message ? error.message : 'Unable to save screenshot', '!');
+            });
+    }
+
+    player.once('canplay', () => {
+        const resumeTime = Number.parseFloat(config.resumeTime || '0');
+        if (resumeTime > 0 && resumeTime < (player.duration || Infinity)) {
+            player.currentTime = resumeTime;
+        }
+    });
+
+    let progressInterval;
+    player.on('play', () => {
+        sendProgress(false);
+        clearInterval(progressInterval);
+        progressInterval = setInterval(() => sendProgress(false), 30000);
+    });
+
+    player.on('pause ended', () => {
+        clearInterval(progressInterval);
+        sendProgress(false);
+        fetch('/clear_rpc', {
+            method: 'POST',
+            headers: actionHeaders()
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error('Clear RPC failed');
+            }
+        }).catch(() => {});
+    });
+
+    if (screenshotBtn) {
+        screenshotBtn.addEventListener('click', saveMovieScreenshot);
+    }
+
+    if (vlcBtn) {
+        vlcBtn.addEventListener('click', openMovieInVLC);
+    }
+
+    document.addEventListener('keydown', (event) => {
+        const target = event.target;
+        const isTyping =
+            target &&
+            (
+                target.isContentEditable ||
+                (target.matches && target.matches('input, textarea, select'))
+            );
+
+        const isPlus = event.key === '+' || event.code === 'NumpadAdd';
+        const isMinus = event.key === '-' || event.code === 'NumpadSubtract';
+
+        if (
+            (isPlus || isMinus) &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey &&
+            !event.repeat &&
+            !isTyping
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+            changeMoviePlaybackSpeed(isPlus ? 1 : -1);
+            return;
+        }
+
+        if (
+            event.key.toLowerCase() !== 's' ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.altKey ||
+            event.repeat ||
+            isTyping
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        saveMovieScreenshot();
+    }, true);
+
+    window.addEventListener('beforeunload', () => {
+        sendProgress(true);
+        fetch('/clear_rpc', {
+            method: 'POST',
+            headers: actionHeaders(),
+            keepalive: true
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error('Clear RPC failed');
+            }
+        }).catch(() => {});
+    });
+})();
+</script>
+{% endif %}
+</body>
+</html>

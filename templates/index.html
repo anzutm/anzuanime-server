@@ -1,0 +1,787 @@
+{% extends "base.html" %}
+
+{% block title %}AniBase{% endblock %}
+
+{% block content %}
+{% if featured_slides %}
+
+<div class="featured-anime">
+    <div class="hero-ambient hero-ambient-left"></div>
+    <div class="hero-ambient hero-ambient-right"></div>
+
+    {% for slide in featured_slides %}
+    <div class="featured-slide {% if loop.first %}active{% endif %}">
+        <img
+            src="{{ url_for('banner', anime_name=slide.anime.name) }}"
+            class="featured-banner"
+            alt="{{ slide.anime.name }}"
+        >
+
+        <div class="featured-overlay">
+            <div class="featured-stage">
+                <div class="featured-content">
+                    <div class="featured-kicker">Featured Collection</div>
+                    <h2 class="{% if slide.anime.name|length > 64 %}is-extra-long{% elif slide.anime.name|length > 48 %}is-long{% elif slide.anime.name|length > 34 %}is-medium{% endif %}">
+                        {{ slide.anime.name }}
+                    </h2>
+
+                    <div class="featured-row">
+                        {% if slide.info %}
+                        <div class="hero-actions">
+                            <a href="{{ url_for('anime_detail', anime_name=slide.anime.name) }}" class="watch-btn">&#9654; Play Now</a>
+                        </div>
+
+                        <div class="featured-meta">
+                            {% if slide.info and slide.info.score is not none %}
+                            <span><b>&starf;</b> {{ "%.1f"|format((slide.info.score or 0) / 10) }}/10</span>
+                            {% endif %}
+
+                            {% if slide.info.year %}
+                            <span>{{ slide.info.season }} {{ slide.info.year }}</span>
+                            {% endif %}
+
+                            {% if slide.info.genres %}
+                            <span>{{ slide.info.genres[:3] | join(" / ") }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <span class="featured-episodes">{{ slide.anime.episodes }} Episodes</span>
+                    </div>
+
+                    {% if slide.info and slide.info.description %}
+                    <p class="featured-description">
+                        {{ slide.info.description | striptags | truncate(150) }}
+                    </p>
+                    {% endif %}
+
+                    <div class="featured-proof">
+                        <span>Local Library</span>
+                        <span>HD Ready</span>
+                        <span>Resume Supported</span>
+                    </div>
+                </div>
+
+                <div class="featured-visual">
+                    <div class="featured-poster-wrapper">
+                        <div class="poster-glass-frame">
+                            <img src="{{ url_for('poster', anime_name=slide.anime.name) }}" class="featured-poster-floating" alt="">
+                        </div>
+                        <div class="featured-side-panel">
+                            <span class="side-panel-label">Now Featuring</span>
+                            <strong>{{ loop.index }}/{{ featured_slides|length }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="featured-dots">
+        {% for slide in featured_slides %}
+        <div class="dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endif %}
+
+<section class="continue-watching-section index-section-panel">
+    <div class="resume-section-head">
+        <div>
+            <span class="home-section-eyebrow">Resume</span>
+            <div class="section-title">
+                <div class="section-line"></div>
+                <h2 class="section-heading">Last Watched</h2>
+            </div>
+            <p class="section-subtitle">Back to the last episode without losing momentum.</p>
+        </div>
+        <div class="resume-actions">
+            <div class="resume-count-badge">
+                {{ continue_watching|length }} Active
+            </div>
+            <div class="resume-carousel-controls" aria-label="Continue watching carousel controls">
+                <button type="button" class="resume-arrow resume-prev" aria-label="Scroll continue watching left">&larr;</button>
+                <button type="button" class="resume-arrow resume-next" aria-label="Scroll continue watching right">&rarr;</button>
+            </div>
+        </div>
+    </div>
+    <div class="continue-grid-shell">
+        <div class="continue-grid" id="continueGrid">
+            {% for item in continue_watching %}
+            <div class="continue-card" data-history-key="{{ item.history_key }}">
+                <a href="{{ url_for('player', anime_name=item.name, episode=item.episode) }}" class="continue-card-link">
+                    <div class="continue-thumb">
+                        <img src="{{ item.image_url }}" alt="{{ item.display_name }}">
+                        <div class="continue-badge">Resume</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-fill" style="width: 0%;" data-progress="{{ item.progress_percent }}"></div>
+                        </div>
+                        <div class="continue-overlay">
+                            <button class="play-mini-btn" type="button">&#9654;</button>
+                            <span class="continue-overlay-text">Continue</span>
+                        </div>
+                    </div>
+                    <div class="continue-info">
+                        <div class="continue-title-row">
+                            <h3>{{ item.display_name }}</h3>
+                            <span>{% if item.is_movie %}Movie{% else %}EP {{ item.episode_num }}{% endif %}</span>
+                        </div>
+                        <p>
+                            {% if item.time_str %}
+                            Last watched {{ item.time_str }}
+                            {% else %}
+                            Ready to continue
+                            {% endif %}
+                        </p>
+                    </div>
+                </a>
+                <button type="button" class="continue-remove-btn" data-history-key="{{ item.history_key }}" aria-label="Remove from watch history">×</button>
+            </div>
+            {% endfor %}
+
+            <div class="continue-card empty" id="continueEmptyState" {% if continue_watching %}style="display:none"{% endif %}>
+                <div class="empty-content">
+                    <span>+</span>
+                    <p>No last watched items yet.</p>
+                    <a href="#animeCollectionGrid" class="empty-inline-action">Browse Library</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="collection-section index-section-panel index-collection-section">
+    <div class="collection-glow"></div>
+
+    <div class="collection-top index-collection-top">
+        <div class="collection-heading">
+            <span class="home-section-eyebrow">Library</span>
+            <div class="section-title">
+                <div class="section-line"></div>
+                <h2 class="section-heading">Anime Collection</h2>
+            </div>
+            <p class="section-subtitle">Explore your local anime library with real-time data.</p>
+        </div>
+    </div>
+
+    <div class="collection-toolbar">
+        <div class="toolbar-line"></div>
+
+        <div class="home-filter-groups">
+            <div class="home-filter-group">
+                <span class="home-filter-label">Release</span>
+                <div class="status-filter release-status-filter">
+                    <a
+                        href="#"
+                        data-filter="ALL"
+                        class="filter-btn {% if status_filter == 'ALL' %}active{% endif %}"
+                    >
+                        All ({{ all_count }})
+                    </a>
+
+                    <a
+                        href="#"
+                        data-filter="RELEASING"
+                        class="filter-btn {% if status_filter == 'RELEASING' %}active{% endif %}"
+                    >
+                        Releasing ({{ releasing_count }})
+                    </a>
+
+                    <a
+                        href="#"
+                        data-filter="FINISHED"
+                        class="filter-btn {% if status_filter == 'FINISHED' %}active{% endif %}"
+                    >
+                        Finished ({{ finished_count }})
+                    </a>
+                </div>
+            </div>
+
+            <div class="home-filter-group home-filter-group--watch">
+                <span class="home-filter-label">Watch Status</span>
+                <div class="status-filter watch-status-filter" aria-label="Watch status filter">
+                    <button type="button" class="filter-btn watch-filter-btn active" data-watch-filter="all">All</button>
+                    <button type="button" class="filter-btn watch-filter-btn" data-watch-filter="not_started">Not Started</button>
+                    <button type="button" class="filter-btn watch-filter-btn" data-watch-filter="watching">Watching</button>
+                    <button type="button" class="filter-btn watch-filter-btn" data-watch-filter="up_to_date">Up to Date</button>
+                    <button type="button" class="filter-btn watch-filter-btn" data-watch-filter="completed">Completed</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="home-refresh-control">
+            <button
+                type="button"
+                class="home-refresh-btn"
+                id="homeRefreshLibrary"
+                data-refresh-url="{{ url_for('refresh_library') }}"
+            >
+                <span class="home-refresh-icon" aria-hidden="true">&#8635;</span>
+                <span data-refresh-label>Refresh Library</span>
+            </button>
+            <span class="home-refresh-status" id="homeRefreshStatus" role="status" aria-live="polite"></span>
+        </div>
+
+        <div class="sort-control home-sort-control" id="animeSortControl">
+            <span class="sort-label">
+                <span class="sort-icon" aria-hidden="true">&#8645;</span>
+                Sort
+            </span>
+            <button
+                type="button"
+                class="sort-trigger"
+                id="animeSortTrigger"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+            >
+                <span id="animeSortLabel">Default</span>
+                <span class="sort-chevron">⌄</span>
+            </button>
+
+            <div class="sort-menu" id="animeSortMenu" role="listbox">
+                <button type="button" class="sort-option active" data-sort="default" role="option" aria-selected="true">Default</button>
+                <button type="button" class="sort-option" data-sort="title-asc" role="option">Title A-Z</button>
+                <button type="button" class="sort-option" data-sort="title-desc" role="option">Title Z-A</button>
+                <button type="button" class="sort-option" data-sort="score-desc" role="option">Highest Score</button>
+                <button type="button" class="sort-option" data-sort="episodes-desc" role="option">Most Episodes</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid" id="animeCollectionGrid">
+        {% for anime in anime_list %}
+        <div
+            class="card"
+            data-index="{{ loop.index0 }}"
+            data-title="{{ anime.name | lower }}"
+            data-score="{{ anime.score or 0 }}"
+            data-episodes="{{ anime.episodes or 0 }}"
+            data-status="{{ anime.status }}"
+            data-watch-status="{{ anime.watch_status_kind }}"
+        >
+            <a
+                href="{% if anime.name == 'Movies' %}{{ url_for('movies') }}{% else %}{{ url_for('anime_detail', anime_name=anime.name) }}{% endif %}"
+                onclick="this.querySelector('.poster').style.viewTransitionName = 'anime-poster'"
+            >
+                <img
+                    class="poster"
+                    src="{{ url_for('poster', anime_name=anime.name) }}"
+                    alt="{{ anime.name }}"
+                    loading="lazy"
+                >
+
+                <div class="anime-watch-corner-badge {% if anime.watch_status_kind in ['up_to_date', 'completed'] %}is-complete{% elif anime.watch_status_kind == 'not_started' %}not-started{% endif %}">
+                    <span>
+                        {{ anime.watch_status_label }} {{ anime.watch_progress_label }}
+                    </span>
+                    {% if anime.watch_status_kind in ['up_to_date', 'completed'] %}
+                    <i aria-hidden="true">✓</i>
+                    {% endif %}
+                </div>
+
+                {% if anime.status == 'RELEASING' and anime.next_airing %}
+                <div
+                    class="anime-airing-countdown"
+                    data-airing-at="{{ anime.next_airing.airingAt }}"
+                    data-airing-episode="{{ anime.next_airing.episode }}"
+                >
+                    <strong>Airing</strong>
+                    <span>
+                        Ep {{ anime.next_airing.episode }}:
+                        <b data-airing-countdown>soon</b>
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="poster-overlay">
+                    <h3>{{ anime.name }}</h3>
+
+                    <div class="poster-card-meta">
+                        {% if anime.score %}
+                        <span>&starf; {{ "%.1f"|format((anime.score or 0) / 10) }}</span>
+                        {% endif %}
+
+                        {% if anime.year %}
+                        <span>
+                            {% if anime.season %}
+                                {{ anime.season }}
+                            {% endif %}
+                            {{ anime.year }}
+                        </span>
+                        {% endif %}
+
+                        {% if anime.format %}
+                        <span>{{ anime.format }}</span>
+                        {% endif %}
+                    </div>
+
+                    <button class="play-hover-btn">&#9654; Watch</button>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+
+        {% for movie in home_movies %}
+        <div
+            class="card home-movie-card"
+            data-index="{{ anime_list|length + loop.index0 }}"
+            data-title="{{ movie.title | lower }}"
+            data-score="{{ movie.score or 0 }}"
+            data-episodes="1"
+            data-status="MOVIE"
+            data-watch-status="{{ movie.watch_status_kind }}"
+        >
+            <a
+                href="{{ url_for('movie_detail_page', filename=movie.file) }}"
+                onclick="this.querySelector('.poster').style.viewTransitionName = 'anime-poster'"
+            >
+                <img
+                    class="poster"
+                    src="{{ url_for('poster', anime_name=movie.title) }}"
+                    alt="{{ movie.title }}"
+                    loading="lazy"
+                >
+
+                <div class="anime-watch-corner-badge {% if movie.watch_status_kind in ['up_to_date', 'completed'] %}is-complete{% elif movie.watch_status_kind == 'not_started' %}not-started{% endif %}">
+                    <span>
+                        {{ movie.watch_status_label }} {{ movie.watch_progress_label }}
+                    </span>
+                    {% if movie.watch_status_kind in ['up_to_date', 'completed'] %}
+                    <i aria-hidden="true">&#10003;</i>
+                    {% endif %}
+                </div>
+
+                <div class="poster-overlay">
+                    <div class="anime-watch-corner-badge {% if movie.watch_status_kind != 'watching' %}is-complete{% endif %}">
+                        <span>
+                            {{ movie.watch_status_label }} {{ movie.watch_progress_label }}
+                        </span>
+                        {% if movie.watch_status_kind != 'watching' %}
+                        <i aria-hidden="true">✓</i>
+                        {% endif %}
+                    </div>
+
+                    <h3>{{ movie.title }}</h3>
+
+                    <div class="poster-card-meta">
+                        {% if movie.score %}
+                        <span>&starf; {{ "%.1f"|format(movie.score / 10) }}</span>
+                        {% endif %}
+                        {% if movie.year %}
+                        <span>{{ movie.year }}</span>
+                        {% endif %}
+                        <span>Movie</span>
+                    </div>
+
+                    <button class="play-hover-btn">&#9654; Details</button>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div
+        class="library-filter-empty {% if library_is_empty %}library-filter-empty--setup{% endif %}"
+        id="libraryFilterEmpty"
+        data-library-empty="{{ 'true' if library_is_empty else 'false' }}"
+        {% if not library_is_empty %}hidden{% endif %}
+    >
+        <span aria-hidden="true">{% if library_is_empty %}+{% else %}?{% endif %}</span>
+        <p>
+            {% if library_is_empty %}
+            Add your anime folder to start building the library.
+            {% else %}
+            No anime match your filters.
+            {% endif %}
+        </p>
+        {% if library_is_empty %}
+        <a class="empty-inline-action" href="{{ url_for('settings_page') }}">Add Folder</a>
+        {% else %}
+        <button type="button" class="empty-inline-action" id="libraryResetFilters">Reset Filter</button>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const slides = document.querySelectorAll('.featured-slide');
+        const dots = document.querySelectorAll('.dot');
+        let currentSlide = 0;
+        let slideInterval;
+
+        function showSlide(index) {
+            if (!slides[currentSlide] || !dots[currentSlide] || !slides[index] || !dots[index]) {
+                return;
+            }
+
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function startSlider() {
+            slideInterval = setInterval(() => {
+                showSlide((currentSlide + 1) % slides.length);
+            }, 7000);
+        }
+
+        if (slides.length > 1) {
+            startSlider();
+            dots.forEach((dot, idx) => {
+                dot.addEventListener('click', () => {
+                    clearInterval(slideInterval);
+                    showSlide(idx);
+                    startSlider();
+                });
+            });
+        }
+
+        const searchInput = document.getElementById('animeSearch');
+        const featuredSection = document.querySelector('.featured-anime');
+        const continueSection = document.querySelector('.continue-watching-section');
+        const collectionHeading = document.querySelector('.collection-top');
+        const toolbar = document.querySelector('.collection-toolbar');
+        const collectionGrid = document.getElementById('animeCollectionGrid');
+        const cards = Array.from(document.querySelectorAll('#animeCollectionGrid .card'));
+        const filterBtns = document.querySelectorAll('.release-status-filter .filter-btn');
+        const watchFilterBtns = document.querySelectorAll('.watch-filter-btn[data-watch-filter]');
+        const libraryFilterEmpty = document.getElementById('libraryFilterEmpty');
+        const isLibraryEmpty = libraryFilterEmpty?.dataset.libraryEmpty === 'true';
+        const libraryResetFilters = document.getElementById('libraryResetFilters');
+        const sortControl = document.getElementById('animeSortControl');
+        const sortTrigger = document.getElementById('animeSortTrigger');
+        const sortLabel = document.getElementById('animeSortLabel');
+        const sortOptions = document.querySelectorAll('.sort-option');
+        const refreshLibraryButton = document.getElementById('homeRefreshLibrary');
+        const refreshLibraryStatus = document.getElementById('homeRefreshStatus');
+
+        let currentStatus = document.querySelector('.release-status-filter .filter-btn.active')?.getAttribute('data-filter') || 'ALL';
+        let currentWatchStatus = document.querySelector('.watch-filter-btn.active')?.getAttribute('data-watch-filter') || 'all';
+        let currentSearch = '';
+        let currentSort = 'default';
+
+        if (refreshLibraryButton) {
+            refreshLibraryButton.addEventListener('click', async function() {
+                const label = this.querySelector('[data-refresh-label]');
+                this.disabled = true;
+                this.classList.add('is-loading');
+                if (label) label.textContent = 'Scanning...';
+                if (refreshLibraryStatus) {
+                    refreshLibraryStatus.textContent = 'Checking anime folders';
+                    refreshLibraryStatus.classList.remove('is-error');
+                }
+
+                try {
+                    const response = await fetch(this.dataset.refreshUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-AniBase-Action-Token': window.ANIBASE_ACTION_TOKEN || ''
+                        }
+                    });
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || !data.ok) {
+                        throw new Error(data.message || 'Library refresh failed.');
+                    }
+                    if (refreshLibraryStatus) {
+                        refreshLibraryStatus.textContent = `Found ${data.anime_count || 0} anime. Reloading...`;
+                    }
+                    window.location.reload();
+                } catch (error) {
+                    this.disabled = false;
+                    this.classList.remove('is-loading');
+                    if (label) label.textContent = 'Refresh Library';
+                    if (refreshLibraryStatus) {
+                        refreshLibraryStatus.textContent = error.message || 'Library refresh failed.';
+                        refreshLibraryStatus.classList.add('is-error');
+                    }
+                }
+            });
+        }
+
+        function getNumber(value) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        function sortCards() {
+            if (!collectionGrid) {
+                return;
+            }
+
+            const sortedCards = [...cards].sort((a, b) => {
+                const titleA = a.dataset.title || '';
+                const titleB = b.dataset.title || '';
+                const scoreA = getNumber(a.dataset.score);
+                const scoreB = getNumber(b.dataset.score);
+                const episodesA = getNumber(a.dataset.episodes);
+                const episodesB = getNumber(b.dataset.episodes);
+                const indexA = getNumber(a.dataset.index);
+                const indexB = getNumber(b.dataset.index);
+
+                if (currentSort === 'title-asc') {
+                    return titleA.localeCompare(titleB);
+                }
+
+                if (currentSort === 'title-desc') {
+                    return titleB.localeCompare(titleA);
+                }
+
+                if (currentSort === 'score-desc') {
+                    return scoreB - scoreA || titleA.localeCompare(titleB);
+                }
+
+                if (currentSort === 'episodes-desc') {
+                    return episodesB - episodesA || titleA.localeCompare(titleB);
+                }
+
+                return indexA - indexB;
+            });
+
+            sortedCards.forEach(card => collectionGrid.appendChild(card));
+        }
+
+        function applyFilters() {
+            const isSearching = currentSearch.length > 0;
+
+            if (featuredSection) featuredSection.style.display = isSearching ? 'none' : 'block';
+            if (continueSection) continueSection.style.display = isSearching ? 'none' : 'block';
+            if (collectionHeading) collectionHeading.style.display = isSearching ? 'none' : 'block';
+            if (toolbar) toolbar.style.marginTop = isSearching ? '80px' : '0';
+
+            sortCards();
+
+            let visibleCount = 0;
+            cards.forEach((card) => {
+                const title = card.dataset.title || '';
+                const status = card.getAttribute('data-status');
+                const watchStatus = card.dataset.watchStatus || '';
+
+                const matchesSearch = title.includes(currentSearch);
+                const matchesStatus = (currentStatus === 'ALL' || status === currentStatus);
+                const matchesWatchStatus = (currentWatchStatus === 'all' || watchStatus === currentWatchStatus);
+
+                if (matchesSearch && matchesStatus && matchesWatchStatus) {
+                    card.style.display = "flex";
+                    card.classList.remove('filter-item');
+                    void card.offsetWidth;
+
+                    const delay = Math.min(visibleCount * 0.05, 0.8);
+                    card.style.animation = `slideUpReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s forwards`;
+                    card.style.opacity = '0';
+                    card.classList.add('filter-item');
+                    visibleCount++;
+                } else {
+                    card.style.display = "none";
+                    card.classList.remove('filter-item');
+                }
+            });
+
+            if (libraryFilterEmpty) {
+                libraryFilterEmpty.hidden = isLibraryEmpty ? false : visibleCount > 0;
+            }
+
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                currentSearch = e.target.value.toLowerCase().trim();
+                applyFilters();
+            });
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentStatus = this.getAttribute('data-filter');
+                applyFilters();
+            });
+        });
+
+        watchFilterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                watchFilterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentWatchStatus = this.getAttribute('data-watch-filter') || 'all';
+                applyFilters();
+            });
+        });
+
+        if (libraryResetFilters) {
+            libraryResetFilters.addEventListener('click', function() {
+                currentSearch = '';
+                currentStatus = 'ALL';
+                currentWatchStatus = 'all';
+                if (searchInput) searchInput.value = '';
+                filterBtns.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-filter') === 'ALL'));
+                watchFilterBtns.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-watch-filter') === 'all'));
+                applyFilters();
+            });
+        }
+
+        if (sortTrigger && sortControl) {
+            sortTrigger.addEventListener('click', function() {
+                const isOpen = sortControl.classList.toggle('open');
+                sortTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+        }
+
+        sortOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                sortOptions.forEach(item => {
+                    item.classList.remove('active');
+                    item.setAttribute('aria-selected', 'false');
+                });
+
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                currentSort = this.dataset.sort || 'default';
+                if (sortLabel) {
+                    sortLabel.textContent = this.textContent.trim();
+                }
+                if (sortControl && sortTrigger) {
+                    sortControl.classList.remove('open');
+                    sortTrigger.setAttribute('aria-expanded', 'false');
+                }
+                applyFilters();
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (sortControl && sortTrigger && !sortControl.contains(e.target)) {
+                sortControl.classList.remove('open');
+                sortTrigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        const continueGrid = document.getElementById('continueGrid');
+        const resumePrev = document.querySelector('.resume-prev');
+        const resumeNext = document.querySelector('.resume-next');
+        const continueCountBadge = document.querySelector('.resume-count-badge');
+        const emptyState = document.getElementById('continueEmptyState');
+
+        function updateContinueCount() {
+            const cards = continueGrid ? Array.from(continueGrid.querySelectorAll('.continue-card:not(.empty)')) : [];
+            if (continueCountBadge) {
+                continueCountBadge.textContent = `${cards.length} Active`;
+            }
+            if (emptyState) {
+                emptyState.style.display = cards.length ? 'none' : 'flex';
+            }
+        }
+
+        document.querySelectorAll('.continue-card .progress-fill[data-progress]').forEach(fill => {
+            const value = Number(fill.dataset.progress);
+            const progress = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+            fill.style.width = `${progress}%`;
+        });
+
+        const airingCountdowns = document.querySelectorAll('.anime-airing-countdown[data-airing-at]');
+
+        function formatAiringCountdown(seconds) {
+            if (!Number.isFinite(seconds) || seconds <= 0) {
+                return 'now';
+            }
+
+            const totalMinutes = Math.max(1, Math.ceil(seconds / 60));
+            const days = Math.floor(totalMinutes / 1440);
+            const hours = Math.floor((totalMinutes % 1440) / 60);
+            const minutes = totalMinutes % 60;
+            const parts = [];
+
+            if (days) parts.push(`${days}d`);
+            if (hours || days) parts.push(`${hours}h`);
+            parts.push(`${minutes}m`);
+            return parts.join(' ');
+        }
+
+        function updateAiringCountdowns() {
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            airingCountdowns.forEach(card => {
+                const airingAt = Number(card.dataset.airingAt || 0);
+                const output = card.querySelector('[data-airing-countdown]');
+                if (!airingAt || !output) {
+                    return;
+                }
+
+                output.textContent = formatAiringCountdown(airingAt - nowSeconds);
+            });
+        }
+
+        if (airingCountdowns.length) {
+            updateAiringCountdowns();
+            setInterval(updateAiringCountdowns, 60000);
+        }
+
+        if (continueGrid && resumePrev && resumeNext) {
+            const scrollResume = (direction) => {
+                const card = continueGrid.querySelector('.continue-card:not(.empty)');
+                const distance = card ? card.getBoundingClientRect().width + 420 : 800;
+                continueGrid.scrollBy({
+                    left: direction * distance,
+                    behavior: 'smooth'
+                });
+            };
+
+            resumePrev.addEventListener('click', () => scrollResume(-1));
+            resumeNext.addEventListener('click', () => scrollResume(1));
+        }
+
+        document.querySelectorAll('.continue-remove-btn').forEach(button => {
+            button.addEventListener('click', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const historyKey = this.dataset.historyKey;
+                if (!historyKey) {
+                    return;
+                }
+
+                this.disabled = true;
+                this.textContent = '…';
+
+                try {
+                    const response = await fetch('/api/watch-history/remove', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-AniBase-Action-Token': window.ANIBASE_ACTION_TOKEN || ''
+                        },
+                        body: JSON.stringify({ history_key: historyKey })
+                    });
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to remove watch history entry');
+                    }
+
+                    if (data.ok) {
+                        const card = this.closest('.continue-card');
+                        if (card) {
+                            card.remove();
+                        }
+                        updateContinueCount();
+                    }
+                } catch (error) {
+                    console.error('Failed to remove watch history entry', error);
+                } finally {
+                    this.disabled = false;
+                    if (this.isConnected) {
+                        this.textContent = '×';
+                    }
+                }
+            });
+        });
+
+        updateContinueCount();
+        applyFilters();
+    });
+</script>
+{% endblock %}

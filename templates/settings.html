@@ -1,0 +1,912 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - AniBase{% endblock %}
+
+{% block content %}
+<section class="collection-section settings-page">
+    <div class="collection-glow"></div>
+
+    <div class="collection-top settings-top">
+        <div class="collection-heading settings-heading-panel">
+            <span class="settings-eyebrow">Local configuration</span>
+            <div class="section-title">
+                <div class="section-line"></div>
+                <h2 class="section-heading">Settings</h2>
+            </div>
+            <p class="section-subtitle settings-heading-copy">Manage library paths, playback, integrations, and automation.</p>
+        </div>
+    </div>
+
+    <div class="settings-shell">
+        {% if saved %}
+        <div class="settings-success">
+            Settings saved successfully.
+        </div>
+        {% endif %}
+
+        {% if cache_cleaned %}
+        <div class="settings-success">
+            Orphan cache cleaned. Removed {{ cache_removed_files }} files, {{ cache_removed_dirs }} folders, and {{ cache_removed_watch_entries }} watch entries. Skipped {{ cache_skipped }} item{% if cache_skipped != '1' %}s{% endif %}.
+        </div>
+        {% endif %}
+
+        {% if auto_import_scanned %}
+        <div class="settings-success">
+            Auto import scan complete. Checked {{ auto_import_processed }} file{% if auto_import_processed != '1' %}s{% endif %}, moved {{ auto_import_moved }}, unmatched {{ auto_import_unmatched_count }}, errors {{ auto_import_errors }}.
+        </div>
+        {% endif %}
+
+        {% if auto_import_resolved %}
+        <div class="settings-success">
+            Auto import file moved successfully.
+        </div>
+        {% endif %}
+
+        {% if sync_busy %}
+        <div class="settings-success">
+            Settings saved. Library sync was already running, so no new sync was started.
+        </div>
+        {% endif %}
+
+        <div class="settings-picker-message" id="settingsPickerMessage" aria-live="polite"></div>
+
+        <div class="settings-status-grid" aria-label="Settings status">
+            {% for item in settings_status_cards %}
+            <div class="settings-status-card is-{{ item.state }}">
+                <span class="settings-status-dot" aria-hidden="true"></span>
+                <div>
+                    <span class="settings-status-label">{{ item.label }}</span>
+                    <strong>{{ item.text }}</strong>
+                    <small>{{ item.detail }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <form method="POST" action="{{ url_for('update_settings') }}" class="settings-form">
+            <input type="hidden" name="action_token" value="{{ action_token }}">
+            <div class="settings-layout">
+                <div class="settings-main-column">
+                <section class="settings-card">
+                    <div class="settings-card-head">
+                        <span class="settings-kicker">Library</span>
+                        <h3>Library Folders</h3>
+                        <p>Choose the local folders AniBase should scan and organize.</p>
+                    </div>
+
+                    <div class="settings-field">
+                        <div class="settings-field-head">
+                            <div>
+                                <label class="settings-label">Anime Library Paths</label>
+                                <p class="settings-helper">Add every root folder that contains anime folders.</p>
+                            </div>
+                            <button
+                                class="settings-add-path-btn"
+                                type="button"
+                                id="addLibraryPath"
+                            >
+                                Add Path
+                            </button>
+                        </div>
+
+                        <div class="settings-path-list" id="libraryPathList">
+                            {% set library_paths = settings.library_paths if settings.library_paths else [''] %}
+                            {% for path in library_paths %}
+                            <div class="settings-path-row">
+                                <input
+                                    class="settings-input settings-path-input"
+                                    id="library_path_{{ loop.index0 }}"
+                                    type="text"
+                                    name="library_paths"
+                                    value="{{ path }}"
+                                    autocomplete="off"
+                                    placeholder="D:/Anime/Library"
+                                >
+                                <button
+                                    class="settings-browse-btn"
+                                    type="button"
+                                    data-picker="folder"
+                                    data-target="library_path_{{ loop.index0 }}"
+                                >
+                                    Browse Folder
+                                </button>
+                                <button
+                                    class="settings-remove-path-btn"
+                                    type="button"
+                                    aria-label="Remove library path"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="settings-field">
+                        <label class="settings-label" for="movie_path">Movie Path</label>
+                        <p class="settings-helper">Movie collection folder used by the Movies page.</p>
+                        <div class="settings-input-row">
+                            <input
+                                class="settings-input settings-path-input"
+                                id="movie_path"
+                                type="text"
+                                name="movie_path"
+                                value="{{ settings.movie_path }}"
+                                autocomplete="off"
+                            >
+                            <button
+                                class="settings-browse-btn"
+                                type="button"
+                                data-picker="folder"
+                                data-target="movie_path"
+                            >
+                                Browse Folder
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-card settings-card--automation">
+                    <div class="settings-card-head auto-import-head">
+                        <div>
+                            <span class="settings-kicker">Automation</span>
+                            <h3>Auto Import Download</h3>
+                            <p>Move completed downloads into the matching anime folder.</p>
+                        </div>
+
+                        <label class="settings-toggle-row settings-toggle-row--featured">
+                            <input
+                                type="checkbox"
+                                name="auto_import_enabled"
+                                {% if settings.auto_import_enabled %}checked{% endif %}
+                            >
+                            <span class="settings-toggle-ui" aria-hidden="true"></span>
+                            <span>Auto Import</span>
+                        </label>
+                    </div>
+
+                    <div class="auto-import-panel">
+                        <div class="auto-import-summary">
+                            <div class="auto-import-summary-card">
+                                <span class="auto-import-summary-label">Status</span>
+                                <strong class="{% if auto_import_overview.enabled %}is-active{% else %}is-off{% endif %}">
+                                    {{ "Active" if auto_import_overview.enabled else "Off" }}
+                                </strong>
+                                <small>
+                                    {% if auto_import_overview.enabled %}
+                                    Scans every {{ auto_import_overview.interval_seconds }}s after files stay stable for {{ auto_import_overview.stable_seconds }}s.
+                                    {% else %}
+                                    Auto scan is off. You can still run Scan Now manually.
+                                    {% endif %}
+                                </small>
+                            </div>
+
+                            <div class="auto-import-summary-card">
+                                <span class="auto-import-summary-label">Download Folder</span>
+                                <strong>{{ auto_import_overview.downloads_path or "No folder set" }}</strong>
+                                <small>
+                                    {% if auto_import_overview.downloads_exists %}
+                                    Download folder is available.
+                                    {% else %}
+                                    Folder is missing or not configured.
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="auto-import-path-grid">
+                            <div class="settings-field">
+                                <label class="settings-label" for="auto_import_downloads_path">Download Folder</label>
+                                <p class="settings-helper">Folder where completed anime downloads arrive.</p>
+                                <div class="settings-input-row">
+                                    <input
+                                        class="settings-input settings-path-input"
+                                        id="auto_import_downloads_path"
+                                        type="text"
+                                        name="auto_import_downloads_path"
+                                        value="{{ settings.auto_import_downloads_path }}"
+                                        autocomplete="off"
+                                    >
+                                    <button
+                                        class="settings-browse-btn"
+                                        type="button"
+                                        data-picker="folder"
+                                        data-target="auto_import_downloads_path"
+                                    >
+                                        Browse
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="settings-field">
+                                <label class="settings-label" for="auto_import_destination_root">Import To</label>
+                                <p class="settings-helper">
+                                    {% if auto_import_destination_paths %}
+                                    Choose the anime library folder used by Auto Import.
+                                    {% else %}
+                                    Add an anime library folder first.
+                                    {% endif %}
+                                </p>
+                                <select
+                                    class="settings-input settings-path-input"
+                                    id="auto_import_destination_root"
+                                    name="auto_import_destination_root"
+                                >
+                                    {% if auto_import_destination_paths %}
+                                    <option value="" {% if not settings.auto_import_destination_root %}selected{% endif %}>Choose destination...</option>
+                                    {% for path in auto_import_destination_paths %}
+                                    <option
+                                        value="{{ path }}"
+                                        {% if settings.auto_import_destination_root == path %}selected{% endif %}
+                                    >
+                                        {{ path }}
+                                    </option>
+                                    {% endfor %}
+                                    {% else %}
+                                    <option value="" selected>Add anime library folder first</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <label class="settings-toggle-row settings-toggle-row--subtle">
+                            <input
+                                type="checkbox"
+                                name="auto_import_create_ongoing_folders"
+                                {% if settings.auto_import_create_ongoing_folders %}checked{% endif %}
+                            >
+                            <span class="settings-toggle-ui" aria-hidden="true"></span>
+                            <span>
+                                <strong>Create missing anime folders</strong>
+                                <small>Create a new anime folder when no confident match exists.</small>
+                            </span>
+                        </label>
+
+                        <div class="settings-field-row">
+                            <div class="settings-field">
+                                <label class="settings-label" for="auto_import_interval_seconds">Check Every</label>
+                                <input
+                                    class="settings-input"
+                                    id="auto_import_interval_seconds"
+                                    type="number"
+                                    min="5"
+                                    name="auto_import_interval_seconds"
+                                    value="{{ settings.auto_import_interval_seconds }}"
+                                >
+                                <p class="settings-helper">Seconds between scans.</p>
+                            </div>
+
+                            <div class="settings-field">
+                                <label class="settings-label" for="auto_import_stable_seconds">Stable Wait</label>
+                                <input
+                                    class="settings-input"
+                                    id="auto_import_stable_seconds"
+                                    type="number"
+                                    min="10"
+                                    name="auto_import_stable_seconds"
+                                    value="{{ settings.auto_import_stable_seconds }}"
+                                >
+                                <p class="settings-helper">Seconds before a file is moved.</p>
+                            </div>
+
+                            <div class="settings-field settings-field--action">
+                                <button
+                                    type="submit"
+                                    class="settings-cleanup-btn settings-scan-btn"
+                                    formaction="{{ url_for('scan_auto_import_settings') }}"
+                                    formmethod="POST"
+                                >
+                                    Scan Now
+                                </button>
+                            </div>
+                        </div>
+
+                        <details class="settings-mapping-panel">
+                            <summary class="settings-mapping-summary">
+                                <div>
+                                    <h4>Advanced Import Matching</h4>
+                                    <p>Optional title aliases. Most users can leave this closed.</p>
+                                </div>
+                                <span>Advanced</span>
+                            </summary>
+
+                            <p class="settings-helper">
+                                Use this only when a downloaded filename keeps matching the wrong anime.
+                            </p>
+                            <div class="auto-import-mapping-list" id="autoImportMappingList">
+                                {% set mapping_rows = auto_import_mapping_rows if auto_import_mapping_rows else [{'source': '', 'target': ''}] %}
+                                {% for mapping in mapping_rows %}
+                                <div class="auto-import-mapping-row">
+                                    <div class="settings-field">
+                                        <label class="settings-label">Name in downloaded file</label>
+                                        <input
+                                            class="settings-input"
+                                            type="text"
+                                            name="auto_import_mapping_source"
+                                            value="{{ mapping.source }}"
+                                            autocomplete="off"
+                                            placeholder="Example: Hokori"
+                                        >
+                                    </div>
+                                    <div class="settings-field">
+                                        <label class="settings-label">Anime folder name</label>
+                                        <input
+                                            class="settings-input"
+                                            type="text"
+                                            name="auto_import_mapping_target"
+                                            value="{{ mapping.target }}"
+                                            autocomplete="off"
+                                            placeholder="Example: Heroine Seijo Iie, All Works Maid desu (Ko)!"
+                                        >
+                                    </div>
+                                    <button class="settings-remove-path-btn auto-import-remove-mapping" type="button">Remove</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button class="settings-add-path-btn auto-import-add-mapping" id="addAutoImportMapping" type="button">Add Match</button>
+                        </details>
+
+                        <div class="auto-import-results-grid">
+                            <div class="auto-import-result-panel">
+                                <div class="settings-mini-head">
+                                    <div>
+                                        <h4>Recent Imports</h4>
+                                        <p>Files moved by Auto Import most recently.</p>
+                                    </div>
+                                </div>
+
+                                {% if auto_import_overview.recent_imports %}
+                                <div class="auto-import-list">
+                                    {% for item in auto_import_overview.recent_imports %}
+                                    <div class="auto-import-row">
+                                        <div>
+                                            <strong>{{ item.filename }}</strong>
+                                            <small>{{ item.source or "download" }} &rarr; {{ item.anime or item.target }}</small>
+                                        </div>
+                                        <span class="auto-import-pill is-valid">Moved</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="auto-import-empty">No recent imports yet.</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="auto-import-result-panel">
+                                <div class="settings-mini-head">
+                                    <div>
+                                        <h4>Unmatched Downloads</h4>
+                                        <p>Pick the right anime folder, preview the move, then resolve it.</p>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        class="settings-cleanup-btn settings-scan-btn auto-import-mini-action"
+                                        formaction="{{ url_for('scan_auto_import_settings') }}"
+                                        formmethod="POST"
+                                    >
+                                        Retry Scan
+                                    </button>
+                                </div>
+
+                                {% if auto_import_overview.unmatched %}
+                                <div class="auto-import-list">
+                                    {% for item in auto_import_overview.unmatched %}
+                                    <div class="auto-import-row auto-import-unmatched-row">
+                                        <div class="auto-import-unmatched-main">
+                                            <strong>{{ item.filename }}</strong>
+                                            <small>{{ item.reason }}</small>
+                                            {% if not item.exists %}
+                                            <span class="auto-import-source-warning">Source file not found. Try Retry Scan.</span>
+                                            {% endif %}
+                                            <div class="auto-import-preview" data-auto-import-preview>
+                                                {{ item.source_path }} &rarr; {{ item.suggested_path or "Choose a target anime folder" }}
+                                            </div>
+                                        </div>
+
+                                        <div class="auto-import-resolve-controls">
+                                            <select
+                                                class="settings-input auto-import-target-select"
+                                                data-source-path="{{ item.source_path }}"
+                                                data-preview-source="{{ item.source_path }}"
+                                            >
+                                                <option value="">Choose target...</option>
+                                                {% for folder in anime_folders %}
+                                                <option
+                                                    value="{{ folder.name }}"
+                                                    data-target-path="{{ folder.path }}"
+                                                    {% if folder.name == item.suggested_anime %}selected{% endif %}
+                                                >
+                                                    {{ folder.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <label class="auto-import-map-check">
+                                                <input type="checkbox" checked>
+                                                <span>Remember choice</span>
+                                            </label>
+
+                                            <button
+                                                type="button"
+                                                class="settings-cleanup-btn auto-import-resolve-btn"
+                                                data-source-path="{{ item.source_path }}"
+                                            >
+                                                Move File
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="auto-import-empty">No unmatched downloads.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                </div>
+
+                <aside class="settings-side">
+                    <section class="settings-card settings-card-compact">
+                        <div class="settings-card-head">
+                            <span class="settings-kicker">Playback</span>
+                            <h3>Player</h3>
+                            <p>Optional external player executable.</p>
+                        </div>
+
+                        <div class="settings-field">
+                            <label class="settings-label" for="vlc_path">Player Path</label>
+                            <p class="settings-helper">Leave empty to use browser playback.</p>
+                            <div class="settings-input-row">
+                                <input
+                                    class="settings-input settings-path-input"
+                                    id="vlc_path"
+                                    type="text"
+                                    name="vlc_path"
+                                    value="{{ settings.vlc_path }}"
+                                    autocomplete="off"
+                                >
+                                <button
+                                    class="settings-browse-btn"
+                                    type="button"
+                                    data-picker="file"
+                                    data-target="vlc_path"
+                                >
+                                    Browse File
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="settings-card settings-card-compact">
+                        <div class="settings-card-head">
+                            <span class="settings-kicker">Integration</span>
+                            <h3>Integration</h3>
+                            <p>Control local integrations used while watching.</p>
+                        </div>
+
+                        <label class="settings-toggle-row settings-toggle-row--subtle">
+                            <input
+                                type="checkbox"
+                                name="discord_rpc_enabled"
+                                {% if settings.discord_rpc_enabled %}checked{% endif %}
+                            >
+                            <span class="settings-toggle-ui" aria-hidden="true"></span>
+                            <span>
+                                <strong>Discord Rich Presence</strong>
+                                <small>Show current playback status on Discord.</small>
+                            </span>
+                        </label>
+
+                        <label class="settings-toggle-row settings-toggle-row--subtle">
+                            <input
+                                type="checkbox"
+                                name="lan_access_enabled"
+                                {% if settings.lan_access_enabled %}checked{% endif %}
+                            >
+                            <span class="settings-toggle-ui" aria-hidden="true"></span>
+                            <span>
+                                <strong>LAN Access</strong>
+                                <small>Allow devices on the same network to open AniBase.</small>
+                            </span>
+                        </label>
+
+                        <div class="settings-field">
+                            <label class="settings-label" for="discord_client_id">Discord Client ID</label>
+                            <p class="settings-helper">Restart may be needed if RPC is already active.</p>
+                            <input
+                                class="settings-input"
+                                type="text"
+                                id="discord_client_id"
+                                name="discord_client_id"
+                                value="{{ settings.discord_client_id }}"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="Discord application client ID"
+                            >
+                        </div>
+                    </section>
+
+                    <section class="settings-card settings-card-compact theme-settings-card">
+                <div class="settings-card-head">
+                    <span class="settings-kicker">Appearance</span>
+                    <h3>Theme Preset</h3>
+                    <p>Choose the accent palette used across the interface.</p>
+                </div>
+
+                <div class="theme-preset-grid" role="radiogroup" aria-label="Theme Preset">
+                    <label class="theme-preset-card" data-theme-choice="dark-blue">
+                        <input
+                            type="radio"
+                            name="theme_preset"
+                            value="dark-blue"
+                            {% if settings.theme_preset == 'dark-blue' %}checked{% endif %}
+                        >
+                        <span class="theme-preview theme-preview-blue">
+                            <i></i><i></i><i></i>
+                        </span>
+                        <span>
+                            <strong>Dark Blue</strong>
+                            <small>Current AniBase blue accent.</small>
+                        </span>
+                    </label>
+
+                    <label class="theme-preset-card" data-theme-choice="dark-orange">
+                        <input
+                            type="radio"
+                            name="theme_preset"
+                            value="dark-orange"
+                            {% if settings.theme_preset == 'dark-orange' %}checked{% endif %}
+                        >
+                        <span class="theme-preview theme-preview-orange">
+                            <i></i><i></i><i></i>
+                        </span>
+                        <span>
+                            <strong>Dark Orange</strong>
+                            <small>Warm amber and bronze accent palette.</small>
+                        </span>
+                    </label>
+
+                </div>
+            </section>
+
+                    <section class="settings-card settings-card-compact settings-card--danger settings-maintenance-card">
+                        <div class="settings-card-head">
+                            <span class="settings-kicker">Maintenance</span>
+                            <h3>Cache Maintenance</h3>
+                            <p>
+                                Removes generated orphan cache only. Your anime files are not deleted.
+                            </p>
+                        </div>
+
+                        <div class="settings-maintenance-footer">
+                            <p class="settings-note">
+                                Cleans posters, banners, metadata, thumbnails, subtitles, watch data, and stale episode cache.
+                            </p>
+
+                            <div class="settings-maintenance-actions">
+                                <button type="submit" class="settings-cleanup-btn" form="settingsCleanupForm">
+                                    Clean Orphan Cache
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </aside>
+            </div>
+
+            <div class="settings-footer">
+                <p class="settings-note">
+                    Changes are saved locally.
+                </p>
+
+                <div class="settings-actions">
+                    <button type="submit" class="settings-save-btn">Save Settings</button>
+                </div>
+            </div>
+        </form>
+
+        <form id="settingsCleanupForm" method="POST" action="{{ url_for('cleanup_cache_settings') }}">
+            <input type="hidden" name="action_token" value="{{ action_token }}">
+        </form>
+
+        <form id="autoImportResolveForm" method="POST" action="{{ url_for('resolve_auto_import_settings') }}">
+            <input type="hidden" name="action_token" value="{{ action_token }}">
+            <input type="hidden" name="source_path" id="autoImportResolveSource">
+            <input type="hidden" name="target_anime" id="autoImportResolveTarget">
+            <input type="hidden" name="add_mapping" id="autoImportResolveMapping" value="on">
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const message = document.getElementById('settingsPickerMessage');
+    const libraryPathList = document.getElementById('libraryPathList');
+    const addLibraryPath = document.getElementById('addLibraryPath');
+    const autoImportDestinationRoot = document.getElementById('auto_import_destination_root');
+    const autoImportMappingList = document.getElementById('autoImportMappingList');
+    const addAutoImportMapping = document.getElementById('addAutoImportMapping');
+    const themeInputs = document.querySelectorAll('input[name="theme_preset"]');
+    const autoImportSelects = document.querySelectorAll('.auto-import-target-select');
+    const autoImportResolveButtons = document.querySelectorAll('.auto-import-resolve-btn');
+    const autoImportResolveForm = document.getElementById('autoImportResolveForm');
+    const autoImportResolveSource = document.getElementById('autoImportResolveSource');
+    const autoImportResolveTarget = document.getElementById('autoImportResolveTarget');
+    const autoImportResolveMapping = document.getElementById('autoImportResolveMapping');
+    let libraryPathIndex = libraryPathList ? libraryPathList.querySelectorAll('.settings-path-row').length : 0;
+
+    function showPickerMessage(text, isError) {
+        if (!message) {
+            if (isError) alert(text);
+            return;
+        }
+
+        message.textContent = text;
+        message.classList.toggle('error', Boolean(isError));
+        message.classList.toggle('active', Boolean(text));
+    }
+
+    function createLibraryPathRow(value = '') {
+        if (!libraryPathList) return;
+
+        const index = libraryPathIndex;
+        libraryPathIndex += 1;
+        const row = document.createElement('div');
+        row.className = 'settings-path-row';
+        row.innerHTML = `
+            <input
+                class="settings-input settings-path-input"
+                id="library_path_${index}"
+                type="text"
+                name="library_paths"
+                value=""
+                autocomplete="off"
+                placeholder="D:/Anime/Library"
+            >
+            <button
+                class="settings-browse-btn"
+                type="button"
+                data-picker="folder"
+                data-target="library_path_${index}"
+            >
+                Browse Folder
+            </button>
+            <button
+                class="settings-remove-path-btn"
+                type="button"
+                aria-label="Remove library path"
+            >
+                Remove
+            </button>
+        `;
+        row.querySelector('input').value = value;
+        libraryPathList.appendChild(row);
+        updateLibraryPathRemoveButtons();
+        refreshAutoImportDestinationOptions();
+    }
+
+    function updateLibraryPathRemoveButtons() {
+        if (!libraryPathList) return;
+
+        const rows = libraryPathList.querySelectorAll('.settings-path-row');
+        rows.forEach((row) => {
+            const removeButton = row.querySelector('.settings-remove-path-btn');
+            if (removeButton) {
+                removeButton.disabled = rows.length <= 1;
+            }
+        });
+    }
+
+    function getLibraryPathValues() {
+        if (!libraryPathList) return [];
+
+        const paths = [];
+        const seen = new Set();
+        libraryPathList.querySelectorAll('input[name="library_paths"]').forEach((input) => {
+            const path = input.value.trim();
+            const key = path.toLowerCase();
+            if (!path || seen.has(key)) return;
+
+            seen.add(key);
+            paths.push(path);
+        });
+        return paths;
+    }
+
+    function refreshAutoImportDestinationOptions() {
+        if (!autoImportDestinationRoot) return;
+
+        const selectedValue = autoImportDestinationRoot.value;
+        const paths = getLibraryPathValues();
+        autoImportDestinationRoot.innerHTML = '';
+
+        if (!paths.length) {
+            const option = new Option('Add anime library folder first', '', true, true);
+            autoImportDestinationRoot.appendChild(option);
+            return;
+        }
+
+        autoImportDestinationRoot.appendChild(new Option('Choose destination...', ''));
+        paths.forEach((path) => {
+            autoImportDestinationRoot.appendChild(new Option(path, path));
+        });
+        if (paths.includes(selectedValue)) {
+            autoImportDestinationRoot.value = selectedValue;
+        } else {
+            autoImportDestinationRoot.value = '';
+        }
+    }
+
+    if (addLibraryPath) {
+        addLibraryPath.addEventListener('click', function() {
+            createLibraryPathRow();
+        });
+    }
+
+    if (libraryPathList) {
+        libraryPathList.addEventListener('click', function(event) {
+            const removeButton = event.target.closest('.settings-remove-path-btn');
+            if (!removeButton) return;
+
+            const rows = libraryPathList.querySelectorAll('.settings-path-row');
+            if (rows.length <= 1) {
+                const input = rows[0]?.querySelector('input');
+                if (input) input.value = '';
+                refreshAutoImportDestinationOptions();
+                return;
+            }
+
+            removeButton.closest('.settings-path-row')?.remove();
+            updateLibraryPathRemoveButtons();
+            refreshAutoImportDestinationOptions();
+        });
+        libraryPathList.addEventListener('input', function(event) {
+            if (event.target.matches('input[name="library_paths"]')) {
+                refreshAutoImportDestinationOptions();
+            }
+        });
+        updateLibraryPathRemoveButtons();
+        refreshAutoImportDestinationOptions();
+    }
+
+    function updateAutoImportMappingRemoveButtons() {
+        if (!autoImportMappingList) return;
+
+        const rows = autoImportMappingList.querySelectorAll('.auto-import-mapping-row');
+        rows.forEach((row) => {
+            const removeButton = row.querySelector('.auto-import-remove-mapping');
+            if (removeButton) {
+                removeButton.disabled = rows.length <= 1;
+            }
+        });
+    }
+
+    function createAutoImportMappingRow() {
+        if (!autoImportMappingList) return;
+
+        const row = document.createElement('div');
+        row.className = 'auto-import-mapping-row';
+        row.innerHTML = `
+            <div class="settings-field">
+                <label class="settings-label">Name in downloaded file</label>
+                <input class="settings-input" type="text" name="auto_import_mapping_source" autocomplete="off" placeholder="Example: Hokori">
+            </div>
+            <div class="settings-field">
+                <label class="settings-label">Anime folder name</label>
+                <input class="settings-input" type="text" name="auto_import_mapping_target" autocomplete="off" placeholder="Example: Heroine Seijo Iie, All Works Maid desu (Ko)!">
+            </div>
+            <button class="settings-remove-path-btn auto-import-remove-mapping" type="button">Remove</button>
+        `;
+        autoImportMappingList.appendChild(row);
+        updateAutoImportMappingRemoveButtons();
+    }
+
+    if (addAutoImportMapping) {
+        addAutoImportMapping.addEventListener('click', createAutoImportMappingRow);
+    }
+
+    if (autoImportMappingList) {
+        autoImportMappingList.addEventListener('click', function(event) {
+            const removeButton = event.target.closest('.auto-import-remove-mapping');
+            if (!removeButton) return;
+
+            const rows = autoImportMappingList.querySelectorAll('.auto-import-mapping-row');
+            if (rows.length <= 1) {
+                rows[0]?.querySelectorAll('input').forEach((input) => {
+                    input.value = '';
+                });
+                return;
+            }
+
+            removeButton.closest('.auto-import-mapping-row')?.remove();
+            updateAutoImportMappingRemoveButtons();
+        });
+        updateAutoImportMappingRemoveButtons();
+    }
+
+    document.addEventListener('click', async function(event) {
+        const button = event.target.closest('.settings-browse-btn[data-picker][data-target]');
+        if (!button) {
+            return;
+        }
+
+        const target = document.getElementById(button.dataset.target);
+        const endpoint = button.dataset.picker === 'file'
+            ? '/settings/pick-file'
+            : '/settings/pick-folder';
+        const originalText = button.textContent;
+
+        showPickerMessage('', false);
+        button.disabled = true;
+        button.textContent = 'Opening...';
+
+        try {
+            const response = await fetch(endpoint);
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok || data.error) {
+                showPickerMessage(data.message || 'Unable to open picker. You can still type the path manually.', true);
+                return;
+            }
+
+            if (data.path && target) {
+                target.value = data.path;
+                if (target.name === 'library_paths') {
+                    refreshAutoImportDestinationOptions();
+                }
+            }
+        } catch (error) {
+            showPickerMessage('Unable to open picker. You can still type the path manually.', true);
+        } finally {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    });
+
+    themeInputs.forEach((input) => {
+        input.addEventListener('change', function() {
+            if (this.checked) {
+                document.documentElement.dataset.theme = this.value || 'dark-blue';
+            }
+        });
+    });
+
+    function updateAutoImportPreview(select) {
+        const row = select.closest('.auto-import-unmatched-row');
+        const preview = row ? row.querySelector('[data-auto-import-preview]') : null;
+        const selected = select.selectedOptions && select.selectedOptions[0];
+        const source = select.dataset.previewSource || select.dataset.sourcePath || '';
+        const targetPath = selected ? selected.dataset.targetPath : '';
+
+        if (preview) {
+            preview.textContent = `${source} \u2192 ${targetPath || 'Choose a target anime folder'}`;
+        }
+    }
+
+    autoImportSelects.forEach((select) => {
+        updateAutoImportPreview(select);
+        select.addEventListener('change', () => updateAutoImportPreview(select));
+    });
+
+    autoImportResolveButtons.forEach((button) => {
+        button.addEventListener('click', function() {
+            const row = this.closest('.auto-import-unmatched-row');
+            const select = row ? row.querySelector('.auto-import-target-select') : null;
+            const mapCheck = row ? row.querySelector('.auto-import-map-check input') : null;
+
+            if (!select || !select.value) {
+                showPickerMessage('Choose a target anime folder before resolving.', true);
+                return;
+            }
+
+            autoImportResolveSource.value = this.dataset.sourcePath || select.dataset.sourcePath || '';
+            autoImportResolveTarget.value = select.value;
+            autoImportResolveMapping.disabled = !(mapCheck && mapCheck.checked);
+            autoImportResolveForm.submit();
+        });
+    });
+});
+</script>
+{% endblock %}

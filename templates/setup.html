@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Setup - AniBase{% endblock %}
+{% block body_class %}setup-body{% endblock %}
+{% block topbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<section class="setup-page">
+    <div class="setup-shell">
+        <div class="setup-hero">
+            <span class="settings-kicker">First Run</span>
+            <h1>Set up AniBase</h1>
+            <p>Add your anime folders and choose a theme. You can change everything later in Settings.</p>
+        </div>
+
+        {% if error %}
+        <div class="setup-alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('setup_page') }}" class="setup-card">
+            <input type="hidden" name="action_token" value="{{ action_token }}">
+
+            <div class="setup-step">
+                <div class="setup-step-number">1</div>
+                <div class="setup-step-content">
+                    <h2>Anime Library Folders</h2>
+                    <p>Add every root folder that contains anime folders.</p>
+
+                    <div class="settings-path-list" id="setupLibraryPathList">
+                        {% set library_paths = settings.library_paths if settings.library_paths else [''] %}
+                        {% for path in library_paths %}
+                        <div class="settings-path-row">
+                            <input
+                                class="settings-input settings-path-input"
+                                id="setup_library_path_{{ loop.index0 }}"
+                                type="text"
+                                name="library_paths"
+                                value="{{ path }}"
+                                autocomplete="off"
+                                placeholder="D:/Anime/Library"
+                            >
+                            <button
+                                class="settings-browse-btn"
+                                type="button"
+                                data-picker="folder"
+                                data-target="setup_library_path_{{ loop.index0 }}"
+                            >
+                                Browse
+                            </button>
+                            <button class="settings-remove-path-btn" type="button">Remove</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <button class="settings-add-path-btn setup-add-path" type="button" id="setupAddLibraryPath">Add Path</button>
+                </div>
+            </div>
+
+            <div class="setup-step">
+                <div class="setup-step-number">2</div>
+                <div class="setup-step-content">
+                    <h2>Theme</h2>
+                    <p>Pick the palette you want to start with.</p>
+                    <div class="theme-preset-grid setup-theme-grid" role="radiogroup" aria-label="Theme Preset">
+                        <label class="theme-preset-card" data-theme-choice="dark-blue">
+                            <input type="radio" name="theme_preset" value="dark-blue" {% if settings.theme_preset == 'dark-blue' %}checked{% endif %}>
+                            <span class="theme-preview theme-preview-blue"><i></i><i></i><i></i></span>
+                            <span><strong>Dark Blue</strong><small>Default AniBase accent.</small></span>
+                        </label>
+                        <label class="theme-preset-card" data-theme-choice="dark-orange">
+                            <input type="radio" name="theme_preset" value="dark-orange" {% if settings.theme_preset == 'dark-orange' %}checked{% endif %}>
+                            <span class="theme-preview theme-preview-orange"><i></i><i></i><i></i></span>
+                            <span><strong>Dark Orange</strong><small>Warm amber accents.</small></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-actions">
+                <div id="settingsPickerMessage" class="settings-picker-message"></div>
+                <button class="settings-save-btn setup-start-btn" type="submit">Finish Setup</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const message = document.getElementById('settingsPickerMessage');
+    const list = document.getElementById('setupLibraryPathList');
+    const addButton = document.getElementById('setupAddLibraryPath');
+    const themeInputs = document.querySelectorAll('input[name="theme_preset"]');
+    let pathIndex = list ? list.querySelectorAll('.settings-path-row').length : 0;
+
+    function showPickerMessage(text, isError) {
+        if (!message) return;
+        message.textContent = text;
+        message.classList.toggle('error', Boolean(isError));
+        message.classList.toggle('active', Boolean(text));
+    }
+
+    function updateRemoveButtons() {
+        if (!list) return;
+        const rows = list.querySelectorAll('.settings-path-row');
+        rows.forEach((row) => {
+            const removeButton = row.querySelector('.settings-remove-path-btn');
+            if (removeButton) removeButton.disabled = rows.length <= 1;
+        });
+    }
+
+    function addPathRow(value = '') {
+        if (!list) return null;
+        const index = pathIndex;
+        pathIndex += 1;
+        const row = document.createElement('div');
+        row.className = 'settings-path-row';
+        row.innerHTML = `
+            <input class="settings-input settings-path-input" id="setup_library_path_${index}" type="text" name="library_paths" autocomplete="off" placeholder="D:/Anime/Library">
+            <button class="settings-browse-btn" type="button" data-picker="folder" data-target="setup_library_path_${index}">Browse</button>
+            <button class="settings-remove-path-btn" type="button">Remove</button>
+        `;
+        row.querySelector('input').value = value;
+        list.appendChild(row);
+        updateRemoveButtons();
+        return row;
+    }
+
+    async function openPathPicker(button, target) {
+        const originalText = button.textContent;
+
+        showPickerMessage('', false);
+        button.disabled = true;
+        button.textContent = 'Opening...';
+
+        try {
+            const response = await fetch("{{ url_for('pick_settings_folder') }}");
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                showPickerMessage(data.message || data.error || 'Unable to open folder picker.', true);
+                return '';
+            }
+            if (data.path && target) target.value = data.path;
+            return data.path || '';
+        } catch (error) {
+            showPickerMessage('Unable to open picker. You can still type the path manually.', true);
+            return '';
+        } finally {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    }
+
+    if (addButton) {
+        addButton.addEventListener('click', async function() {
+            if (!list) return;
+
+            const emptyInput = Array.from(list.querySelectorAll('input[name="library_paths"]'))
+                .find((input) => !input.value.trim());
+            const selectedPath = await openPathPicker(addButton, emptyInput || null);
+            if (selectedPath && !emptyInput) addPathRow(selectedPath);
+        });
+    }
+
+    if (list) {
+        list.addEventListener('click', function(event) {
+            const removeButton = event.target.closest('.settings-remove-path-btn');
+            if (!removeButton) return;
+            const rows = list.querySelectorAll('.settings-path-row');
+            if (rows.length <= 1) {
+                const input = rows[0]?.querySelector('input');
+                if (input) input.value = '';
+                return;
+            }
+            removeButton.closest('.settings-path-row')?.remove();
+            updateRemoveButtons();
+        });
+        updateRemoveButtons();
+    }
+
+    document.addEventListener('click', async function(event) {
+        const button = event.target.closest('.settings-browse-btn[data-picker][data-target]');
+        if (!button) return;
+
+        const target = document.getElementById(button.dataset.target);
+        await openPathPicker(button, target);
+    });
+
+    themeInputs.forEach((input) => {
+        input.addEventListener('change', function() {
+            if (this.checked) document.documentElement.dataset.theme = this.value || 'dark-blue';
+        });
+    });
+});
+</script>
+{% endblock %}

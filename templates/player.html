@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html data-theme="{{ current_theme|default('dark-blue') }}">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ anime_name }}
+    </title>
+
+    <!-- Plyr & SubtitlesOctopus Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='plyr.css') }}" />
+    <style>html{background-color:#0b0907;} body{background-color:transparent !important; color:#F3F4F5;}</style>
+    <meta name="theme-color" content="#0b0907">
+
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='arcana.jpg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=(range(1, 9999) | list | random)) }}">
+
+</head>
+
+<body class="player-body">
+
+<div class="player-backdrop">
+    <img src="{{ url_for('banner', anime_name=anime_name) }}" alt="{{ anime_name }}">
+</div>
+
+<div class="player-cinema-shell">
+<div class="player-page">
+
+    <header class="player-header">
+        <div class="player-header-actions" aria-label="Player navigation">
+            <a href="{{ url_for('index') }}" class="player-back player-home">
+                <span class="player-home-icon" aria-hidden="true">&#8962;</span>
+            </a>
+
+            <a
+                href="{{ back_url or url_for('anime_detail', anime_name=anime_name) }}"
+                class="player-back"
+            >
+                &larr; Back
+            </a>
+        </div>
+        
+        <div class="player-title-stack">
+            <h1>{{ watch_display_name if is_movie else anime_name }}</h1> {# Display name, no need to urlencode #}
+            <p class="player-episode-line" id="playerEpisodeLine">
+                {% if is_movie %}
+                Movie
+                {% else %}
+                Episode {{ current_episode_label or current_episode }} ({{ current_position }} of {{ total_episodes }} available)
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="player-header-meta" aria-label="Playback status">
+            <span class="player-vlc-status{% if not vlc_available %} is-warning{% endif %}">
+                {{ "Media Player Ready" if vlc_available else "Media Player Not Set" }}
+            </span>
+            {% if previous_episode or next_episode %}
+            <span>Episode Nav</span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="main-player-section">
+        <div class="video-player-container">
+            <div class="video-player">
+                <video id="player" playsinline controls crossorigin>
+                    <source src="{{ url_for('stream_video', anime_name=anime_name, episode=episode) }}" type="video/mp4">
+                    <track
+                        kind="subtitles" 
+                        src="{{ url_for('get_subtitle', anime_name=anime_name, episode=episode) }}"
+                        srclang="id" 
+                        label="Indonesian" 
+                        default
+                    >
+                    <p>Your browser does not support this video codec (H.265/10-bit). Use <b>Open in Media Player</b> to watch.</p>
+                </video>
+            </div>
+
+            <div id="episodeSwitchNotice" class="player-switch-notice" hidden>
+                Loading episode...
+            </div>
+            
+            <div class="player-status-bar">
+                <div class="status-left">
+                    <span class="live-badge">Local Stream</span>
+                </div>
+                <div class="player-navigation">
+                    <div class="nav-divider"></div>
+
+                    <button type="button" onclick="playInVLC()" class="nav-btn vlc-quick-btn">
+                        <span class="vlc-icon">&#9654;</span> Open in Media Player
+                    </button>
+                    <button id="openMxPlayerBtn" type="button" class="nav-btn mx-quick-btn" hidden>
+                        Open in MX Player
+                    </button>
+                    <div class="nav-divider"></div>
+
+                    <a
+                        id="prevEpisodeLink"
+                        class="nav-btn prev"
+                        href="{% if previous_episode %}{{ url_for('player', anime_name=anime_name, episode=previous_episode) }}{% else %}#{% endif %}"
+                        data-player-nav
+                        data-episode-path="{{ previous_episode or '' }}"
+                        {% if not previous_episode %}hidden aria-disabled="true"{% endif %}
+                    >
+                        <span>&lsaquo;</span> Prev
+                    </a>
+                    
+                    <a
+                        id="nextEpisodeLink"
+                        class="nav-btn next"
+                        href="{% if next_episode %}{{ url_for('player', anime_name=anime_name, episode=next_episode) }}{% else %}#{% endif %}"
+                        data-player-nav
+                        data-episode-path="{{ next_episode or '' }}"
+                        {% if not next_episode %}hidden aria-disabled="true"{% endif %}
+                    >
+                        Next <span>&rsaquo;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="player-episodes">
+
+    <div class="episode-header">
+        <div class="section-title">
+            <span class="player-section-eyebrow">Episode Queue</span>
+            <div class="section-line"></div>
+            <h2>{{ "Now Playing" if is_movie else "Episodes" }}</h2>
+        </div>
+        <div class="episode-controls">
+            <button id="scrollLeft">&larr;</button>
+            <button id="scrollRight">&rarr;</button>
+        </div>
+    </div>
+
+    <div class="player-episode-grid" id="episodeGrid">
+
+        {% for ep in episodes %}
+        <a
+
+            href="{{ url_for('player', anime_name=anime_name, episode=ep.file) }}"
+            data-player-nav
+            data-episode-path="{{ ep.file }}"
+            data-episode-num="{{ ep.episode }}"
+            data-episode-label="{{ ep.episode_label or ep.episode }}"
+            data-list-position="{{ ep.list_position }}"
+
+            class="player-episode-card
+
+            {% if ep.file == episode %}
+                active
+            {% endif %}"
+
+        >
+            <div class="player-thumb-wrapper">
+
+                <img
+
+                    class="player-thumb"
+
+                    src="{{ ep.thumbnail }}"
+
+                    loading="lazy"
+                >
+
+                <div class="duration-badge">
+
+                    {{ ep.duration }}
+
+                </div>
+
+                <div class="resolution-badge">
+                    {{ ep.resolution }}
+                </div>
+
+                <div class="episode-overlay">
+                    <div class="play-circle">
+                        &#9654;
+                    </div>
+
+                    <div class="episode-meta">
+                        <p>
+                            Watch now
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="player-card-info">
+
+                <div class="player-card-row">
+                    <h3>
+                        {% if is_movie %}
+                        {{ watch_display_name }}
+                        {% else %}
+                        Episode {{ ep.episode_label or ep.episode }}
+                        {% endif %}
+                    </h3>
+
+                    {% if ep.watched %}
+                    <span class="watch-status-badge">
+                        Watched
+                    </span>
+                    {% elif ep.progress and ep.progress > 0 %}
+                    <span class="watch-progress-badge">
+                        Progress {{ ep.progress }}%
+                    </span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<div id="screenshotToast" class="toast player-screenshot-toast">
+    <span class="toast-icon">&#128247;</span>
+    <span id="screenshotToastMessage">Screenshot saved</span>
+</div>
+
+<div id="vlcToast" class="toast player-vlc-toast">
+    <span class="toast-icon" aria-hidden="true">&#9654;</span>
+    <span id="vlcToastMessage">Opening video in Media Player...</span>
+    <button type="button" id="vlcToastActionBtn" class="toast-action-btn" hidden></button>
+</div>
+
+<!-- Player Libraries -->
+<script src="{{ url_for('static', filename='plyr.js') }}"></script>
+
+<!-- Metadata container untuk sinkronisasi data ke JavaScript tanpa memicu error linter -->
+<div id="player-data-container" style="display: none;"
+    data-anime-name="{{ anime_name }}"
+    data-episode-path="{{ episode }}"
+    data-current-ep="{{ current_episode }}"
+    data-current-ep-label="{{ current_episode_label or current_episode }}"
+    data-current-position="{{ current_position }}"
+    data-total-ep="{{ total_episodes }}"
+    data-next-ep="{{ next_episode }}"
+    data-resume-time="{{ resume_time or 0 }}"
+    data-vlc-available="{{ '1' if vlc_available else '0' }}"
+    data-player-url-template="{{ url_for('player', anime_name='__ANIME__', episode='__EPISODE__') }}"
+    data-stream-url-template="{{ url_for('stream_video', anime_name='__ANIME__', episode='__EPISODE__') }}"
+    data-subtitle-url-template="{{ url_for('get_subtitle', anime_name='__ANIME__', episode='__EPISODE__') }}"
+    data-play-url-template="{{ url_for('play_episode', anime_name='__ANIME__', episode='__EPISODE__') }}">
+</div>
+
+<script>
+    (function() {
+        const config = document.getElementById('player-data-container').dataset;
+        window.ANIME_NAME = config.animeName;
+        window.EPISODE_PATH = config.episodePath;
+        window.CURRENT_EP_NUM = config.currentEp;
+        window.CURRENT_EP_LABEL = config.currentEpLabel || config.currentEp;
+        window.CURRENT_POSITION = config.currentPosition;
+        window.TOTAL_EPISODES = config.totalEp;
+        window.NEXT_EP_PATH = (config.nextEp && config.nextEp !== 'None') ? config.nextEp : null;
+        window.RESUME_TIME = parseFloat(config.resumeTime || 0);
+        window.VLC_AVAILABLE = config.vlcAvailable === '1';
+        window.PLYR_ICON_URL = "{{ url_for('static', filename='plyr.svg') }}";
+        window.ANIBASE_ACTION_TOKEN = "{{ action_token }}";
+        window.PLAYER_URL_TEMPLATE = config.playerUrlTemplate;
+        window.STREAM_URL_TEMPLATE = config.streamUrlTemplate;
+        window.SUBTITLE_URL_TEMPLATE = config.subtitleUrlTemplate;
+        window.PLAY_URL_TEMPLATE = config.playUrlTemplate;
+    })();
+</script>
+
+<script src="{{ url_for('static', filename='player.js') }}"></script>
+
+</body>
+
+</html>

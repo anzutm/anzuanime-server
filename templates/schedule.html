@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+
+{% block title %}Airing Schedule - AniBase{% endblock %}
+
+{% block content %}
+<section class="collection-section schedule-page">
+    <div class="collection-glow"></div>
+
+    <div class="collection-top page-heading-top">
+        <div class="collection-heading page-heading-panel">
+            <div class="schedule-heading-main">
+                <div class="schedule-heading-copy">
+                    <span class="page-heading-eyebrow">Airing Schedule</span>
+                    <div class="section-title">
+                        <div class="section-line"></div>
+                        <h2 class="section-heading"><span>Upcoming</span> Airing</h2>
+                    </div>
+                    <p class="section-subtitle page-heading-copy">{{ schedule_range }} (Local Time)</p>
+                    <p class="schedule-heading-support">Track what aired, what is live, and what comes next.</p>
+                </div>
+
+                <div class="schedule-summary">
+                    <span id="scheduleVisibleCount">{{ schedule_visible_count }} Title{% if schedule_visible_count != 1 %}s{% endif %}</span>
+                    <span>{{ schedule_lookahead_days }} Days</span>
+                    <span>Local Time</span>
+                    <span
+                        class="schedule-now-clock"
+                        id="scheduleNowClock"
+                        data-now-ts="{{ now_ts }}"
+                        data-now-iso="{{ now_iso }}"
+                        data-tz-offset="{{ timezone_offset_minutes }}"
+                    >Now &bull; --:--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="collection-toolbar schedule-toolbar">
+        <div class="toolbar-line"></div>
+        <div class="schedule-filter-tabs" aria-label="Schedule filter">
+            <a
+                href="{{ url_for('schedule', scope='all') }}"
+                class="schedule-filter-tab {% if schedule_scope == 'all' %}active{% endif %}"
+                data-schedule-scope="all"
+                {% if schedule_scope == 'all' %}aria-current="page"{% endif %}
+            >
+                All Anime
+                <span>{{ schedule_all_count }}</span>
+            </a>
+            <a
+                href="{{ url_for('schedule', scope='library') }}"
+                class="schedule-filter-tab {% if schedule_scope == 'library' %}active{% endif %}"
+                data-schedule-scope="library"
+                {% if schedule_scope == 'library' %}aria-current="page"{% endif %}
+            >
+                My Library
+                <span>{{ schedule_library_count }}</span>
+            </a>
+        </div>
+    </div>
+
+    {% if schedule_focus %}
+    <section
+        class="schedule-now-hero is-{{ schedule_focus.focus_mode }}"
+        data-focus-airing-at="{{ schedule_focus.airing_at }}"
+        data-focus-airing-iso="{{ schedule_focus.airing_iso }}"
+        data-focus-in-library="{{ '1' if schedule_focus.is_in_library else '0' }}"
+        style="--schedule-focus-poster: url('{{ schedule_focus.poster }}');"
+    >
+        <div class="schedule-now-hero-bg" aria-hidden="true"></div>
+        <img class="schedule-now-hero-poster" src="{{ schedule_focus.poster }}" alt="{{ schedule_focus.title }}" loading="lazy">
+
+        <div class="schedule-now-hero-content">
+            <div class="schedule-now-hero-topline">
+                <span class="schedule-now-hero-badge" data-focus-badge>{{ schedule_focus.focus_badge }}</span>
+                {% if schedule_focus.more_count %}
+                <span class="schedule-now-hero-more">+{{ schedule_focus.more_count }} more airing</span>
+                {% endif %}
+            </div>
+
+            <h3>{{ schedule_focus.title }}</h3>
+
+            <div class="schedule-now-hero-meta">
+                <span>Ep {{ schedule_focus.episode }}</span>
+                <span>{{ schedule_focus.time }}</span>
+                {% if schedule_focus.format %}
+                <span>{{ schedule_focus.format }}</span>
+                {% endif %}
+            </div>
+
+            <p class="schedule-now-hero-status" data-focus-status>{{ schedule_focus.focus_status }}</p>
+
+            {% if schedule_focus.detail_url %}
+            <a class="schedule-now-hero-action" href="{{ schedule_focus.detail_url }}">View Details</a>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="schedule-timeline" id="scheduleTimeline">
+        <div class="schedule-now-marker" id="scheduleNowMarker" hidden>
+            <span>Now</span>
+        </div>
+
+        {% for date_key, day_entries in schedule|groupby("date_key") %}
+        <section class="schedule-day" data-schedule-day="{{ date_key }}">
+            <div class="schedule-day-heading">
+                <span>{{ day_entries[0].date_label }}</span>
+                <strong>{{ day_entries[0].date_display }}</strong>
+            </div>
+
+            <div class="schedule-day-slots">
+                {% for time, entries in day_entries|groupby("time") %}
+                <section
+                    class="schedule-slot"
+                    data-slot-time="{{ time }}"
+                    data-slot-date="{{ date_key }}"
+                    data-slot-ts="{{ entries[0].airing_at }}"
+                    data-slot-iso="{{ entries[0].airing_iso }}"
+                >
+                    <div class="schedule-time-rail">
+                        <span class="schedule-time">{{ time }}</span>
+                        <span class="schedule-slot-now-label">Now</span>
+                    </div>
+
+                    <div class="schedule-slot-list">
+                        {% for item in entries %}
+                        {% if item.detail_url %}
+                        <a
+                            class="schedule-entry-card"
+                            href="{{ item.detail_url }}"
+                            data-airing-at="{{ item.airing_at }}"
+                            data-airing-iso="{{ item.airing_iso }}"
+                            data-in-library="{{ '1' if item.is_in_library else '0' }}"
+                        >
+                        {% else %}
+                        <article
+                            class="schedule-entry-card"
+                            data-airing-at="{{ item.airing_at }}"
+                            data-airing-iso="{{ item.airing_iso }}"
+                            data-in-library="{{ '1' if item.is_in_library else '0' }}"
+                        >
+                        {% endif %}
+                            <img class="schedule-thumb" src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy">
+
+                            <div class="schedule-entry-main">
+                                <div class="schedule-entry-top">
+                                    <h3>{{ item.title }}</h3>
+                                    <span class="schedule-status schedule-status-{{ item.status|lower|replace(' ', '-') }}" data-status-label>
+                                        {{ item.status }}
+                                    </span>
+                                </div>
+
+                                <div class="schedule-entry-meta">
+                                    <span>Ep {{ item.episode }}</span>
+                                    <span>{{ item.time }}</span>
+                                    {% if item.format %}
+                                    <span>{{ item.format }}</span>
+                                    {% endif %}
+                                    {% if item.is_in_library %}
+                                    <span class="schedule-library-chip">In Library</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% if item.detail_url %}
+                        </a>
+                        {% else %}
+                        </article>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+
+        {% if schedule_error %}
+        <div class="schedule-state compact-empty-state">
+            <span aria-hidden="true">!</span>
+            <p>{{ schedule_error }}</p>
+            <button type="button" class="empty-inline-action" onclick="window.location.reload()">Retry</button>
+        </div>
+        {% elif not schedule %}
+        <div class="schedule-state compact-empty-state" id="scheduleEmptyState">
+            <span aria-hidden="true">.</span>
+            <p>No schedule data available.</p>
+            <button type="button" class="empty-inline-action" onclick="window.location.reload()">Retry</button>
+        </div>
+        {% endif %}
+        {% if schedule %}
+        <div class="schedule-state compact-empty-state" id="scheduleEmptyState" hidden>
+            <span aria-hidden="true">?</span>
+            <p>No airing schedule found for the selected filter.</p>
+            <button type="button" class="empty-inline-action" data-schedule-reset>Reset Filter</button>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const scheduleSearchInput = document.getElementById('animeSearch');
+    const scheduleTimeline = document.getElementById('scheduleTimeline');
+    const scheduleNowClock = document.getElementById('scheduleNowClock');
+    const scheduleNowMarker = document.getElementById('scheduleNowMarker');
+    const scheduleVisibleCount = document.getElementById('scheduleVisibleCount');
+    const scheduleEmptyState = document.getElementById('scheduleEmptyState');
+    const scheduleFocusHero = document.querySelector('.schedule-now-hero[data-focus-airing-at]');
+    const scheduleDays = Array.from(document.querySelectorAll('.schedule-day[data-schedule-day]'));
+    const scheduleSlots = Array.from(document.querySelectorAll('.schedule-slot[data-slot-ts]'));
+    const scheduleCards = Array.from(document.querySelectorAll('.schedule-entry-card[data-airing-at]'));
+    const scheduleFilterTabs = Array.from(document.querySelectorAll('.schedule-filter-tab[data-schedule-scope]'));
+
+    const scheduleServerNowMs = scheduleNowClock && scheduleNowClock.dataset.nowIso
+        ? Date.parse(scheduleNowClock.dataset.nowIso)
+        : Date.now();
+    const schedulePageLoadedMs = Date.now();
+    const scheduleTimezoneOffsetMinutes = scheduleNowClock
+        ? Number(scheduleNowClock.dataset.tzOffset || 0)
+        : 0;
+    let scheduleScope = '{{ schedule_scope }}';
+    let scheduleSearchTerm = '';
+
+    function getScheduleNowMs() {
+        return scheduleServerNowMs + (Date.now() - schedulePageLoadedMs);
+    }
+
+    function getTimestampMs(element, isoKey, fallbackKey) {
+        const isoValue = element.dataset[isoKey];
+        const parsedIso = isoValue ? Date.parse(isoValue) : NaN;
+        if (Number.isFinite(parsedIso)) {
+            return parsedIso;
+        }
+
+        const fallbackSeconds = Number(element.dataset[fallbackKey]);
+        return Number.isFinite(fallbackSeconds) ? fallbackSeconds * 1000 : NaN;
+    }
+
+    function formatLocalDateKey(epochMs) {
+        const shifted = new Date(epochMs + scheduleTimezoneOffsetMinutes * 60000);
+        const year = shifted.getUTCFullYear();
+        const month = String(shifted.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(shifted.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function formatScheduleClock(epochMs) {
+        const shifted = new Date(epochMs + scheduleTimezoneOffsetMinutes * 60000);
+        const hours = String(shifted.getUTCHours()).padStart(2, '0');
+        const minutes = String(shifted.getUTCMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+    function formatScheduleCountdown(seconds) {
+        const totalMinutes = Math.max(0, Math.ceil(seconds / 60));
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (hours > 0 && minutes > 0) {
+            return `In ${hours}h ${minutes}m`;
+        }
+
+        if (hours > 0) {
+            return `In ${hours}h`;
+        }
+
+        return `In ${minutes}m`;
+    }
+
+    function setScheduleStatus(card, status, label) {
+        const badge = card.querySelector('[data-status-label]');
+        if (!badge) return;
+
+        badge.textContent = label;
+        badge.classList.remove(
+            'schedule-status-aired',
+            'schedule-status-airing-now',
+            'schedule-status-upcoming'
+        );
+        badge.classList.add(`schedule-status-${status}`);
+    }
+
+    function updateScheduleLiveState() {
+        const nowMs = getScheduleNowMs();
+        const todayKey = formatLocalDateKey(nowMs);
+
+        if (scheduleNowClock) {
+            scheduleNowClock.textContent = `Now \u2022 ${formatScheduleClock(nowMs)}`;
+        }
+
+        scheduleCards.forEach(card => {
+            const airingAtMs = getTimestampMs(card, 'airingIso', 'airingAt');
+            if (!Number.isFinite(airingAtMs)) return;
+
+            card.classList.remove('is-past', 'is-current', 'is-upcoming');
+
+            if (airingAtMs <= nowMs && nowMs < airingAtMs + 1800000) {
+                card.classList.add('is-current');
+                setScheduleStatus(card, 'airing-now', 'Airing now');
+            } else if (airingAtMs > nowMs) {
+                card.classList.add('is-upcoming');
+                setScheduleStatus(card, 'upcoming', formatScheduleCountdown((airingAtMs - nowMs) / 1000));
+            } else {
+                card.classList.add('is-past');
+                setScheduleStatus(card, 'aired', 'Aired');
+            }
+        });
+
+        scheduleSlots.forEach(slot => {
+            const slotTsMs = getTimestampMs(slot, 'slotIso', 'slotTs');
+            if (!Number.isFinite(slotTsMs)) return;
+
+            slot.classList.remove('is-past', 'is-current', 'is-upcoming', 'is-current-nearest');
+
+            if (slotTsMs <= nowMs && nowMs < slotTsMs + 1800000) {
+                slot.classList.add('is-current');
+            } else if (slotTsMs > nowMs) {
+                slot.classList.add('is-upcoming');
+            } else {
+                slot.classList.add('is-past');
+            }
+        });
+
+        if (scheduleFocusHero) {
+            const focusAtMs = getTimestampMs(scheduleFocusHero, 'focusAiringIso', 'focusAiringAt');
+            const focusBadge = scheduleFocusHero.querySelector('[data-focus-badge]');
+            const focusStatus = scheduleFocusHero.querySelector('[data-focus-status]');
+
+            if (Number.isFinite(focusAtMs)) {
+                scheduleFocusHero.classList.remove('is-live', 'is-next', 'is-past');
+
+                if (focusAtMs <= nowMs && nowMs < focusAtMs + 1800000) {
+                    scheduleFocusHero.classList.add('is-live');
+                    if (focusBadge) focusBadge.textContent = 'LIVE NOW';
+                    if (focusStatus) focusStatus.textContent = 'Airing now';
+                } else if (focusAtMs > nowMs) {
+                    scheduleFocusHero.classList.add('is-next');
+                    if (focusBadge) focusBadge.textContent = 'NEXT UP';
+                    if (focusStatus) focusStatus.textContent = `Starts ${formatScheduleCountdown((focusAtMs - nowMs) / 1000).toLowerCase()}`;
+                } else {
+                    scheduleFocusHero.classList.add('is-past');
+                    if (focusBadge) focusBadge.textContent = 'AIRED';
+                    if (focusStatus) focusStatus.textContent = 'Aired';
+                }
+            }
+        }
+
+        if (!scheduleTimeline || !scheduleNowMarker || scheduleSlots.length === 0) {
+            return;
+        }
+
+        const todaySlots = scheduleSlots.filter(slot => slot.dataset.slotDate === todayKey);
+        if (todaySlots.length === 0) {
+            scheduleNowMarker.hidden = true;
+            return;
+        }
+
+        const firstSlot = todaySlots[0];
+        const lastSlot = todaySlots[todaySlots.length - 1];
+        const firstTsMs = getTimestampMs(firstSlot, 'slotIso', 'slotTs');
+        const lastTsMs = getTimestampMs(lastSlot, 'slotIso', 'slotTs');
+
+        if (!Number.isFinite(firstTsMs) || !Number.isFinite(lastTsMs) || nowMs < firstTsMs || nowMs > lastTsMs + 1800000) {
+            scheduleNowMarker.hidden = true;
+            return;
+        }
+
+        let previousSlot = firstSlot;
+        let nextSlot = null;
+
+        for (const slot of todaySlots) {
+            const slotMs = getTimestampMs(slot, 'slotIso', 'slotTs');
+            if (!Number.isFinite(slotMs)) continue;
+
+            if (slotMs <= nowMs) {
+                previousSlot = slot;
+            }
+
+            if (slotMs > nowMs) {
+                nextSlot = slot;
+                break;
+            }
+        }
+
+        const timelineRect = scheduleTimeline.getBoundingClientRect();
+        const previousRect = previousSlot.getBoundingClientRect();
+        const previousTop = previousRect.top - timelineRect.top + Math.min(44, previousRect.height / 2);
+        let markerTop = previousTop;
+
+        if (nextSlot) {
+            const previousMs = getTimestampMs(previousSlot, 'slotIso', 'slotTs');
+            const nextMs = getTimestampMs(nextSlot, 'slotIso', 'slotTs');
+            const nextRect = nextSlot.getBoundingClientRect();
+            const nextTop = nextRect.top - timelineRect.top + Math.min(44, nextRect.height / 2);
+            const ratio = Math.max(0, Math.min(1, (nowMs - previousMs) / (nextMs - previousMs)));
+            markerTop = previousTop + (nextTop - previousTop) * ratio;
+        } else {
+            const lastRatio = Math.max(0, Math.min(1, (nowMs - lastTsMs) / 1800000));
+            markerTop = previousTop + Math.min(previousRect.height, 88) * lastRatio;
+        }
+
+        scheduleNowMarker.style.top = `${Math.max(0, markerTop)}px`;
+        scheduleNowMarker.hidden = false;
+    }
+
+    function updateScheduleScopeUI() {
+        scheduleFilterTabs.forEach(tab => {
+            const isActive = tab.dataset.scheduleScope === scheduleScope;
+            tab.classList.toggle('active', isActive);
+            if (isActive) {
+                tab.setAttribute('aria-current', 'page');
+            } else {
+                tab.removeAttribute('aria-current');
+            }
+        });
+    }
+
+    function updateScheduleVisibleCount(count) {
+        if (!scheduleVisibleCount) return;
+        scheduleVisibleCount.textContent = `${count} Title${count === 1 ? '' : 's'}`;
+    }
+
+    function applyScheduleFilters() {
+        let totalVisible = 0;
+
+        scheduleSlots.forEach(slot => {
+            let visibleCount = 0;
+            const cards = slot.querySelectorAll('.schedule-entry-card');
+
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const matchesSearch = !scheduleSearchTerm || title.includes(scheduleSearchTerm);
+                const matchesScope = scheduleScope !== 'library' || card.dataset.inLibrary === '1';
+                const isVisible = matchesSearch && matchesScope;
+
+                card.style.display = isVisible ? "grid" : "none";
+                if (isVisible) {
+                    visibleCount++;
+                    totalVisible++;
+                }
+            });
+
+            slot.style.display = visibleCount > 0 ? "grid" : "none";
+        });
+
+        scheduleDays.forEach(day => {
+            const visibleSlots = day.querySelectorAll('.schedule-slot:not([style*="display: none"])');
+            day.style.display = visibleSlots.length > 0 ? "grid" : "none";
+        });
+
+        if (scheduleFocusHero) {
+            scheduleFocusHero.hidden = scheduleScope === 'library'
+                && scheduleFocusHero.dataset.focusInLibrary !== '1';
+        }
+
+        if (scheduleEmptyState) {
+            scheduleEmptyState.hidden = totalVisible > 0;
+            const message = scheduleScope === 'library'
+                ? 'No airing anime from your library found for the next {{ schedule_lookahead_days }} days.'
+                : 'No airing schedule found for the selected filter.';
+            const messageNode = scheduleEmptyState.querySelector('p');
+            if (messageNode) messageNode.textContent = message;
+        }
+
+        updateScheduleVisibleCount(totalVisible);
+        updateScheduleScopeUI();
+        updateScheduleLiveState();
+    }
+
+    scheduleFilterTabs.forEach(tab => {
+        tab.addEventListener('click', function(event) {
+            event.preventDefault();
+            scheduleScope = this.dataset.scheduleScope || 'all';
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('scope', scheduleScope);
+            window.history.pushState({ scheduleScope }, '', url);
+
+            applyScheduleFilters();
+        });
+    });
+
+    const scheduleReset = document.querySelector('[data-schedule-reset]');
+    if (scheduleReset) {
+        scheduleReset.addEventListener('click', function() {
+            scheduleScope = 'all';
+            scheduleSearchTerm = '';
+            if (scheduleSearchInput) scheduleSearchInput.value = '';
+            applyScheduleFilters();
+        });
+    }
+
+    window.addEventListener('popstate', function() {
+        const params = new URLSearchParams(window.location.search);
+        scheduleScope = params.get('scope') === 'library' ? 'library' : 'all';
+        applyScheduleFilters();
+    });
+
+    if (scheduleSearchInput) {
+        scheduleSearchInput.addEventListener('input', function(e) {
+            scheduleSearchTerm = e.target.value.toLowerCase().trim();
+            applyScheduleFilters();
+        });
+    }
+
+    applyScheduleFilters();
+    window.setInterval(updateScheduleLiveState, 60000);
+</script>
+{% endblock %}

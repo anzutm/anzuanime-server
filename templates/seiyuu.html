@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}{{ seiyuu_data.name_full if seiyuu_data else 'Voice Actor Profile' }} - AniBase{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='seiyuu.css') }}">
+{% endblock %}
+
+{% macro stat(value, label) %}
+{% if value is not none and value != '' %}
+<div class="sy-stat"><strong>{{ value }}</strong><span>{{ label }}</span></div>
+{% endif %}
+{% endmacro %}
+
+{% macro role_card(role, local=false, initially_hidden=false) %}
+<article class="sy-role{% if local %} sy-role--local{% endif %}"{% if initially_hidden %} data-extra-role hidden{% endif %}>
+    <div class="sy-role-character">
+        {% if role.character_image %}
+        <img src="{{ role.character_image }}" alt="{{ role.character_name or 'Unknown Character' }}" loading="lazy">
+        {% else %}
+        <div class="sy-role-fallback" aria-hidden="true">{{ role.character_name[:1] if role.character_name else 'C' }}</div>
+        {% endif %}
+        {% if local %}<span class="sy-library-badge">In Library</span>{% endif %}
+    </div>
+    <div class="sy-role-copy">
+        <div class="sy-role-meta">
+            {% if role.role_notes %}<span>{{ role.role_notes }}</span>{% endif %}
+            {% if role.media_year %}<time>{{ role.media_year }}</time>{% endif %}
+        </div>
+        <h3>{{ role.character_name or 'Unknown Character' }}</h3>
+        <p>{{ role.media_title or 'Unknown Anime' }}</p>
+        {% if local %}
+        <a href="{{ role.local_detail_url }}" class="sy-role-action">Open anime</a>
+        {% endif %}
+    </div>
+</article>
+{% endmacro %}
+
+{% block content %}
+<main class="sy-page">
+    {% if not seiyuu_data %}
+    <section class="sy-error">
+        <span class="sy-eyebrow">Voice Actor</span>
+        <h1>Profile unavailable</h1>
+        <p>{{ seiyuu_error or 'The profile could not be loaded right now.' }}</p>
+        <a href="{{ url_for('index') }}" class="sy-button sy-button--primary">Back to Library</a>
+    </section>
+    {% else %}
+    <a href="{{ url_for('index') }}" class="sy-back"><span aria-hidden="true">&larr;</span> Back to Library</a>
+
+    <section class="sy-hero">
+        <div class="sy-backdrop" aria-hidden="true">
+            {% if backdrop_image %}<img src="{{ backdrop_image }}" alt="">{% endif %}
+        </div>
+        <div class="sy-portrait">
+            {% if seiyuu_data.image %}
+            <img src="{{ seiyuu_data.image }}" alt="Portrait of {{ seiyuu_data.name_full }}">
+            {% else %}
+            <div class="sy-portrait-fallback" aria-hidden="true">{{ seiyuu_data.name_full[:1] if seiyuu_data.name_full else 'V' }}</div>
+            {% endif %}
+        </div>
+
+        <div class="sy-profile">
+            <div class="sy-badges">
+                <span>Voice Actor</span>
+                {% if seiyuu_data.source %}<span class="sy-source">Data: {{ seiyuu_data.source }}</span>{% endif %}
+            </div>
+            <h1>{{ seiyuu_data.name_full or 'Unknown Voice Actor' }}</h1>
+            {% if seiyuu_data.name_native %}<p class="sy-native">{{ seiyuu_data.name_native }}</p>{% endif %}
+
+            <div class="sy-stats" aria-label="Profile statistics">
+                {{ stat(voice_roles|length, 'Total Roles') }}
+                {{ stat(library_roles|length, 'In Library') }}
+                {{ stat(seiyuu_data.language, 'Language') }}
+                {{ stat(seiyuu_data.age, 'Age') }}
+            </div>
+
+            {% if seiyuu_data.gender or seiyuu_data.home_town or seiyuu_data.blood_type or seiyuu_data.date_of_birth or seiyuu_data.language %}
+            <section class="sy-personal" aria-labelledby="sy-personal-title">
+                <h2 id="sy-personal-title">Personal Information</h2>
+                <dl>
+                    {% if seiyuu_data.gender %}<div><dt>Gender</dt><dd>{{ seiyuu_data.gender }}</dd></div>{% endif %}
+                    {% if seiyuu_data.home_town %}<div><dt>Hometown</dt><dd>{{ seiyuu_data.home_town }}</dd></div>{% endif %}
+                    {% if seiyuu_data.blood_type %}<div><dt>Blood Type</dt><dd>{{ seiyuu_data.blood_type }}</dd></div>{% endif %}
+                    {% if seiyuu_data.date_of_birth %}<div><dt>Date of Birth</dt><dd>{{ seiyuu_data.date_of_birth }}</dd></div>{% endif %}
+                    {% if seiyuu_data.language %}<div><dt>Language</dt><dd>{{ seiyuu_data.language }}</dd></div>{% endif %}
+                </dl>
+            </section>
+            {% endif %}
+
+            {% if bio_paragraphs %}
+            <div class="sy-bio" id="seiyuuBio">
+                {% for paragraph in bio_paragraphs %}
+                <p>{% for segment in paragraph %}{% if segment.kind == 'strong' %}<strong>{{ segment.text }}</strong>{% elif segment.kind == 'em' %}<em>{{ segment.text }}</em>{% elif segment.kind == 'link' %}<a href="{{ segment.url }}" target="_blank" rel="noopener noreferrer">{{ segment.text }}</a>{% else %}{{ segment.text }}{% endif %}{% endfor %}</p>
+                {% endfor %}
+            </div>
+            <button class="sy-bio-toggle" id="seiyuuBioToggle" type="button" aria-expanded="false">Show more</button>
+            {% endif %}
+
+            {% if social_links %}
+            <nav class="sy-socials" aria-label="External profiles">
+                {% for link in social_links %}
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+                {% endfor %}
+            </nav>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if seiyuu_error %}<div class="sy-notice">{{ seiyuu_error }}</div>{% endif %}
+
+    <section class="sy-section" aria-labelledby="library-roles-title">
+        <header class="sy-section-head">
+            <div><span class="sy-eyebrow">Local Collection</span><h2 id="library-roles-title">Roles in Your Library</h2></div>
+            <span>{{ library_roles|length }} role{% if library_roles|length != 1 %}s{% endif %}</span>
+        </header>
+        {% if library_roles %}
+        <div class="sy-role-grid">
+            {% for role in library_roles %}{{ role_card(role, true) }}{% endfor %}
+        </div>
+        {% else %}
+        <div class="sy-empty"><strong>No related anime in your library</strong><p>Known roles will still appear below when AniList data is available.</p></div>
+        {% endif %}
+    </section>
+
+    <section class="sy-section" aria-labelledby="other-roles-title">
+        <header class="sy-section-head">
+            <div><span class="sy-eyebrow">AniList Credits</span><h2 id="other-roles-title">Other Known Roles</h2></div>
+            <span>{{ other_roles|length }} role{% if other_roles|length != 1 %}s{% endif %}</span>
+        </header>
+        {% if other_roles %}
+        <div class="sy-role-grid" id="otherRolesGrid">
+            {% for role in other_roles %}{{ role_card(role, false, loop.index > 24) }}{% endfor %}
+        </div>
+        {% if other_roles|length > 24 %}<button class="sy-load-more" id="seiyuuLoadMore" type="button">Show more roles</button>{% endif %}
+        {% else %}
+        <div class="sy-empty"><strong>No other roles available</strong><p>This profile does not currently include additional AniList credits.</p></div>
+        {% endif %}
+    </section>
+    {% endif %}
+</main>
+<script src="{{ url_for('static', filename='seiyuu.js') }}" defer></script>
+{% endblock %}
