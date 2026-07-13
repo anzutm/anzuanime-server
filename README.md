@@ -84,7 +84,7 @@ Choose one path:
 * 🛠️ **Developer** if you want to run from source and use the project-local cache.
 * 📦 **Build Release** if you want to create `AniBase.exe`.
 
-### Release
+### 🚀 Release
 
 **Version:** [v2026.07.13]
 
@@ -114,7 +114,7 @@ Release builds store settings, database, watch history/status, cache, logs, and 
 %LOCALAPPDATA%\AniBase\
 ```
 
-### Developer
+### 🛠️ Developer
 
 The setup script creates `.venv`, installs all Python dependencies, and makes
 sure FFmpeg and FFprobe are available:
@@ -151,7 +151,7 @@ Open the dashboard from the tray or visit:
 http://127.0.0.1:5000/ or localhost:5000
 ```
 
-### Build Release
+### 📦 Build Release
 
 **Step 1: Prepare the Developer Environment**
 
